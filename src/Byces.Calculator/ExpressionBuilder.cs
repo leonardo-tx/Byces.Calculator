@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Byces.Calculator.Enums;
+using Byces.Calculator.Expressions;
+using Byces.Calculator.Extensions;
+using MathNet.Numerics;
 
 namespace Byces.Calculator
 {
     /// <summary>
-    /// This class provides the direct building of an <see cref="Byces.Calculator.Expression"/> in a simplified way to be used in the <see cref="Byces.Calculator"/>.
+    /// This class provides the direct building of a <see cref="FormatedExpression"/> in a simplified way to be used in the <see cref="Calculator"/>.
     /// </summary>
     public sealed class ExpressionBuilder
     {
@@ -17,8 +21,11 @@ namespace Byces.Calculator
             Expression = string.Empty;
         }
 
-        private const string AllOperators = "+-*/^√";
-        private const string AllValidNumbers = "0123456789.,()";
+        public const string AllSelfOperatorsBefore = "√";
+        public const string AllSelfOperatorsAfter = "!";
+        public const string AllOperations = "+-*/^√";
+        public const string AllValidNumbers = "0123456789.,πe";
+        public const string AllContainers = "()";
 
         /// <summary>
         /// Gets or sets the expression of a <see cref="ExpressionBuilder"/>.
@@ -36,40 +43,48 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Builds the <see cref="Byces.Calculator.Expression"/> to be used in <see cref="Byces.Calculator"/>.
+        /// Builds the <see cref="FormatedExpression"/> to be used in <see cref="Calculator"/>.
         /// </summary>
         /// <returns>The built calculator result.</returns>
-        public Expression Build()
+        public FormatedExpression Build()
         {
-            if (string.IsNullOrWhiteSpace(Expression)) return Byces.Calculator.Expression.Empty;
+            if (string.IsNullOrWhiteSpace(Expression)) return FormatedExpression.Empty;
             try
             {
-                (IList<Operation> operatorsList, IList<double> numbersList, IList<int> prioritiesList) = FormatExpression();
-                return new Expression(numbersList, operatorsList, prioritiesList, true, null);
+                return new FormatedExpression(FormatExpression(), true);
             }
             catch (Exception ex)
             {
-                return new Expression(new List<double>(0), new List<Operation>(0), new List<int>(0), false, ex.Message);
+                return new FormatedExpression(ex.Message);
             }
         }
 
-        private (IList<Operation>, IList<double>, IList<int>) FormatExpression()
+        private Content FormatExpression()
         {
             ReadOnlySpan<char> expressionSpan = Expression.Replace(" ", "");
-            if (!IsContainersValid(expressionSpan)) throw new ArgumentException("The provided expression is missing containers to be closed.");
+            CheckParentheses(expressionSpan);
             
-            int capacity = CountAll(expressionSpan, AllOperators);
-            
-            if ((2 * capacity + 1) % 2 == 0) throw new ArgumentException("The provided expression is not complete");
-            IList<double> numbersList = new List<double>(capacity + 1);
-            IList<Operation> operatorsList = new List<Operation>(capacity);
-            IList<int> prioritiesList = new List<int>(capacity);
+            int capacity = expressionSpan.Count(AllOperations);
+            IList<Operation> operations; IList<int> priorities; IList<Number> numbers = new List<Number>(capacity + 1);
 
-            ConfigureLists(expressionSpan, numbersList, operatorsList, prioritiesList);
-            return (operatorsList, numbersList, prioritiesList);
+            if (capacity == 0) 
+            { 
+                operations = Array.Empty<Operation>();
+                priorities = Array.Empty<int>();
+            }
+            else 
+            { 
+                operations = new List<Operation>(capacity);
+                priorities = new List<int>(capacity);
+            }
+            var content = new Content(numbers, operations, priorities);
+            ConfigureContent(expressionSpan, content);
+            if ((content.Numbers.Count + content.Operations.Count) % 2 == 0) throw new ArgumentException("The provided expression is not complete");
+
+            return content;
         }
 
-        private static bool IsContainersValid(ReadOnlySpan<char> expressionSpan)
+        private static void CheckParentheses(ReadOnlySpan<char> expressionSpan)
         {
             int unclosedParentheses = 0;
             for (int i = 0; i < expressionSpan.Length; i++)
@@ -80,71 +95,92 @@ namespace Byces.Calculator
                         unclosedParentheses++;
                         break;
                     case ')':
-                        if (unclosedParentheses-- == 0) throw new ArgumentException("Provided expression has misplaced parentheses.");
+                        unclosedParentheses--;
                         break;
                 }
             }
-            return unclosedParentheses == 0;
+            if (unclosedParentheses < 0) throw new ArgumentException("Provided expression has misplaced parentheses.");
+            if (unclosedParentheses > 0) throw new ArgumentException("The provided expression is missing containers to be closed.");
         }
 
-        private static int CountAll(ReadOnlySpan<char> expressionSpan, ReadOnlySpan<char> characters)
-        {
-            int count = 0;
-            for (int i = 0; i < expressionSpan.Length; i++)
-            {
-                for (int j = 0; j < characters.Length; j++)
-                {
-                    if (expressionSpan[i] == characters[j]) count++;
-                }
-            }
-            return count;
-        }
-
-        private static void ConfigureLists(ReadOnlySpan<char> expressionSpan, IList<double> numbersList, IList<Operation> operatorsList, IList<int> prioritiesList)
+        private static void ConfigureContent(ReadOnlySpan<char> expressionSpan, Content content)
         {
             for (int i = 0, numberFirstIndex = 0, priority = 0; i < expressionSpan.Length; i++)
             {
-                if (!AllValidNumbers.Contains(expressionSpan[i]))
+                if (content.Numbers.Count != content.Operations.Count)
                 {
-                    if (expressionSpan[i] == '-' && (i == 0 || AllOperators.Contains(expressionSpan[i - 1]))) continue;
-                    if (!AllOperators.Contains(expressionSpan[i])) throw new ArgumentException("Provided expression has a unknown operator");
+                    if (!AllOperations.Contains(expressionSpan[i])) throw new ArgumentException("Provided expression has an unknown symbol");
 
-                    var slice1 = GetValidNumberSlice(expressionSpan, numberFirstIndex, i);
-                    if (!double.TryParse(slice1, out _)) throw new ArgumentException("Provided expression has a number that could not be parsed");
-
-                    numbersList.Add(double.Parse(slice1));
-                    operatorsList.Add(GetOperation(expressionSpan[i]));
-                    prioritiesList.Add(priority);
+                    content.Operations.Add(GetOperation(expressionSpan[i]));
+                    content.Priorities.Add(priority);
 
                     numberFirstIndex = i + 1;
                     continue;
                 }
-                if (expressionSpan[i] == '(') priority++;
-                else if (expressionSpan[i] == ')') priority--;
-                if (expressionSpan.Length != i + 1) continue;
-
-                var slice2 = GetValidNumberSlice(expressionSpan, numberFirstIndex, i + 1);
-                if (!double.TryParse(slice2, out _)) throw new ArgumentException("Provided expression has a number that could not be parsed");
-                numbersList.Add(double.Parse(slice2));
+                switch (expressionSpan[i])
+                {
+                    case '-':
+                        continue;
+                    case '(':
+                        priority++;
+                        continue;
+                    case ')':
+                        priority--;
+                        break;
+                }
+                if (expressionSpan.Length == i + 1 || AllOperations.Contains(expressionSpan[i + 1]))
+                {
+                    TryAddNumber(expressionSpan[numberFirstIndex..(i + 1)], content);
+                }
             }
         }
 
-        private static ReadOnlySpan<char> GetValidNumberSlice(ReadOnlySpan<char> expressionSpan, int firstIndex, int lastIndex)
+        private static void TryAddNumber(ReadOnlySpan<char> numberSlice, Content content)
         {
-            var slice = expressionSpan[firstIndex..lastIndex];
-            for (int i = 0; i < slice.Length; i++)
+            if (content.Numbers.Count != content.Operations.Count) return;
+
+            ReadOnlySpan<char> validNumberSlice = GetValidNumberSlice(numberSlice);
+            IList<SelfOperation> selfOperations = Array.Empty<SelfOperation>();
+            int selfOperatorsCount = numberSlice.Count(AllSelfOperatorsAfter + AllSelfOperatorsBefore);
+            
+            if (selfOperatorsCount > 0)
             {
-                switch (slice[i])
+                selfOperations = new List<SelfOperation>(selfOperatorsCount);
+                int lastPriority = content.Priorities.LastOrDefault() + numberSlice.Count("(") - numberSlice.Count(")");
+                for (int i = numberSlice.Length - 1; i >= 0 ; i--)
                 {
-                    case '(':
-                        firstIndex++;
-                        break;
-                    case ')':
-                        lastIndex--;
-                        break;
+                    if (AllSelfOperatorsAfter.Contains(numberSlice[i]) || AllSelfOperatorsBefore.Contains(numberSlice[i]))
+                    {
+                        selfOperations.Add(new SelfOperation(GetSelfOperation(numberSlice[i]), lastPriority));
+                    }
+                    else if (numberSlice[i] == ')') lastPriority++;
+                    else if (numberSlice[i] == '(') lastPriority--;
                 }
             }
-            return expressionSpan[firstIndex..lastIndex];
+            if (!double.TryParse(validNumberSlice, out double doubleNumber))
+            {
+                doubleNumber = validNumberSlice[0] switch
+                {
+                    'π' => Constants.Pi,
+                    'e' => Constants.E,
+                    _ => throw new ArgumentException("Provided expression has a number that could not be parsed")
+                };
+            }
+            Number number = new Number(doubleNumber, selfOperations);
+            content.Numbers.Add(number);
+        }
+
+        private static ReadOnlySpan<char> GetValidNumberSlice(ReadOnlySpan<char> numberSlice)
+        {
+            int firstIndex = 0, count = numberSlice.Length;
+            for (int i = 0; i < numberSlice.Length; i++)
+            {
+                if (numberSlice[i] == '(') firstIndex++;
+                else if (numberSlice[i] == ')') count--;
+                else if (AllSelfOperatorsAfter.Contains(numberSlice[i])) count--;
+                else if (AllSelfOperatorsBefore.Contains(numberSlice[i])) firstIndex++;
+            }
+            return numberSlice[firstIndex..count];
         }
 
         private static Operation GetOperation(char character)
@@ -157,7 +193,17 @@ namespace Byces.Calculator
                 '/' => Operation.Divide,
                 '+' => Operation.Add,
                 '-' => Operation.Subtract,
-                _ => throw new ArgumentException("Invalid operator."),
+                _ => throw new ArgumentException("Invalid operator.")
+            };
+        }
+
+        private static Operation GetSelfOperation(char character)
+        {
+            return character switch
+            {
+                '!' => Operation.Factorial,
+                '√' => Operation.Root,
+                _ => throw new ArgumentException("Invalid operator.")
             };
         }
     }

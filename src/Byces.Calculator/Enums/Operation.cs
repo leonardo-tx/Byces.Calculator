@@ -8,5 +8,6 @@
         Divide,
         Power,
         Root,
+        Factorial,
     }
 }

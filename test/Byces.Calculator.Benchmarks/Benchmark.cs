@@ -11,29 +11,30 @@ public class Benchmark
     [Benchmark]
     public void GetCalculatorResultSimple()
     {
-        var expression = new ExpressionBuilder().WithExpression("2 + 5 * 6").Build();
-        Calculator.Calculate(expression);
+        new ExpressionBuilder().WithExpression("2 + 5 * 6").Build().Calculate();
     }
-
 
     [Benchmark]
     public void GetCalculatorResultComplex()
     {
-        var expression = new ExpressionBuilder().WithExpression("2 ^ 2 + (4 + 5 * (2 √ 9))").Build();
-        Calculator.Calculate(expression);
+        new ExpressionBuilder().WithExpression("2 ^ 2 + (4 + 5 * (2 √ 9))").Build().Calculate();
     }
 
     [Benchmark]
     public void GetCalculatorResultHeavy()
     {
-        var expression = new ExpressionBuilder().WithExpression("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))").Build();
-        Calculator.Calculate(expression);
+        new ExpressionBuilder().WithExpression("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))").Build().Calculate();
     }
 
     [Benchmark]
     public void GetCalculatorResultManyParentheses()
     {
-        var expression = new ExpressionBuilder().WithExpression("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))").Build();
-        Calculator.Calculate(expression);
+        new ExpressionBuilder().WithExpression("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))").Build().Calculate();
+    }
+
+    [Benchmark]
+    public void GetCalculatorResultFactorial()
+    {
+        new ExpressionBuilder().WithExpression("2! + (2! + (2! + 2)!)").Build().Calculate();
     }
 }

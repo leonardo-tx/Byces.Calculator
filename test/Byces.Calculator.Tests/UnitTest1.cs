@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Byces.Calculator.Tests
 {
@@ -33,16 +33,20 @@ namespace Byces.Calculator.Tests
             Validate("20/2/2", 5);
         }
 
+        [TestMethod]
         public void CalculatePowExpressions()
         {
             Validate("2 ^ 32", 4_294_967_296);
             Validate("3^2^5", 59_049);
         }
-
+        
+        [TestMethod]
         public void CalculateRootExpressions()
         {
-            Validate("2 RT 9", 3);
-            Validate("10RT100RT9", 3);
+            Validate("√9", 3);
+            Validate("2 √ 9", 3);
+            ValidateApproximately("√5!", 10.9544);
+            Validate("2√9√64", 4);
         }
 
         [TestMethod]
@@ -67,12 +71,47 @@ namespace Byces.Calculator.Tests
             Validate("( (8))", 8);
         }
 
+        [TestMethod]
+        public void CalculateEmpty()
+        {
+            Validate("", 0);
+            Validate("    ", 0);
+        }
+
+        [TestMethod]
+        public void CalculateFactorial()
+        {
+            Validate("2 !", 2);
+            Validate("2! + 3", 5);
+            Validate("2 + 3!", 8);
+            
+            Validate("(2 + 3)! + 2", 122);
+            Validate("2! + (2! + (2! + 2)!)", 28);
+            Validate("2!*2!*2!", 8);
+            Validate("(2 + 2)!*(2 + 2)!", 576);
+        }
+
+        [TestMethod]
+        public void UtilizeNumberConstants()
+        {
+            ValidateApproximately("π", 3.1415);
+            ValidateApproximately("e", 2.7182);
+        }
+
         private static void Validate(string expressionAsString, double expectedValue)
         {
             var expression = new ExpressionBuilder().WithExpression(expressionAsString).Build();
             if (!expression.IsValid) Assert.Fail(expression.ErrorMessage);
 
-            Assert.AreEqual(expectedValue, Calculator.Calculate(expression));
+            Assert.AreEqual(expectedValue, expression.Calculate());
+        }
+
+        private static void ValidateApproximately(string expressionAsString, double expectedValue)
+        {
+            var expression = new ExpressionBuilder().WithExpression(expressionAsString).Build();
+            if (!expression.IsValid) Assert.Fail(expression.ErrorMessage);
+
+            Assert.AreEqual(expectedValue, expression.Calculate(), 0.001);
         }
     }
 }
