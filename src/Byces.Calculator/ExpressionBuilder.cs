@@ -25,7 +25,6 @@ namespace Byces.Calculator
         public const string AllSelfOperatorsAfter = "!";
         public const string AllOperations = "+-*/^√";
         public const string AllValidNumbers = "0123456789.,πe";
-        public const string AllContainers = "()";
 
         /// <summary>
         /// Gets or sets the expression of a <see cref="ExpressionBuilder"/>.
@@ -43,9 +42,9 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Builds the <see cref="FormatedExpression"/> to be used in <see cref="Calculator"/>.
+        /// Builds the <see cref="FormatedExpression"/> to be calculated.
         /// </summary>
-        /// <returns>The built calculator result.</returns>
+        /// <returns>The built expression.</returns>
         public FormatedExpression Build()
         {
             if (string.IsNullOrWhiteSpace(Expression)) return FormatedExpression.Empty;
@@ -65,7 +64,9 @@ namespace Byces.Calculator
             CheckParentheses(expressionSpan);
             
             int capacity = expressionSpan.Count(AllOperations);
-            IList<Operation> operations; IList<int> priorities; IList<Number> numbers = new List<Number>(capacity + 1);
+            IList<Operation> operations;
+            IList<int> priorities;
+            IList<Number> numbers = new List<Number>(capacity + 1);
 
             if (capacity == 0) 
             { 
@@ -109,8 +110,6 @@ namespace Byces.Calculator
             {
                 if (content.Numbers.Count != content.Operations.Count)
                 {
-                    if (!AllOperations.Contains(expressionSpan[i])) throw new ArgumentException("Provided expression has an unknown symbol");
-
                     content.Operations.Add(GetOperation(expressionSpan[i]));
                     content.Priorities.Add(priority);
 
@@ -119,26 +118,19 @@ namespace Byces.Calculator
                 }
                 switch (expressionSpan[i])
                 {
-                    case '-':
-                        continue;
-                    case '(':
-                        priority++;
-                        continue;
-                    case ')':
-                        priority--;
-                        break;
+                    case '-': continue;
+                    case '(': priority++; continue;
+                    case ')': priority--; break;
                 }
                 if (expressionSpan.Length == i + 1 || AllOperations.Contains(expressionSpan[i + 1]))
                 {
-                    TryAddNumber(expressionSpan[numberFirstIndex..(i + 1)], content);
+                    AddNumber(expressionSpan[numberFirstIndex..(i + 1)], content);
                 }
             }
         }
 
-        private static void TryAddNumber(ReadOnlySpan<char> numberSlice, Content content)
+        private static void AddNumber(ReadOnlySpan<char> numberSlice, Content content)
         {
-            if (content.Numbers.Count != content.Operations.Count) return;
-
             ReadOnlySpan<char> validNumberSlice = GetValidNumberSlice(numberSlice);
             IList<SelfOperation> selfOperations = Array.Empty<SelfOperation>();
             int selfOperatorsCount = numberSlice.Count(AllSelfOperatorsAfter + AllSelfOperatorsBefore);
@@ -163,7 +155,7 @@ namespace Byces.Calculator
                 {
                     'π' => Constants.Pi,
                     'e' => Constants.E,
-                    _ => throw new ArgumentException("Provided expression has a number that could not be parsed")
+                    _ => throw new ArgumentException("Provided expression has unknown symbols")
                 };
             }
             Number number = new Number(doubleNumber, selfOperations);
@@ -175,10 +167,8 @@ namespace Byces.Calculator
             int firstIndex = 0, count = numberSlice.Length;
             for (int i = 0; i < numberSlice.Length; i++)
             {
-                if (numberSlice[i] == '(') firstIndex++;
-                else if (numberSlice[i] == ')') count--;
-                else if (AllSelfOperatorsAfter.Contains(numberSlice[i])) count--;
-                else if (AllSelfOperatorsBefore.Contains(numberSlice[i])) firstIndex++;
+                if (numberSlice[i] == '(' || AllSelfOperatorsBefore.Contains(numberSlice[i])) firstIndex++;
+                else if (numberSlice[i] == ')' || AllSelfOperatorsAfter.Contains(numberSlice[i])) count--;
             }
             return numberSlice[firstIndex..count];
         }
@@ -203,7 +193,7 @@ namespace Byces.Calculator
             {
                 '!' => Operation.Factorial,
                 '√' => Operation.Root,
-                _ => throw new ArgumentException("Invalid operator.")
+                _ => throw new ArgumentException("Invalid self operator.")
             };
         }
     }

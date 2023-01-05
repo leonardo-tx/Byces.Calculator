@@ -103,7 +103,7 @@ namespace Byces.Calculator.Tests
             var expression = new ExpressionBuilder().WithExpression(expressionAsString).Build();
             if (!expression.IsValid) Assert.Fail(expression.ErrorMessage);
 
-            Assert.AreEqual(expectedValue, expression.Calculate());
+            Assert.AreEqual(expectedValue, expression.GetResult());
         }
 
         private static void ValidateApproximately(string expressionAsString, double expectedValue)
@@ -111,7 +111,7 @@ namespace Byces.Calculator.Tests
             var expression = new ExpressionBuilder().WithExpression(expressionAsString).Build();
             if (!expression.IsValid) Assert.Fail(expression.ErrorMessage);
 
-            Assert.AreEqual(expectedValue, expression.Calculate(), 0.001);
+            Assert.AreEqual(expectedValue, expression.GetResult(), 0.001);
         }
     }
 }
