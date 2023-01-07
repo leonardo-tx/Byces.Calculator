@@ -3,7 +3,7 @@
 namespace Byces.Calculator.Tests
 {
     [TestClass]
-    public class UnitTest1
+    public class UnitTest
     {
         [TestMethod]
         public void CalculateAdditionExpressions()
@@ -44,6 +44,7 @@ namespace Byces.Calculator.Tests
         public void CalculateRootExpressions()
         {
             Validate("√9", 3);
+            Validate("SQRT(9)", 3);
             Validate("2 √ 9", 3);
             ValidateApproximately("√5!", 10.9544);
             Validate("2√9√64", 4);
@@ -57,10 +58,10 @@ namespace Byces.Calculator.Tests
         }
 
         [TestMethod]
-        public void CalculateExpressionsWithNegativeNumbers()
+        public void CalculateExpressionsWithNegativeAndPositiveNumbers()
         {
-            Validate("-4 + -5 - -3", -6);
-            Validate("6--8*-3", -18);
+            Validate("-4 + -5 - -3 - +0", -6);
+            Validate("+6--8*-3", -18);
         }
 
         [TestMethod]
@@ -96,6 +97,9 @@ namespace Byces.Calculator.Tests
         {
             ValidateApproximately("π", 3.1415);
             ValidateApproximately("e", 2.7182);
+
+            ValidateApproximately("-π", -3.1415);
+            ValidateApproximately("-e", -2.7182);
         }
 
         private static void Validate(string expressionAsString, double expectedValue)

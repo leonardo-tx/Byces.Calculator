@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enabled</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

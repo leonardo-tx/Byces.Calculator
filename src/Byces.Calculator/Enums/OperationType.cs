@@ -1,6 +1,6 @@
 ﻿namespace Byces.Calculator.Enums
 {
-    public enum Operation
+    public enum OperationType
     {
         Add,
         Subtract,

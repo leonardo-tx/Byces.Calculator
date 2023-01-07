@@ -1,5 +1,5 @@
 ﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Extensions;
+using Byces.Calculator.Extensions.Content;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,24 +8,21 @@ namespace Byces.Calculator.Expressions
 {
     internal readonly struct Content
     {
-        internal Content(IList<Number> numbers, IList<Operation> operations, IList<int> priorities)
+        internal Content(IList<Number> numbers, IList<Operation> operations)
         {
             Numbers = numbers;
             Operations = operations;
-            Priorities = priorities;
         }
 
-        internal static readonly Content Empty = new Content(new List<Number>(1) { new Number(0) }, Array.Empty<Operation>(), Array.Empty<int>());
+        internal static readonly Content Default = new Content(new List<Number>(1) { new Number(0) }, Array.Empty<Operation>());
 
         internal IList<Number> Numbers { get; }
 
         internal IList<Operation> Operations { get; }
 
-        internal IList<int> Priorities { get; }
-
-        private static readonly Operation[] FirstPriority = new Operation[2] { Operation.Power, Operation.Root };
-        private static readonly Operation[] SecondPriority = new Operation[2] { Operation.Multiply, Operation.Divide };
-        private static readonly Operation[] ThirdPriority = new Operation[2] { Operation.Add, Operation.Subtract };
+        private static readonly OperationType[] FirstPriority = new OperationType[2] { OperationType.Power, OperationType.Root };
+        private static readonly OperationType[] SecondPriority = new OperationType[2] { OperationType.Multiply, OperationType.Divide };
+        private static readonly OperationType[] ThirdPriority = new OperationType[2] { OperationType.Add, OperationType.Subtract };
 
         internal void Process()
         {
@@ -36,21 +33,18 @@ namespace Byces.Calculator.Expressions
 
         private void CalculatePriorities()
         {
-            if (Priorities.Count == 0) return;
-#if NET7_0_OR_GREATER
-            int priority = Priorities.Max();
-#else
-            int priority = Priorities.CustomMax();
-#endif
+            if (Operations.Count == 0) return;
+
+            int priority = Operations.MaxPriority();
             if (priority == 0) return;
 
             int firstIndex = -1;
-            for (int i = 0; i < Priorities.Count; i++)
+            for (int i = 0; i < Operations.Count; i++)
             {
-                if (Priorities[i] != priority) continue;
+                if (Operations[i].Priority != priority) continue;
                 if (firstIndex == -1) firstIndex = i;
 
-                if (i + 1 != Priorities.Count && Priorities[i] == Priorities[i + 1]) continue;
+                if (i + 1 != Operations.Count && Operations[i].Priority == Operations[i + 1].Priority) continue;
                 int lastIndex = i;
 
                 CalculateSelfOperators(priority, firstIndex);
@@ -59,12 +53,9 @@ namespace Byces.Calculator.Expressions
                 i -= removedCount + 1;
                 firstIndex = -1;
 
-                if (Priorities.Count == 0) return;
-#if NET7_0_OR_GREATER
-                priority = Priorities.Max();
-#else
-                priority = Priorities.CustomMax();
-#endif
+                if (Operations.Count == 0) return;
+                priority = Operations.MaxPriority();
+
                 if (priority == 0) return;
                 if (i < 0) i = 0;
             }
@@ -78,7 +69,7 @@ namespace Byces.Calculator.Expressions
                 {
                     if (Numbers[i].Operations[j].Priority != priority) continue;
 
-                    double result = Numbers[i].Operations[j].Operation.Operate(Numbers[i].Value);
+                    double result = Numbers[i].Operations[j].Value.Operate(Numbers[i].Value);
                     Numbers[i].Operations.RemoveAt(j);
                     var selfOperations = Numbers[i].Operations;
 
@@ -96,16 +87,15 @@ namespace Byces.Calculator.Expressions
             return CalculateOperations(ThirdPriority, firstIndex, count);
         }
 
-        private int? CalculateOperations(Operation[] operations, int? firstIndex = null, int? count = null)
+        private int? CalculateOperations(OperationType[] operations, int? firstIndex = null, int? count = null)
         {
             for (int i = firstIndex ?? 0; i < (count ?? Operations.Count); i++)
             {
-                if (!operations.Contains(Operations[i])) continue;
-                double result = Operations[i].Operate(Numbers[i].Value, Numbers[i + 1].Value);
+                if (!operations.Contains(Operations[i].Value)) continue;
+                double result = Operations[i].Value.Operate(Numbers[i].Value, Numbers[i + 1].Value);
 
                 Operations.RemoveAt(i);
-                Priorities.RemoveAt(i);
-                IList<SelfOperation> selfOperations = Numbers[i + 1].Operations;
+                IList<Operation> selfOperations = Numbers[i + 1].Operations;
 
                 for (int j = 0; j < 2; j++) Numbers.RemoveAt(i);
                 Numbers.Insert(i, new Number(result, selfOperations));

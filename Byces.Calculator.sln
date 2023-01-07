@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator", "src\Byc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator.Benchmarks", "test\Byces.Calculator.Benchmarks\Byces.Calculator.Benchmarks.csproj", "{7F4004C8-3436-4361-9F91-8B1D7A3913EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Byces.Calculator.Tests", "test\Byces.Calculator.Tests\Byces.Calculator.Tests.csproj", "{558ADF50-3455-43B6-9C29-44DB8B28C5B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator.Tests", "test\Byces.Calculator.Tests\Byces.Calculator.Tests.csproj", "{558ADF50-3455-43B6-9C29-44DB8B28C5B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
