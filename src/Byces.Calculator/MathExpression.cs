@@ -47,6 +47,7 @@ namespace Byces.Calculator
         public double GetResult()
         {
             if (!IsValid) throw new InvalidExpressionException();
+            if (Content.Numbers.Count == 1 && Content.Numbers[0].Operations.Count == 0) return Content.Numbers[0].Value;
 
             Content.Process();
             return Content.Numbers[0].Value;

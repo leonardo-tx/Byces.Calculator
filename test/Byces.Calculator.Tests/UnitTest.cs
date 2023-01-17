@@ -96,10 +96,10 @@ namespace Byces.Calculator.Tests
         public void UtilizeNumberConstants()
         {
             ValidateApproximately("π", 3.1415);
-            ValidateApproximately("e", 2.7182);
+            ValidateApproximately("EULER", 2.7182);
 
             ValidateApproximately("-π", -3.1415);
-            ValidateApproximately("-e", -2.7182);
+            ValidateApproximately("-EULER", -2.7182);
         }
 
         private static void Validate(string expressionAsString, double expectedValue)

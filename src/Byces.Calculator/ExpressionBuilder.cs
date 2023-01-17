@@ -40,10 +40,20 @@ namespace Byces.Calculator
         /// <returns>The built expression.</returns>
         public MathExpression Build()
         {
-            if (string.IsNullOrWhiteSpace(Expression)) return MathExpression.Default;
+            return GetMathExpression(Expression);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="MathExpression"/> without having to create an <see cref="ExpressionBuilder"/> object.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns>The built expression.</returns>
+        public static MathExpression GetMathExpression(string expression)
+        {
+            if (string.IsNullOrWhiteSpace(expression)) return MathExpression.Default;
             try
             {
-                return new MathExpression(FormatExpression(), true);
+                return new MathExpression(FormatExpression(expression), true);
             }
             catch (Exception ex)
             {
@@ -51,9 +61,9 @@ namespace Byces.Calculator
             }
         }
 
-        private Content FormatExpression()
+        private static Content FormatExpression(string expression)
         {
-            ReadOnlySpan<char> expressionSpan = Expression.Replace(" ", "");
+            ReadOnlySpan<char> expressionSpan = GetExpressionSpan(expression);
             CheckParentheses(expressionSpan);
 
             int capacity = expressionSpan.CountOperations();
@@ -64,10 +74,27 @@ namespace Byces.Calculator
             else operations = new List<Operation>(capacity);
 
             var content = new Content(numbers, operations);
-            ConfigureContent(expressionSpan, content);
+            var contentBuilder = new ContentBuilder(expressionSpan);
+
+            contentBuilder.Build(content);
             if ((content.Numbers.Count + content.Operations.Count) % 2 == 0) throw new ArgumentException("The provided expression is not complete.");
 
             return content;
+        }
+
+        private static ReadOnlySpan<char> GetExpressionSpan(string expression)
+        {
+            int spaceCharsCount = expression.AsSpan().Count(" ");
+            if (spaceCharsCount == 0) return expression;
+
+            ReadOnlySpan<char> reference = expression;
+            Span<char> expressionSpan = stackalloc char[reference.Length - spaceCharsCount];
+            for (int i = 0, j = 0; i < reference.Length; i++)
+            {
+                if (reference[i] == ' ') continue;
+                expressionSpan[j++] = reference[i];
+            }
+            return expressionSpan.ToString();
         }
 
         private static void CheckParentheses(ReadOnlySpan<char> expressionSpan)
@@ -87,43 +114,6 @@ namespace Byces.Calculator
             }
             if (unclosedParentheses < 0) throw new ArgumentException("Provided expression has misplaced parentheses.");
             if (unclosedParentheses > 0) throw new ArgumentException("The provided expression is missing parentheses to be closed.");
-        }
-
-        private static void ConfigureContent(ReadOnlySpan<char> expressionSpan, Content content)
-        {
-            for (int i = 0, numberFirstIndex = 0, priority = 0; i < expressionSpan.Length; i++)
-            {
-                if (content.Numbers.Count != content.Operations.Count)
-                {
-                    content.Operations.Add(new Operation(expressionSpan[i].GetOperation(), priority));
-
-                    numberFirstIndex = i + 1;
-                    continue;
-                }
-                switch (expressionSpan[i])
-                {
-                    case '-': case '+': continue;
-                    case '(': priority++; continue;
-                    case ')': priority--; break;
-                }
-                if (expressionSpan.Length == i + 1 || expressionSpan.AnyOperationAt(i + 1))
-                {
-                    AddNumber(expressionSpan[numberFirstIndex..(i + 1)], content);
-                }
-            }
-        }
-
-        private static void AddNumber(ReadOnlySpan<char> numberSlice, Content content)
-        {
-            ReadOnlySpan<char> validNumberSlice = numberSlice.GetValidNumberSlice();
-            IList<Operation> selfOperations = numberSlice.GetAllSelfOperations(content.Operations.LastOrDefault().Priority);
-
-            if (!double.TryParse(validNumberSlice, out double doubleNumber))
-            {
-                doubleNumber = validNumberSlice.TryGetAlternativeNumber() ?? throw new ArgumentException("Provided expression has unknown symbols.");
-            }
-            Number number = new Number(doubleNumber, selfOperations);
-            content.Numbers.Add(number);
         }
     }
 }

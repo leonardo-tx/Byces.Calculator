@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0</TargetFrameworks>
     <Authors>Leonardo Teixeira</Authors>
     <VersionPrefix>1.0.0</VersionPrefix>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ardalis.SmartEnum" Version="2.1.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
   </ItemGroup>
 
