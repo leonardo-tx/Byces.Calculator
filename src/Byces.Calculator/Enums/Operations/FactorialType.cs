@@ -7,9 +7,9 @@ namespace Byces.Calculator.Enums.Operations
     {
         internal FactorialType(int value) : base("Factorial", value) { }
 
-        internal override string StringRepresentation => string.Empty;
-        internal override char CharRepresentation => '!';
-        internal override OperationCategory Category => OperationCategory.After;
+        internal override string StringRepresentation => "FACT";
+        internal override char CharRepresentation => default;
+        internal override OperationCategory Category => OperationCategory.Before;
 
         internal override double Operate(double firstNumber, double secondNumber) => throw new NotSupportedException();
 

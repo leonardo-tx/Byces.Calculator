@@ -14,40 +14,40 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
             return ExpressionBuilder.GetMathExpression("2 + 5 * 6").GetResult();
         }
 
-        //[Benchmark]
-        //public double GetCalculatorResultComplex()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("2 ^ 2 + (4 + 5 * (2 √ 9))").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultComplex()
+        {
+            return ExpressionBuilder.GetMathExpression("2 ^ 2 + (4 + 5 * (2 √ 9))").GetResult();
+        }
 
-        //[Benchmark]
-        //public double GetCalculatorResultHeavy()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultHeavy()
+        {
+            return ExpressionBuilder.GetMathExpression("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))").GetResult();
+        }
 
-        //[Benchmark]
-        //public double GetCalculatorResultManyParentheses()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultManyParentheses()
+        {
+            return ExpressionBuilder.GetMathExpression("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))").GetResult();
+        }
 
-        //[Benchmark]
-        //public double GetCalculatorResultFactorial()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("2! + (2! + (2! + 2)!)").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultFactorial()
+        {
+            return ExpressionBuilder.GetMathExpression("fact2 + (fact2 + fact(fact2 + 2))").GetResult();
+        }
 
-        //[Benchmark]
-        //public double GetCalculatorResultSquareRoot()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("SQRT9").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultSquareRoot()
+        {
+            return ExpressionBuilder.GetMathExpression("SQRT9").GetResult();
+        }
 
-        //[Benchmark]
-        //public double GetCalculatorResultSquareRoot2()
-        //{
-        //    return ExpressionBuilder.GetMathExpression("√9").GetResult();
-        //}
+        [Benchmark]
+        public double GetCalculatorResultSquareRoot2()
+        {
+            return ExpressionBuilder.GetMathExpression("√9").GetResult();
+        }
     }
 }

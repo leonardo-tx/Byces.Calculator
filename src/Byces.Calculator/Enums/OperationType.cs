@@ -30,10 +30,6 @@ namespace Byces.Calculator.Enums
         {
             IList<OperationType> normalOperations = new List<OperationType>();
             IList<OperationType> beforeOperations = new List<OperationType>();
-            IList<OperationType> afterOperations = new List<OperationType>();
-            IList<char> normalOperationChars = new List<char>();
-            IList<char> beforeOperationChars = new List<char>();
-            IList<char> afterOperationChars = new List<char>();
 
             Type type = typeof(OperationType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
@@ -43,27 +39,19 @@ namespace Byces.Calculator.Enums
                 switch (operationType.Category) 
                 { 
                     case OperationCategory.None:
-                        normalOperationChars.Add(operationType.CharRepresentation);
                         normalOperations.Add(operationType);
                         break;
                     case OperationCategory.Before:
-                        beforeOperationChars.Add(operationType.CharRepresentation);
                         beforeOperations.Add(operationType);
-                        break;
-                    case OperationCategory.After:
-                        afterOperationChars.Add(operationType.CharRepresentation);
-                        afterOperations.Add(operationType);
                         break;
                 }
             }
             _normalOperations = normalOperations.ToArray();
             _beforeOperations = beforeOperations.ToArray();
-            _afterOperations = afterOperations.ToArray();
         }
 
         private static readonly ReadOnlyMemory<OperationType> _normalOperations;
         private static readonly ReadOnlyMemory<OperationType> _beforeOperations;
-        private static readonly ReadOnlyMemory<OperationType> _afterOperations;
 
         protected OperationType(string name, int value): base(name, value) { }
 
@@ -123,7 +111,6 @@ namespace Byces.Calculator.Enums
             {
                 OperationCategory.None => _normalOperations.Span,
                 OperationCategory.Before => _beforeOperations.Span,
-                OperationCategory.After => _afterOperations.Span,
                 _ => throw new NotImplementedException(),
             };
         }

@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Byces.Calculator.Expressions;
-using Byces.Calculator.Extensions.ExpressionBuilder;
+using Byces.Calculator.Extensions;
 
 namespace Byces.Calculator
 {
@@ -53,7 +52,7 @@ namespace Byces.Calculator
             if (string.IsNullOrWhiteSpace(expression)) return MathExpression.Default;
             try
             {
-                return new MathExpression(FormatExpression(expression), true);
+                return FormatExpression(expression);
             }
             catch (Exception ex)
             {
@@ -61,40 +60,37 @@ namespace Byces.Calculator
             }
         }
 
-        private static Content FormatExpression(string expression)
-        {
-            ReadOnlySpan<char> expressionSpan = GetExpressionSpan(expression);
-            CheckParentheses(expressionSpan);
-
-            int capacity = expressionSpan.CountOperations();
-            IList<Operation> operations;
-            IList<Number> numbers = new List<Number>(capacity + 1);
-
-            if (capacity == 0) operations = Array.Empty<Operation>();
-            else operations = new List<Operation>(capacity);
-
-            var content = new Content(numbers, operations);
-            var contentBuilder = new ContentBuilder(expressionSpan);
-
-            contentBuilder.Build(content);
-            if ((content.Numbers.Count + content.Operations.Count) % 2 == 0) throw new ArgumentException("The provided expression is not complete.");
-
-            return content;
-        }
-
-        private static ReadOnlySpan<char> GetExpressionSpan(string expression)
+        private static MathExpression FormatExpression(string expression)
         {
             int spaceCharsCount = expression.AsSpan().Count(" ");
-            if (spaceCharsCount == 0) return expression;
+            if (spaceCharsCount == 0) return BuildMathExpression(expression);
 
+            Span<char> expressionSpan = stackalloc char[expression.Length - spaceCharsCount];
             ReadOnlySpan<char> reference = expression;
-            Span<char> expressionSpan = stackalloc char[reference.Length - spaceCharsCount];
             for (int i = 0, j = 0; i < reference.Length; i++)
             {
                 if (reference[i] == ' ') continue;
                 expressionSpan[j++] = reference[i];
             }
-            return expressionSpan.ToString();
+            return BuildMathExpression(expressionSpan);
+        }
+
+        private static MathExpression BuildMathExpression(ReadOnlySpan<char> expressionSpan)
+        {
+            CheckParentheses(expressionSpan);
+            (int operationsCount, int selfOperationsCount) = expressionSpan.CountOperationsAndSelfOperations();
+
+            Span<Operation?> operations = stackalloc Operation?[operationsCount];
+            Span<Number?> numbers = stackalloc Number?[operationsCount + 1];
+            Span<SelfOperation?> selfOperations = stackalloc SelfOperation?[selfOperationsCount];
+
+            var content = new Content(numbers, operations, selfOperations);
+            
+            if ((content.Numbers.Length + content.Operations.Length) % 2 == 0) throw new ArgumentException("The provided expression is not complete.");
+
+            content.Build(expressionSpan);
+            content.Process();
+            return new MathExpression(content.Numbers[0]!.Value.Value, true);
         }
 
         private static void CheckParentheses(ReadOnlySpan<char> expressionSpan)

@@ -3,7 +3,6 @@
     internal enum OperationCategory
     {
         None,
-        After,
         Before
     }
 }

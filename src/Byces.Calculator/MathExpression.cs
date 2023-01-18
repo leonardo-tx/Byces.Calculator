@@ -5,16 +5,16 @@ namespace Byces.Calculator
 {
     public readonly struct MathExpression
     {
-        internal MathExpression(Content content, bool isValid, string? errorMessage = null)
+        internal MathExpression(double result, bool isValid, string? errorMessage = null)
         {
-            Content = content;
+            Result = result;
             IsValid = isValid;
             ErrorMessage = errorMessage;
         }
 
         internal MathExpression(string errorMessage)
         {
-            Content = Content.Default;
+            Result = 0;
             IsValid = false;
             ErrorMessage = errorMessage;
         }
@@ -23,7 +23,7 @@ namespace Byces.Calculator
         /// Returns a valid math expression that contains only a number 0.
         /// </summary>
         /// <returns>An expression that contains only a number 0.</returns>
-        public static readonly MathExpression Default = new MathExpression(Content.Default, true, null);
+        public static readonly MathExpression Default = new MathExpression(0, true, null);
 
         /// <summary>
         /// Gets the validity of the <see cref="MathExpression"/> instance.
@@ -37,7 +37,7 @@ namespace Byces.Calculator
         /// <returns>The generated error message, or <c>null</c> if the expression is valid.</returns>
         public string? ErrorMessage { get; }
 
-        private Content Content { get; }
+        private double Result { get; }
 
         /// <summary>
         /// Processes the current instance and returns a <see cref="double"/> result.
@@ -47,10 +47,7 @@ namespace Byces.Calculator
         public double GetResult()
         {
             if (!IsValid) throw new InvalidExpressionException();
-            if (Content.Numbers.Count == 1 && Content.Numbers[0].Operations.Count == 0) return Content.Numbers[0].Value;
-
-            Content.Process();
-            return Content.Numbers[0].Value;
+            return Result;
         }
     }
 }

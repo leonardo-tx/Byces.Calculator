@@ -1,29 +1,33 @@
 ﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Extensions.Content;
-using Byces.Calculator.Extensions.ExpressionBuilder;
+using Byces.Calculator.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Expressions
 {
-    internal readonly struct Content
+    internal readonly ref struct Content
     {
-        internal Content(IList<Number> numbers, IList<Operation> operations)
+        internal Content(Span<Number?> numbers, Span<Operation?> operations, Span<SelfOperation?> selfOperations)
         {
             Numbers = numbers;
             Operations = operations;
+            SelfOperations = selfOperations;
         }
 
-        internal static readonly Content Default = new Content(new List<Number>(1) { new Number(0) }, Array.Empty<Operation>());
+        internal Span<Number?> Numbers { get; }
 
-        internal IList<Number> Numbers { get; }
+        internal Span<Operation?> Operations { get; }
 
-        internal IList<Operation> Operations { get; }
+        internal Span<SelfOperation?> SelfOperations { get; }
 
         private static readonly ReadOnlyMemory<int> FirstPriority = new int[2] { OperationType.Power, OperationType.Root };
         private static readonly ReadOnlyMemory<int> SecondPriority = new int[3] { OperationType.Multiply, OperationType.Divide, OperationType.Modulus };
         private static readonly ReadOnlyMemory<int> ThirdPriority = new int[2] { OperationType.Add, OperationType.Subtract };
+
+        internal void Build(ReadOnlySpan<char> expressionSpan)
+        {
+            var contentBuilder = new ContentBuilder(expressionSpan);
+            contentBuilder.Build(this);
+        }
 
         internal void Process()
         {
@@ -34,86 +38,129 @@ namespace Byces.Calculator.Expressions
 
         private void CalculatePriorities()
         {
-            if (Operations.Count == 0) return;
+            if (Operations.Length == 0) return;
 
             int priority = Operations.MaxPriority();
             if (priority == 0) return;
 
-            for (int i = 0, firstIndex = -1; i < Operations.Count; i++)
+            for (int i = 0, firstIndex = -1; i < Operations.Length; i++)
             {
-                if (Operations[i].Priority != priority) continue;
+                if (Operations[i] == null) continue;
+                if (Operations[i]!.Value.Priority != priority) continue;
                 if (firstIndex == -1) firstIndex = i;
 
-                if (i + 1 != Operations.Count && Operations[i].Priority == Operations[i + 1].Priority) continue;
+                if (i + 1 != Operations.Length && Operations[i]!.Value.Priority == ((Operations[i + 1] != null) ? Operations[i + 1]!.Value.Priority : -1)) continue;
                 int lastIndex = i;
 
-                CalculateSelfOperations(priority, firstIndex);
-                int removedCount = lastIndex + 1 - (int)CalculateOperationsInOrder(firstIndex, lastIndex + 1)!;
+                CalculateSelfOperations(priority);
+                CalculateOperationsInOrder(firstIndex, lastIndex + 1);
 
-                i -= removedCount + 1;
                 firstIndex = -1;
 
-                if (Operations.Count == 0) return;
-                priority = Operations.MaxPriority();
+                if (Operations.Length == 0) return;
+                int newPriority = Operations.MaxPriority();
 
-                if (priority == 0) return;
-                if (i < 0) i = 0;
+                if (newPriority == priority) continue;
+                if (newPriority == 0) return;
+                
+                priority = newPriority; i = -1; continue;
+            }
+        }
+
+        private void CalculateSelfOperations(int minPriority)
+        {
+            for (int i = SelfOperations.Length - 1; i >= 0; i--)
+            {
+                if (SelfOperations[i] == null) continue;
+                if (SelfOperations[i]!.Value.Operation.Priority < minPriority) continue;
+
+                int maxPriority = SelfOperations.MaxPriority();
+                while (maxPriority > minPriority)
+                {
+                    CalculateSelfOperations(maxPriority);
+                    maxPriority = SelfOperations.MaxPriority();
+                }
+                int numberIndex = SelfOperations[i]!.Value.NumberIndex;
+                double result = SelfOperations[i]!.Value.Operation.Operate(Numbers[numberIndex]!.Value.Value);
+
+                SelfOperations[i] = null;
+                Numbers[numberIndex] = new Number(result);
             }
         }
 
         private void CalculateSelfOperations(int priority, int? firstIndex = null)
         {
-            for (int i = firstIndex ?? 0; i < Numbers.Count; i++)
+            for (int i = SelfOperations.Length - 1; i >= 0; i--)
             {
-                for (int j = Numbers[i].Operations.Count - 1; j >= 0; j--)
-                {
-                    if (Numbers[i].Operations[j].Priority != priority && priority != 0) continue;
+                if (SelfOperations[i] == null) continue;
+                if (SelfOperations[i]!.Value.NumberIndex < firstIndex) continue;
+                if (SelfOperations[i]!.Value.Operation.Priority != priority && priority != 0) continue;
 
-                    double result = Numbers[i].Operations[j].Operate(Numbers[i].Value);
-                    Numbers[i].Operations.RemoveAt(j);
-                    var selfOperations = Numbers[i].Operations;
-
-                    Numbers.RemoveAt(i);
-                    Numbers.Insert(i, new Number(result, selfOperations));
-                }
+                int numberIndex = SelfOperations[i]!.Value.NumberIndex;
+                double result = SelfOperations[i]!.Value.Operation.Operate(Numbers[numberIndex]!.Value.Value);
+                
+                SelfOperations[i] = null;
+                Numbers[numberIndex] = new Number(result);
             }
         }
 
-        private int? CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
+        private void CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
         {
-            count = CalculateOperations(FirstPriority.Span, firstIndex, count);
-            count = CalculateOperations(SecondPriority.Span, firstIndex, count);
-            return CalculateOperations(ThirdPriority.Span, firstIndex, count);
+            CalculateOperations(FirstPriority.Span, firstIndex, count);
+            CalculateOperations(SecondPriority.Span, firstIndex, count);
+            CalculateOperations(ThirdPriority.Span, firstIndex, count);
         }
 
-        private int? CalculateOperations(ReadOnlySpan<int> operations, int? firstIndex = null, int? count = null)
+        private void CalculateOperations(ReadOnlySpan<int> operations, int? firstIndex = null, int? count = null)
         {
-            for (int i = firstIndex ?? 0; i < (count ?? Operations.Count); i++)
+            for (int i = firstIndex ?? 0; i < (count ?? Operations.Length); i++)
             {
-#if NET5_0_OR_GREATER
-                ReadOnlySpan<Operation> Operations = CollectionsMarshal.AsSpan((List<Operation>)this.Operations);
-#endif
-                if (!operations.CustomContains(Operations[i].Value)) continue;
-#if NET5_0_OR_GREATER
-                ReadOnlySpan<Number> Numbers = CollectionsMarshal.AsSpan((List<Number>)this.Numbers);
-#endif
-                double result = Operations[i].Operate(Numbers[i].Value, Numbers[i + 1].Value);
-                int totalSelfOperations = Numbers[i + 1].Operations.Count + Numbers[i].Operations.Count;
+                if (Operations[i] == null) continue;
+                
+                Operation operation = Operations[i]!.Value;
+                if (!operations.CustomContains(operation.Value)) continue;
 
-                IList<Operation> selfOperations;
-                if (totalSelfOperations != 0) selfOperations = new List<Operation>(totalSelfOperations);
-                else selfOperations = Array.Empty<Operation>();
+                int firstNumberIndex = GetFirstNumberIndex(i), secondNumberIndex = GetSecondNumberIndex(i);
+                double result = operation.Operate(Numbers[firstNumberIndex]!.Value.Value, Numbers[secondNumberIndex]!.Value.Value);
 
-                for (int j = 0; j < Numbers[i].Operations.Count; j++) selfOperations.Add(Numbers[i].Operations[j]);
-                for (int j = 0; j < Numbers[i + 1].Operations.Count; j++) selfOperations.Add(Numbers[i + 1].Operations[j]);
-                for (int j = 0; j < 2; j++) this.Numbers.RemoveAt(i);
+                Operations[i] = null;
+                Numbers[secondNumberIndex] = null;
+                Numbers[firstNumberIndex] = new Number(result);
 
-                this.Numbers.Insert(i, new Number(result, selfOperations));
-                this.Operations.RemoveAt(i);
-
-                i--; count--;
+                SetSelfOperationsToIndex(secondNumberIndex, firstNumberIndex);
+                count--;
             }
-            return count;
+        }
+
+        private int GetFirstNumberIndex(int operationIndex)
+        {
+            for (int i = operationIndex; i >= 0; i--)
+            {
+                if (Numbers[i] == null) continue;
+                return i;
+            }
+            throw new IndexOutOfRangeException();
+        }
+
+        private int GetSecondNumberIndex(int operationIndex)
+        {
+            for (int i = operationIndex + 1; i < Numbers.Length; i++)
+            {
+                if (Numbers[i] == null) continue;
+                return i;
+            }
+            throw new IndexOutOfRangeException();
+        }
+
+        private void SetSelfOperationsToIndex(int oldIndex, int newIndex)
+        {
+            for (int i = 0; i < SelfOperations.Length; i++)
+            {
+                if (SelfOperations[i] == null) continue;
+                if (SelfOperations[i]!.Value.NumberIndex != oldIndex) continue;
+                
+                SelfOperations[i] = new SelfOperation(SelfOperations[i]!.Value.Operation, newIndex);
+            }
         }
     }
 }

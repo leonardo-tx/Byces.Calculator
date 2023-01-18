@@ -1,7 +1,5 @@
 ﻿using Byces.Calculator.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Byces.Calculator.Expressions
 {
@@ -11,20 +9,14 @@ namespace Byces.Calculator.Expressions
         {
             ExpressionSpan = expressionSpan;
             IsNumber = false;
-            FirstIndex = 0; LastIndex = 0; Priority = 0; NumberCount = 0; SelfOperationsCount = 0;
-            NumberRange = 0..0; BeforeRange = 0..0; AfterRange = 0..0;
+            FirstIndex = 0; LastIndex = 0; Priority = 0; NumberCount = 0; AddedNumbers= 0; AddedOperations = 0; AddedSelfOperations = 0;
+            NumberRange = 0..0;
         }
         private ReadOnlySpan<char> ExpressionSpan { get; }
 
         private Range NumberRange { get; set; }
 
-        private Range BeforeRange { get; set; }
-
-        private Range AfterRange { get; set; }
-
         private int NumberCount { get; set; }
-
-        private int SelfOperationsCount { get; set; }
 
         private int FirstIndex { get; set; }
 
@@ -34,15 +26,17 @@ namespace Byces.Calculator.Expressions
 
         private bool IsNumber { get; set; }
 
+        private int AddedNumbers { get; set; }
+
+        private int AddedOperations { get; set; }
+
+        private int AddedSelfOperations { get; set; }
+
         private ReadOnlySpan<char> CurrentSpan => ExpressionSpan[FirstIndex..(LastIndex + 1)];
 
         private ReadOnlySpan<char> NextSpan => ExpressionSpan[FirstIndex..(LastIndex + 2)];
 
         private ReadOnlySpan<char> CurrentNumber => ExpressionSpan[NumberRange];
-
-        private ReadOnlySpan<char> CurrentBefore => ExpressionSpan[BeforeRange];
-
-        private ReadOnlySpan<char> CurrentAfter => ExpressionSpan[AfterRange];
 
         private char CurrentChar => ExpressionSpan[LastIndex];
 
@@ -52,9 +46,9 @@ namespace Byces.Calculator.Expressions
 
         private void Reset()
         {
-            NumberRange = 0..0; BeforeRange = 0..0; AfterRange = 0..0;
+            NumberRange = 0..0;
             FirstIndex = LastIndex;
-            NumberCount = 0; SelfOperationsCount = 0;
+            NumberCount = 0;
             IsNumber = false;
         }
 
@@ -65,9 +59,8 @@ namespace Byces.Calculator.Expressions
                 if (FindParentheses()) continue;
                 if (FindNumber()) { IsNumber = true; continue; }
                 if (FindOperation(content)) continue;
-                if (FindBeforeSelfOperation() || FindAfterSelfOperation())
+                if (FindBeforeSelfOperation(content))
                 {
-                    SelfOperationsCount++;
                     FirstIndex = LastIndex; continue;
                 }
                 FirstIndex--;
@@ -79,12 +72,12 @@ namespace Byces.Calculator.Expressions
         {
             if (CurrentChar == '(')
             {
-                Priority++; BeforeRange = GetCurrentRange(BeforeRange);
+                Priority++;
                 return true;
             }
             if (CurrentChar == ')')
             {
-                Priority--; AfterRange = GetCurrentRange(AfterRange);
+                Priority--;
                 return true;
             }
             return false;
@@ -131,79 +124,39 @@ namespace Byces.Calculator.Expressions
 
         private void AddNumber(Content content)
         {
-            IList<Operation> selfOperations = GetAllSelfOperations(content.Operations.LastOrDefault().Priority);
-            Number number = Number.Parse(CurrentNumber, selfOperations);
-
-            content.Numbers.Add(number);
-        }
-
-        private IList<Operation> GetAllSelfOperations(int priority)
-        {
-            if (SelfOperationsCount == 0) return Array.Empty<Operation>();
-
-            IList<Operation> selfOperations = new List<Operation>(SelfOperationsCount);
-            ReadOnlySpan<char> beforeOperations = CurrentBefore;
-            ReadOnlySpan<char> afterOperations = CurrentAfter;
-
-            for (int i = 0, firstIndex = 0; i < beforeOperations.Length; i++)
-            {
-                if (beforeOperations[i] == '(') { priority++; firstIndex = i + 1; continue; }
-                if (OperationType.TryParse(beforeOperations[firstIndex..(i + 1)], OperationCategory.Before, out OperationType operationType))
-                {
-                    selfOperations.Add(new Operation(operationType, priority));
-                    firstIndex = i + 1;
-                }
-            }
-            for (int i = 0, firstIndex = 0; i < afterOperations.Length; i++)
-            {
-                if (afterOperations[i] == ')') { priority--; firstIndex = i + 1; continue; }
-                if (OperationType.TryParse(afterOperations[firstIndex..(i + 1)], OperationCategory.After, out OperationType operationType))
-                {
-                    selfOperations.Add(new Operation(operationType, priority));
-                    continue;
-                }
-            }
-            return selfOperations;
+            Number number = Number.Parse(CurrentNumber);
+            content.Numbers[AddedNumbers++] = number;
         }
 
         private void AddOperation(Content content, OperationType operationType)
         {
             Operation operation = new Operation(operationType, Priority);
-            content.Operations.Add(operation);
+            content.Operations[AddedOperations++] = operation;
         }
 
-        private bool FindBeforeSelfOperation()
+        private bool FindBeforeSelfOperation(Content content)
         {
-            if (!IsNumber && OperationType.TryParse(CurrentSpan, OperationCategory.Before, out _))
+            if (!IsNumber && OperationType.TryParse(CurrentSpan, OperationCategory.Before, out OperationType operationType))
             {
                 if (!IsLastIndex() && char.IsLetter(NextChar) &&
-                    OperationType.TryParse(NextSpan, OperationCategory.Before, out _))
+                    OperationType.TryParse(NextSpan, OperationCategory.Before, out OperationType operationType2))
                 {
                     LastIndex++;
+                    AddSelfOperation(content, operationType2);
                 }
-                BeforeRange = GetCurrentRange(BeforeRange);
+                else
+                {
+                    AddSelfOperation(content, operationType);
+                }
                 return true;
             }
             return false;
         }
 
-        private bool FindAfterSelfOperation()
+        private void AddSelfOperation(Content content, OperationType operationType)
         {
-            if (IsNumber && OperationType.TryParse(CurrentSpan, OperationCategory.After, out _))
-            {
-                AfterRange = GetCurrentRange(AfterRange);
-                return true;
-            }
-            return false;
-        }
-
-        private Range GetCurrentRange(Range range)
-        {
-            if (range.Start.Value == range.End.Value)
-            {
-                return FirstIndex..(LastIndex + 1);
-            }
-            return range.Start.Value..(LastIndex + 1);
+            SelfOperation selfOperation = new SelfOperation(new Operation(operationType, Priority), AddedNumbers);
+            content.SelfOperations[AddedSelfOperations++] = selfOperation;
         }
     }
 }

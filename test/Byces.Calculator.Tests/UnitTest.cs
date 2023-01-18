@@ -46,7 +46,7 @@ namespace Byces.Calculator.Tests
             Validate("√9", 3);
             Validate("SQRT(9)", 3);
             Validate("2 √ 9", 3);
-            ValidateApproximately("√5!", 10.9544);
+            ValidateApproximately("fact√5", 2.5134);
             Validate("2√9√64", 4);
         }
 
@@ -82,14 +82,14 @@ namespace Byces.Calculator.Tests
         [TestMethod]
         public void CalculateFactorial()
         {
-            Validate("2 !", 2);
-            Validate("2! + 3", 5);
-            Validate("2 + 3!", 8);
+            Validate("fact(2)", 2);
+            Validate("fact2 + 3", 5);
+            Validate("2 + fact3", 8);
             
-            Validate("(2 + 3)! + 2", 122);
-            Validate("2! + (2! + (2! + 2)!)", 28);
-            Validate("2!*2!*2!", 8);
-            Validate("(2 + 2)!*(2 + 2)!", 576);
+            Validate("fact(2 + 3) + 2", 122);
+            Validate("fact2 + (fact2 + fact(fact2 + 2))", 28);
+            Validate("fact2*fact2*fact2", 8);
+            Validate("fact(2 + 2)*fact(2 + 2)", 576);
         }
 
         [TestMethod]
@@ -98,8 +98,8 @@ namespace Byces.Calculator.Tests
             ValidateApproximately("π", 3.1415);
             ValidateApproximately("EULER", 2.7182);
 
-            ValidateApproximately("-π", -3.1415);
-            ValidateApproximately("-EULER", -2.7182);
+            ValidateApproximately("-pi", -3.1415);
+            ValidateApproximately("-Euler", -2.7182);
         }
 
         private static void Validate(string expressionAsString, double expectedValue)
