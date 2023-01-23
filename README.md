@@ -178,8 +178,6 @@ string expression = "tanh(3)";
 string expression = "rad(3)";
 ```
 
-<hr />
-
 ### Available special numbers
 
 #### PI
