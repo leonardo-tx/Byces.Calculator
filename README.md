@@ -1,4 +1,5 @@
 # Byces.Calculator
+[![NuGet version](https://img.shields.io/nuget/v/Byces.Calculator)](https://www.nuget.org/packages/Byces.Calculator)
 [![.NET](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml)
 
 A simple .NET calculator that solves string math expressions
@@ -63,8 +64,6 @@ string expressionExample3 = "1E+3";
 string expressionExample4 = "fact(2 + 3) * fact3";
 ```
 
-<hr />
-
 ### Available operations
 
 #### Add
@@ -115,8 +114,6 @@ string expression2 = "2 rt 4 rt 6";
 string expression1 = "2%4%6";
 string expression2 = "2 mod 4 mod 6";
 ```
-
-<hr />
 
 ### Available self operations
 
@@ -200,4 +197,4 @@ string expression = "euler";
 
 ## Feedback and Bugs
 
-Feel free to send suggestions and problems on the Issues tab on Github, thanks to those who read this far! :D
+Feel free to send suggestions and problems, thanks to those who read this far! :D

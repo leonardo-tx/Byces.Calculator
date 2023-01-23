@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Byces.Calculator\Byces.Calculator.csproj" />
+    <PackageReference Include="Byces.Calculator" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
