@@ -1,17 +1,11 @@
-﻿using System;
-
-namespace Byces.Calculator.Enums.Operations
+﻿namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class SubtractType : OperationType
     {
-        internal SubtractType(int value) : base("Subtract", value) { }
-
+        protected override int Value => 1;
         internal override string StringRepresentation => "SUB";
         internal override char CharRepresentation => '-';
-        internal override OperationCategory Category => OperationCategory.None;
 
         internal override double Operate(double firstNumber, double secondNumber) => firstNumber - secondNumber;
-
-        internal override double Operate(double number) => throw new NotSupportedException();
     }
 }

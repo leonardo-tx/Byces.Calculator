@@ -1,21 +1,29 @@
-﻿using System;
+﻿using Byces.Calculator.Exceptions;
+using System;
 
 namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class RootType : OperationType
     {
-        internal RootType(int value) : base("Root", value) { }
-
+        protected override int Value => 6;
         internal override string StringRepresentation => "RT";
         internal override char CharRepresentation => '√';
-        internal override OperationCategory Category => OperationCategory.None;
 
         internal override double Operate(double firstNumber, double secondNumber)
         {
-            decimal result = (decimal)Math.Pow(secondNumber, 1 / firstNumber);
-            return (double)result;
-        }
+            if (firstNumber < 0) throw new ArithmeticExpressionException("Attempted to make a negative root.");
+            if (secondNumber < 0 && firstNumber % 2 == 0) throw new ArithmeticExpressionException("Attempted to use an even number to take the root of a negative number.");
 
-        internal override double Operate(double number) => throw new NotSupportedException();
+            double result;
+            if (secondNumber < 0)
+            {
+                result = Math.Pow(secondNumber * -1, 1.0 / firstNumber) * -1;
+            }
+            else
+            {
+                result = Math.Pow(secondNumber, 1.0 / firstNumber);
+            }
+            return Math.Round(result, 14);
+        }
     }
 }

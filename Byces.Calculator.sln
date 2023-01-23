@@ -5,15 +5,13 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator", "src\Byces.Calculator\Byces.Calculator.csproj", "{250B0E6C-FF83-4978-A91E-7895F4F8435A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator.Benchmarks", "test\Byces.Calculator.Benchmarks\Byces.Calculator.Benchmarks.csproj", "{7F4004C8-3436-4361-9F91-8B1D7A3913EE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Byces.Calculator.Tests", "test\Byces.Calculator.Tests\Byces.Calculator.Tests.csproj", "{558ADF50-3455-43B6-9C29-44DB8B28C5B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Source", "1. Source", "{AE7A9F00-12BA-41DC-AAE7-50419DABB9B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Test", "2. Test", "{61237A37-C1C5-4DEB-843F-0CCD17854700}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleInput", "example\ConsoleInput\ConsoleInput.csproj", "{31AA3B0D-EB11-4DA2-B492-BFD8DD0B5A1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleInput", "example\ConsoleInput\ConsoleInput.csproj", "{31AA3B0D-EB11-4DA2-B492-BFD8DD0B5A1F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3 . Example", "3 . Example", "{EAE9B631-4610-4D40-BCEE-3BD95F70246D}"
 EndProject
@@ -27,10 +25,6 @@ Global
 		{250B0E6C-FF83-4978-A91E-7895F4F8435A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{250B0E6C-FF83-4978-A91E-7895F4F8435A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{250B0E6C-FF83-4978-A91E-7895F4F8435A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7F4004C8-3436-4361-9F91-8B1D7A3913EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7F4004C8-3436-4361-9F91-8B1D7A3913EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F4004C8-3436-4361-9F91-8B1D7A3913EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F4004C8-3436-4361-9F91-8B1D7A3913EE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{558ADF50-3455-43B6-9C29-44DB8B28C5B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{558ADF50-3455-43B6-9C29-44DB8B28C5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{558ADF50-3455-43B6-9C29-44DB8B28C5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,7 +39,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{250B0E6C-FF83-4978-A91E-7895F4F8435A} = {AE7A9F00-12BA-41DC-AAE7-50419DABB9B9}
-		{7F4004C8-3436-4361-9F91-8B1D7A3913EE} = {61237A37-C1C5-4DEB-843F-0CCD17854700}
 		{558ADF50-3455-43B6-9C29-44DB8B28C5B9} = {61237A37-C1C5-4DEB-843F-0CCD17854700}
 		{31AA3B0D-EB11-4DA2-B492-BFD8DD0B5A1F} = {EAE9B631-4610-4D40-BCEE-3BD95F70246D}
 	EndGlobalSection

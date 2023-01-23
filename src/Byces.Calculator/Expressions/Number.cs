@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator.Enums;
+using Byces.Calculator.Exceptions;
 using System;
 
 namespace Byces.Calculator.Expressions
@@ -15,7 +16,7 @@ namespace Byces.Calculator.Expressions
         internal static Number Parse(ReadOnlySpan<char> span)
         {
             if (TryParse(span, out Number number)) return number;
-            throw new ArgumentException("The given expression has unknown numbers.");
+            throw new UnknownNumberExpressionException();
         }
 
         internal static bool TryParse(ReadOnlySpan<char> span, out Number number)

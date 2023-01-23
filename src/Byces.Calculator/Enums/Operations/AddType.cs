@@ -1,17 +1,11 @@
-﻿using System;
-
-namespace Byces.Calculator.Enums.Operations
+﻿namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class AddType : OperationType
     {
-        internal AddType(int value) : base("Add", value) { }
-
+        protected override int Value => 0;
         internal override string StringRepresentation => "ADD";
         internal override char CharRepresentation => '+';
-        internal override OperationCategory Category => OperationCategory.None;
 
         internal override double Operate(double firstNumber, double secondNumber) => firstNumber + secondNumber;
-
-        internal override double Operate(double number) => throw new NotSupportedException();
     }
 }

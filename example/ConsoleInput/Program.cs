@@ -9,13 +9,13 @@ public class Program
         while (true)
         {
             Console.Write("Enter a math expression: ");
-            var expression = ExpressionBuilder.GetMathExpression(Console.ReadLine() ?? string.Empty);
+            var expression = MathResultBuilder.GetMathResult(Console.ReadLine() ?? string.Empty);
             if (!expression.IsValid)
             {
-                Console.WriteLine($"\n{expression.ErrorMessage}\n");
+                Console.WriteLine($"\n{expression.ErrorMessage} ({expression.ErrorType})\n");
                 continue;
             }
-            Console.WriteLine($"\nResult: {expression.GetResult()}\n");
+            Console.WriteLine($"\nResult: {expression.Result}\n");
         }
     }
 }

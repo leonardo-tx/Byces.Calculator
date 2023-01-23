@@ -1,88 +1,66 @@
-﻿using Ardalis.SmartEnum;
-using Byces.Calculator.Enums.Operations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Reflection;
+using Byces.Calculator.Enums.Operations;
 
 namespace Byces.Calculator.Enums
 {
-    internal abstract class OperationType : SmartEnum<OperationType>
+    internal abstract class OperationType
     {
-        public static readonly OperationType Add = new AddType(0);
-        public static readonly OperationType Subtract = new SubtractType(1);
-        public static readonly OperationType Multiply = new MultiplyType(2);
-        public static readonly OperationType Divide = new DivideType(3);
-        public static readonly OperationType Modulus = new ModulusType(4);
-        public static readonly OperationType Power = new PowerType(5);
-        public static readonly OperationType Root = new RootType(6);
-        public static readonly OperationType Factorial = new FactorialType(7);
-        public static readonly OperationType SquareRoot = new SquareRootType(8);
-        public static readonly OperationType CubeRoot = new CubeRootType(9);
-        public static readonly OperationType Cosine = new CosineType(10);
-        public static readonly OperationType Sine = new SineType(11);
-        public static readonly OperationType Tangent = new TangentType(12);
-        public static readonly OperationType CosineHyperbolic = new CosineHyperbolicType(13);
-        public static readonly OperationType SineHyperbolic = new SineHyperbolicType(14);
-        public static readonly OperationType TangentHyperbolic = new TangentHyperbolicType(15);
+        public static implicit operator int(OperationType operationType) => operationType.Value;
+
+        public static readonly OperationType Add = new AddType();
+        public static readonly OperationType Subtract = new SubtractType();
+        public static readonly OperationType Multiply = new MultiplyType();
+        public static readonly OperationType Divide = new DivideType();
+        public static readonly OperationType Modulus = new ModulusType();
+        public static readonly OperationType Power = new PowerType();
+        public static readonly OperationType Root = new RootType();
 
         static OperationType()
         {
-            IList<OperationType> normalOperations = new List<OperationType>();
-            IList<OperationType> beforeOperations = new List<OperationType>();
-
             Type type = typeof(OperationType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
+
+            OperationType[] allOperations = new OperationType[fields.Length];
+
             for (int i = 0; i < fields.Length; i++)
             {
                 var operationType = (OperationType)fields[i].GetValue(null)!;
-                switch (operationType.Category) 
-                { 
-                    case OperationCategory.None:
-                        normalOperations.Add(operationType);
-                        break;
-                    case OperationCategory.Before:
-                        beforeOperations.Add(operationType);
-                        break;
-                }
+                if (allOperations[operationType.Value] != null) throw new Exception("There are fields with duplicate int values");
+
+                allOperations[operationType.Value] = operationType;
             }
-            _normalOperations = normalOperations.ToArray();
-            _beforeOperations = beforeOperations.ToArray();
+            _allOperations = allOperations;
         }
 
-        private static readonly ReadOnlyMemory<OperationType> _normalOperations;
-        private static readonly ReadOnlyMemory<OperationType> _beforeOperations;
+        private static readonly ReadOnlyMemory<OperationType> _allOperations;
 
-        protected OperationType(string name, int value): base(name, value) { }
+        protected abstract int Value { get; }
 
         internal abstract string StringRepresentation { get; }
 
         internal abstract char CharRepresentation { get; }
 
-        internal abstract OperationCategory Category { get; }
-
         internal abstract double Operate(double firstNumber, double secondNumber);
 
-        internal abstract double Operate(double number);
-
-        internal static OperationType Parse(ReadOnlySpan<char> span, OperationCategory category)
+        internal static OperationType Parse(ReadOnlySpan<char> span)
         {
-            if (TryParse(span, category, out OperationType operationType)) return operationType;
+            if (TryParse(span, out OperationType operationType)) return operationType;
             throw new NotSupportedException("Not supported operation.");
         }
 
-        internal static OperationType Parse(char character, OperationCategory category)
+        internal static OperationType Parse(char character)
         {
-            if (TryParse(character, category, out OperationType operationType)) return operationType;
+            if (TryParse(character, out OperationType operationType)) return operationType;
             throw new NotSupportedException("Not supported operation.");
         }
 
-        internal static bool TryParse(ReadOnlySpan<char> span, OperationCategory category, out OperationType operationType)
+        internal static bool TryParse(ReadOnlySpan<char> span, out OperationType operationType)
         {
             operationType = Add;
-            if (span.Length == 1) return TryParse(span[0], category, out operationType);
+            if (span.Length == 1) return TryParse(span[0], out operationType);
 
-            ReadOnlySpan<OperationType> reference = GetOperationTypeReference(category);
+            ReadOnlySpan<OperationType> reference = _allOperations.Span;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (!span.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
@@ -91,12 +69,12 @@ namespace Byces.Calculator.Enums
             return false;
         }
 
-        internal static bool TryParse(char character, OperationCategory category, out OperationType operationType)
+        internal static bool TryParse(char character, out OperationType operationType)
         {
             operationType = Add;
             if (character == '\0') return false;
 
-            ReadOnlySpan<OperationType> reference = GetOperationTypeReference(category);
+            ReadOnlySpan<OperationType> reference = _allOperations.Span;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (character != reference[i].CharRepresentation) continue;
@@ -105,14 +83,9 @@ namespace Byces.Calculator.Enums
             return false;
         }
 
-        private static ReadOnlySpan<OperationType> GetOperationTypeReference(OperationCategory category)
+        internal static OperationType GetOperation(int value)
         {
-            return category switch
-            {
-                OperationCategory.None => _normalOperations.Span,
-                OperationCategory.Before => _beforeOperations.Span,
-                _ => throw new NotImplementedException(),
-            };
+            return _allOperations.Span[value];
         }
     }
 }

@@ -1,14 +1,13 @@
-﻿using Ardalis.SmartEnum;
-using Byces.Calculator.Enums.SpecialNumbers;
+﻿using Byces.Calculator.Enums.SpecialNumbers;
 using System;
 using System.Reflection;
 
 namespace Byces.Calculator.Enums
 {
-    internal abstract class SpecialNumberType : SmartEnum<SpecialNumberType>
+    internal abstract class SpecialNumberType
     {
-        public static readonly SpecialNumberType Pi = new PiType(0);
-        public static readonly SpecialNumberType Euler = new EulerType(1);
+        public static readonly SpecialNumberType Pi = new PiType();
+        public static readonly SpecialNumberType Euler = new EulerType();
 
         static SpecialNumberType()
         {
@@ -20,12 +19,10 @@ namespace Byces.Calculator.Enums
             {
                 specialNumbers[i] = (SpecialNumberType)fields[i].GetValue(null)!;
             }
-            _specialNumbers = specialNumbers;
+            _allSpecialNumbers = specialNumbers;
         }
 
-        private static readonly ReadOnlyMemory<SpecialNumberType> _specialNumbers;
-
-        protected SpecialNumberType(string name, int value): base(name, value) { }
+        private static readonly ReadOnlyMemory<SpecialNumberType> _allSpecialNumbers;
 
         internal abstract string StringRepresentation { get; }
 
@@ -57,7 +54,7 @@ namespace Byces.Calculator.Enums
                 if (isNegative) number *= -1;
                 return parseResult;
             }
-            ReadOnlySpan<SpecialNumberType> reference = _specialNumbers.Span;
+            ReadOnlySpan<SpecialNumberType> reference = _allSpecialNumbers.Span;
 
             for (int i = 0; i < reference.Length; i++)
             {
@@ -75,7 +72,7 @@ namespace Byces.Calculator.Enums
             number = 0;
             if (character == '\0') return false;
 
-            ReadOnlySpan<SpecialNumberType> reference = _specialNumbers.Span;
+            ReadOnlySpan<SpecialNumberType> reference = _allSpecialNumbers.Span;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (character != reference[i].CharRepresentation) continue;

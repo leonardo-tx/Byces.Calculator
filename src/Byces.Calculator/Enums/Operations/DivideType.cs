@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Byces.Calculator.Exceptions;
 
 namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class DivideType : OperationType
     {
-        internal DivideType(int value) : base("Divide", value) { }
-
+        protected override int Value => 3;
         internal override string StringRepresentation => "DIV";
         internal override char CharRepresentation => '/';
-        internal override OperationCategory Category => OperationCategory.None;
 
-        internal override double Operate(double firstNumber, double secondNumber) => firstNumber / secondNumber;
-
-        internal override double Operate(double number) => throw new NotSupportedException();
+        internal override double Operate(double firstNumber, double secondNumber)
+        {
+            if (secondNumber == 0) throw new ArithmeticExpressionException("Attempted to divide by zero.");
+            return firstNumber / secondNumber;
+        }
     }
 }

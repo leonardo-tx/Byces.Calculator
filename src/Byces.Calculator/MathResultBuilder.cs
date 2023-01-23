@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Linq;
+using Byces.Calculator.Exceptions;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Extensions;
 
 namespace Byces.Calculator
 {
     /// <summary>
-    /// This class provides the direct building of a <see cref="MathExpression"/> in a simplified way.
+    /// This class provides the direct building of a <see cref="MathResult"/> in a simplified way.
     /// </summary>
-    public sealed class ExpressionBuilder
+    public sealed class MathResultBuilder
     {
         /// <summary>
-        /// Initializes a new <see cref="ExpressionBuilder"/> class.
+        /// Initializes a new <see cref="MathResultBuilder"/> class.
         /// </summary>
-        public ExpressionBuilder()
+        public MathResultBuilder()
         {
             Expression = string.Empty;
         }
 
         /// <summary>
-        /// Gets or sets the expression of a <see cref="ExpressionBuilder"/>.
+        /// Gets or sets the expression of a <see cref="MathResultBuilder"/>.
         /// </summary>
         /// <returns>The stored expression of the builder, or <see cref="string.Empty"/> if none is set.</returns>
         public string Expression { get; set; }
@@ -27,55 +28,55 @@ namespace Byces.Calculator
         /// <summary>
         /// Sets the expression to be builded.
         /// </summary>
-        public ExpressionBuilder WithExpression(string expression)
+        public MathResultBuilder WithExpression(string expression)
         {
             Expression = expression;
             return this;
         }
 
         /// <summary>
-        /// Builds the <see cref="MathExpression"/> to be calculated.
+        /// Builds the <see cref="MathResult"/> with the given information.
         /// </summary>
-        /// <returns>The built expression.</returns>
-        public MathExpression Build()
+        /// <returns>The built result.</returns>
+        public MathResult Build()
         {
-            return GetMathExpression(Expression);
+            return GetMathResult(Expression);
         }
 
         /// <summary>
-        /// Gets the <see cref="MathExpression"/> without having to create an <see cref="ExpressionBuilder"/> object.
+        /// Gets the <see cref="MathResult"/> without having to create a <see cref="MathResultBuilder"/> object.
         /// </summary>
         /// <param name="expression"></param>
-        /// <returns>The built expression.</returns>
-        public static MathExpression GetMathExpression(string expression)
+        /// <returns>The built result.</returns>
+        public static MathResult GetMathResult(string expression)
         {
-            if (string.IsNullOrWhiteSpace(expression)) return MathExpression.Default;
+            if (string.IsNullOrWhiteSpace(expression)) return new MathResult(0, true);
             try
             {
                 return FormatExpression(expression);
             }
             catch (Exception ex)
             {
-                return new MathExpression(ex.Message);
+                return new MathResult(ex);
             }
         }
 
-        private static MathExpression FormatExpression(string expression)
+        private static MathResult FormatExpression(string expression)
         {
-            int spaceCharsCount = expression.AsSpan().Count(" ");
+            int spaceCharsCount = expression.AsSpan().CountWhiteSpaces();
             if (spaceCharsCount == 0) return BuildMathExpression(expression);
 
             Span<char> expressionSpan = stackalloc char[expression.Length - spaceCharsCount];
             ReadOnlySpan<char> reference = expression;
             for (int i = 0, j = 0; i < reference.Length; i++)
             {
-                if (reference[i] == ' ') continue;
+                if (char.IsWhiteSpace(reference[i])) continue;
                 expressionSpan[j++] = reference[i];
             }
             return BuildMathExpression(expressionSpan);
         }
 
-        private static MathExpression BuildMathExpression(ReadOnlySpan<char> expressionSpan)
+        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
         {
             CheckParentheses(expressionSpan);
             (int operationsCount, int selfOperationsCount) = expressionSpan.CountOperationsAndSelfOperations();
@@ -85,12 +86,10 @@ namespace Byces.Calculator
             Span<SelfOperation?> selfOperations = stackalloc SelfOperation?[selfOperationsCount];
 
             var content = new Content(numbers, operations, selfOperations);
-            
-            if ((content.Numbers.Length + content.Operations.Length) % 2 == 0) throw new ArgumentException("The provided expression is not complete.");
 
             content.Build(expressionSpan);
             content.Process();
-            return new MathExpression(content.Numbers[0]!.Value.Value, true);
+            return new MathResult(content.Numbers[0]!.Value.Value, true);
         }
 
         private static void CheckParentheses(ReadOnlySpan<char> expressionSpan)
@@ -108,8 +107,8 @@ namespace Byces.Calculator
                         break;
                 }
             }
-            if (unclosedParentheses < 0) throw new ArgumentException("Provided expression has misplaced parentheses.");
-            if (unclosedParentheses > 0) throw new ArgumentException("The provided expression is missing parentheses to be closed.");
+            if (unclosedParentheses < 0) throw new MisplacedParenthesesExpressionException();
+            if (unclosedParentheses > 0) throw new MissingParenthesesExpressionException();
         }
     }
 }

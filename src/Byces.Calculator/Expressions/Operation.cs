@@ -14,7 +14,6 @@ namespace Byces.Calculator.Expressions
 
         internal int Priority { get; }
 
-        internal double Operate(double firstNumber, double secondNumber) => OperationType.FromValue(Value).Operate(firstNumber, secondNumber);
-        internal double Operate(double number) => OperationType.FromValue(Value).Operate(number);
+        internal double Operate(double firstNumber, double secondNumber) => OperationType.GetOperation(Value).Operate(firstNumber, secondNumber);
     }
 }

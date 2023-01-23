@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator.Enums;
+using Byces.Calculator.Exceptions;
 using System;
 
 namespace Byces.Calculator.Expressions
@@ -8,8 +9,15 @@ namespace Byces.Calculator.Expressions
         internal ContentBuilder(ReadOnlySpan<char> expressionSpan)
         {
             ExpressionSpan = expressionSpan;
-            IsNumber = false;
-            FirstIndex = 0; LastIndex = 0; Priority = 0; NumberCount = 0; AddedNumbers= 0; AddedOperations = 0; AddedSelfOperations = 0;
+            AtNumber = false;
+            IsSpecialNumber = true;
+            FirstIndex = 0;
+            LastIndex = 0;
+            Priority = 0;
+            NumberCount = 0;
+            AddedNumbers = 0;
+            AddedOperations = 0;
+            AddedSelfOperations = 0;
             NumberRange = 0..0;
         }
         private ReadOnlySpan<char> ExpressionSpan { get; }
@@ -24,7 +32,9 @@ namespace Byces.Calculator.Expressions
 
         private int Priority { get; set; }
 
-        private bool IsNumber { get; set; }
+        private bool AtNumber { get; set; }
+
+        private bool IsSpecialNumber { get; set; }
 
         private int AddedNumbers { get; set; }
 
@@ -33,8 +43,6 @@ namespace Byces.Calculator.Expressions
         private int AddedSelfOperations { get; set; }
 
         private ReadOnlySpan<char> CurrentSpan => ExpressionSpan[FirstIndex..(LastIndex + 1)];
-
-        private ReadOnlySpan<char> NextSpan => ExpressionSpan[FirstIndex..(LastIndex + 2)];
 
         private ReadOnlySpan<char> CurrentNumber => ExpressionSpan[NumberRange];
 
@@ -49,7 +57,8 @@ namespace Byces.Calculator.Expressions
             NumberRange = 0..0;
             FirstIndex = LastIndex;
             NumberCount = 0;
-            IsNumber = false;
+            AtNumber = false;
+            IsSpecialNumber = true;
         }
 
         internal void Build(Content content)
@@ -57,12 +66,9 @@ namespace Byces.Calculator.Expressions
             for (; LastIndex < ExpressionSpan.Length; LastIndex++, FirstIndex++)
             {
                 if (FindParentheses()) continue;
-                if (FindNumber()) { IsNumber = true; continue; }
+                if (FindNumber()) { AtNumber = true; continue; }
                 if (FindOperation(content)) continue;
-                if (FindBeforeSelfOperation(content))
-                {
-                    FirstIndex = LastIndex; continue;
-                }
+                if (FindBeforeSelfOperation(content)) { FirstIndex = LastIndex; continue; }
                 FirstIndex--;
             }
             AddNumber(content);
@@ -85,25 +91,37 @@ namespace Byces.Calculator.Expressions
 
         private bool FindNumber()
         {
-            if (!IsNumber && (CurrentChar == '+' || CurrentChar == '-'))
+            if (!AtNumber && (CurrentChar == '+' || CurrentChar == '-'))
             {
-                if (char.IsDigit(NextChar)) { NumberCount++; return true; }
+                if (IsLastIndex()) throw new UnknownNumberExpressionException();
+                if (char.IsDigit(NextChar)) { NumberCount++; IsSpecialNumber = false; return true; }
 
                 FirstIndex--;
                 return true;
             }
-            if (CurrentChar == '.' || CurrentChar == ',' || char.IsDigit(CurrentChar) || Number.TryParse(CurrentSpan, out _))
+            if (CurrentChar == '.' || CurrentChar == ','|| char.IsDigit(CurrentChar))
             {
-                if (LastIndex - FirstIndex > 0)
-                {
-                    NumberRange = FirstIndex..(LastIndex + 1);
-                    FirstIndex = LastIndex;
-                }
-                else
-                {
-                    NumberRange = (FirstIndex - NumberCount)..(LastIndex + 1);
-                    NumberCount++;
-                }
+                IsSpecialNumber = false;
+                NumberRange = (FirstIndex - NumberCount)..(LastIndex + 1);
+                NumberCount++;
+
+                return true;
+            }
+            if (!IsSpecialNumber && AtNumber && (CurrentChar == 'E' || CurrentChar == 'e'))
+            {
+                if (IsLastIndex()) throw new UnknownNumberExpressionException();
+                if (NextChar != '+' && NextChar != '-') throw new UnknownNumberExpressionException();
+
+                NumberRange = (FirstIndex++ - NumberCount)..(++LastIndex + 1);
+                NumberCount += 2;
+
+                return true;
+            }
+            if (IsSpecialNumber && SpecialNumberType.TryParse(CurrentSpan, out _))
+            {
+                NumberRange = FirstIndex..(LastIndex + 1);
+                FirstIndex = LastIndex;
+
                 return true;
             }
             return false;
@@ -111,7 +129,7 @@ namespace Byces.Calculator.Expressions
 
         private bool FindOperation(Content content)
         {
-            if (IsNumber && OperationType.TryParse(CurrentSpan, OperationCategory.None, out var operationType))
+            if (AtNumber && OperationType.TryParse(CurrentSpan, out var operationType))
             {
                 AddNumber(content);
                 AddOperation(content, operationType);
@@ -124,6 +142,8 @@ namespace Byces.Calculator.Expressions
 
         private void AddNumber(Content content)
         {
+            if (CurrentNumber.IsEmpty) throw new IncompleteExpressionException();
+
             Number number = Number.Parse(CurrentNumber);
             content.Numbers[AddedNumbers++] = number;
         }
@@ -136,26 +156,28 @@ namespace Byces.Calculator.Expressions
 
         private bool FindBeforeSelfOperation(Content content)
         {
-            if (!IsNumber && OperationType.TryParse(CurrentSpan, OperationCategory.Before, out OperationType operationType))
+            if (!AtNumber && SelfOperationType.TryParse(CurrentSpan, out SelfOperationType selfOperationType))
             {
-                if (!IsLastIndex() && char.IsLetter(NextChar) &&
-                    OperationType.TryParse(NextSpan, OperationCategory.Before, out OperationType operationType2))
+                if (selfOperationType.AdditionalCheck > 0 && !IsLastIndex() && char.IsLetter(NextChar))
                 {
-                    LastIndex++;
-                    AddSelfOperation(content, operationType2);
+                    for (int i = 1; i <= selfOperationType.AdditionalCheck; i++)
+                    {
+                        if (!SelfOperationType.TryParse(ExpressionSpan[FirstIndex..(LastIndex + 1 + i)], out SelfOperationType selfOperationType2)) continue;
+                        
+                        LastIndex += i;
+                        AddSelfOperation(content, selfOperationType2);
+                        return true;
+                    }
                 }
-                else
-                {
-                    AddSelfOperation(content, operationType);
-                }
+                AddSelfOperation(content, selfOperationType);
                 return true;
             }
             return false;
         }
 
-        private void AddSelfOperation(Content content, OperationType operationType)
+        private void AddSelfOperation(Content content, SelfOperationType selfOperationType)
         {
-            SelfOperation selfOperation = new SelfOperation(new Operation(operationType, Priority), AddedNumbers);
+            SelfOperation selfOperation = new SelfOperation(AddedNumbers, selfOperationType, Priority);
             content.SelfOperations[AddedSelfOperations++] = selfOperation;
         }
     }
