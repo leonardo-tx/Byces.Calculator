@@ -49,10 +49,17 @@ Before showing some syntax examples, here are some observations:
 * The builder is not sensitive to whitespace and using it has a low impact on performance
 
 ```csharp
-string expressionExample1 = "-5 + +5"; // You can use signs to represent negative and positive numbers
-string expressionExample2 = "((2 + 5) * 2) * 3"; // You can use parentheses to set priorities in the expression
-string expressionExample3 = "1E+3"; // You can also represent numbers like this
-string expressionExample4 = "fact(2 + 3) * fact3"; // This is an expression with two operations and two self operations
+// You can use signs to represent negative and positive numbers
+string expressionExample1 = "-5 + +5";
+
+// You can use parentheses to set priorities in the expression
+string expressionExample2 = "((2 + 5) * 2) * 3";
+
+// You can also represent numbers like this
+string expressionExample3 = "1E+3";
+
+// This is an expression with two operations and two self operations
+string expressionExample4 = "fact(2 + 3) * fact3";
 ```
 
 <hr />
