@@ -1,4 +1,5 @@
 # Byces.Calculator
+[![.NET](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml)
 
 A simple .NET calculator that solves string math expressions
 
