@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Byces.Calculator.Exceptions;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Extensions;
@@ -46,14 +45,14 @@ namespace Byces.Calculator
         /// <summary>
         /// Gets the <see cref="MathResult"/> without having to create a <see cref="MathResultBuilder"/> object.
         /// </summary>
-        /// <param name="expression"></param>
+        /// <param name="expression">The mathematical expression.</param>
         /// <returns>The built result.</returns>
         public static MathResult GetMathResult(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression)) return new MathResult(0, true);
             try
             {
-                return FormatExpression(expression);
+                return FormatExpression(expression, 1024);
             }
             catch (Exception ex)
             {
@@ -61,29 +60,31 @@ namespace Byces.Calculator
             }
         }
 
-        private static MathResult FormatExpression(string expression)
+        private static MathResult FormatExpression(string expression, int stackLimit)
         {
             int spaceCharsCount = expression.AsSpan().CountWhiteSpaces();
-            if (spaceCharsCount == 0) return BuildMathExpression(expression);
+            if (spaceCharsCount == 0) return BuildMathExpression(expression, stackLimit);
+            
+            int size = expression.Length - spaceCharsCount;
 
-            Span<char> expressionSpan = stackalloc char[expression.Length - spaceCharsCount];
+            Span<char> expressionSpan = (size < stackLimit) ? stackalloc char[size] : new char[size];
             ReadOnlySpan<char> reference = expression;
             for (int i = 0, j = 0; i < reference.Length; i++)
             {
                 if (char.IsWhiteSpace(reference[i])) continue;
                 expressionSpan[j++] = reference[i];
             }
-            return BuildMathExpression(expressionSpan);
+            return BuildMathExpression(expressionSpan, stackLimit);
         }
 
-        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
+        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan, int stackLimit)
         {
             CheckParentheses(expressionSpan);
             (int operationsCount, int selfOperationsCount) = expressionSpan.CountOperationsAndSelfOperations();
 
-            Span<Operation?> operations = stackalloc Operation?[operationsCount];
-            Span<Number?> numbers = stackalloc Number?[operationsCount + 1];
-            Span<SelfOperation?> selfOperations = stackalloc SelfOperation?[selfOperationsCount];
+            Span<Operation?> operations = (operationsCount < stackLimit) ? stackalloc Operation?[operationsCount] : new Operation?[operationsCount];
+            Span<Number?> numbers = (operationsCount + 1 < stackLimit) ? stackalloc Number?[operationsCount + 1] : new Number?[operationsCount + 1];
+            Span<SelfOperation?> selfOperations = (selfOperationsCount < stackLimit) ? stackalloc SelfOperation?[selfOperationsCount] : new SelfOperation?[selfOperationsCount];
 
             var content = new Content(numbers, operations, selfOperations);
 
