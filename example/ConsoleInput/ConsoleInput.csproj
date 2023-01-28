@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Byces.Calculator" Version="1.1.0" />
+    <PackageReference Include="Byces.Calculator" Version="1.1.1" />
   </ItemGroup>
 
 </Project>
