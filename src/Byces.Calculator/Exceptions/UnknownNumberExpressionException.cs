@@ -12,6 +12,9 @@ namespace Byces.Calculator.Exceptions
         /// </summary>
         public UnknownNumberExpressionException(): base("The given expression has an unknown number.") { }
 
+        /// <summary>
+        /// Gets the expression error type.
+        /// </summary>
         public override ResultErrorType ErrorType => ResultErrorType.UnknownNumber;
     }
 }

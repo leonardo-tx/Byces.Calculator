@@ -12,6 +12,9 @@ namespace Byces.Calculator.Exceptions
         /// </summary>
         public MissingParenthesesExpressionException(): base("The provided expression is missing parentheses to be closed.") { }
 
+        /// <summary>
+        /// Gets the expression error type.
+        /// </summary>
         public override ResultErrorType ErrorType => ResultErrorType.MissingParentheses;
     }
 }

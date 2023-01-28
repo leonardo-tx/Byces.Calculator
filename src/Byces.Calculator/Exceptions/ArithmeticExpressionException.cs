@@ -17,6 +17,9 @@ namespace Byces.Calculator.Exceptions
         /// </summary>
         public ArithmeticExpressionException(string message) : base(message) { }
 
+        /// <summary>
+        /// Gets the expression error type.
+        /// </summary>
         public override ResultErrorType ErrorType => ResultErrorType.Arithmetic;
     }
 }

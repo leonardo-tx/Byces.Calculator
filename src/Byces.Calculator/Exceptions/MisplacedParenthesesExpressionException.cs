@@ -12,6 +12,9 @@ namespace Byces.Calculator.Exceptions
         /// </summary>
         public MisplacedParenthesesExpressionException(): base("Provided expression has misplaced parentheses.") { }
 
+        /// <summary>
+        /// Gets the expression error type.
+        /// </summary>
         public override ResultErrorType ErrorType => ResultErrorType.MisplacedParentheses;
     }
 }
