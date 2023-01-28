@@ -6,8 +6,9 @@ namespace Byces.Calculator.Expressions
 {
     internal ref struct ContentBuilder
     {
-        internal ContentBuilder(ReadOnlySpan<char> expressionSpan)
+        internal ContentBuilder(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
         {
+            HasSpecialNumber = builderInfo.HasSpecialNumber;
             ExpressionSpan = expressionSpan;
             AtNumber = false;
             IsSpecialNumber = true;
@@ -35,6 +36,8 @@ namespace Byces.Calculator.Expressions
         private bool AtNumber { get; set; }
 
         private bool IsSpecialNumber { get; set; }
+
+        private bool HasSpecialNumber { get; }
 
         private int AddedNumbers { get; set; }
 
@@ -66,7 +69,7 @@ namespace Byces.Calculator.Expressions
             for (; LastIndex < ExpressionSpan.Length; LastIndex++, FirstIndex++)
             {
                 if (FindParentheses()) continue;
-                if (FindNumber()) { AtNumber = true; continue; }
+                if (FindNumber() || FindSpecialNumber()) { AtNumber = true; continue; }
                 if (FindOperation(content)) continue;
                 if (FindBeforeSelfOperation(content)) { FirstIndex = LastIndex; continue; }
                 FirstIndex--;
@@ -99,7 +102,7 @@ namespace Byces.Calculator.Expressions
                 FirstIndex--;
                 return true;
             }
-            if (CurrentChar == '.' || CurrentChar == ','|| char.IsDigit(CurrentChar))
+            if (char.IsDigit(CurrentChar) || CurrentChar == '.' || CurrentChar == ',')
             {
                 IsSpecialNumber = false;
                 NumberRange = (FirstIndex - NumberCount)..(LastIndex + 1);
@@ -117,14 +120,18 @@ namespace Byces.Calculator.Expressions
 
                 return true;
             }
-            if (IsSpecialNumber && SpecialNumberType.TryParse(CurrentSpan, out _))
-            {
-                NumberRange = FirstIndex..(LastIndex + 1);
-                FirstIndex = LastIndex;
-
-                return true;
-            }
             return false;
+        }
+
+        private bool FindSpecialNumber()
+        {
+            if (!HasSpecialNumber || !IsSpecialNumber || !SpecialNumberType.TryParse(CurrentSpan, out _)) return false;
+
+            NumberRange = FirstIndex..(LastIndex + 1);
+            FirstIndex = LastIndex;
+            IsSpecialNumber = false;
+
+            return true;
         }
 
         private bool FindOperation(Content content)
@@ -156,23 +163,20 @@ namespace Byces.Calculator.Expressions
 
         private bool FindBeforeSelfOperation(Content content)
         {
-            if (!AtNumber && SelfOperationType.TryParse(CurrentSpan, out SelfOperationType selfOperationType))
+            if (AtNumber || !SelfOperationType.TryParse(CurrentSpan, out SelfOperationType selfOperationType)) return false;
+            if (selfOperationType.AdditionalCheck > 0 && !IsLastIndex() && char.IsLetter(NextChar))
             {
-                if (selfOperationType.AdditionalCheck > 0 && !IsLastIndex() && char.IsLetter(NextChar))
+                for (int i = 1; i <= selfOperationType.AdditionalCheck; i++)
                 {
-                    for (int i = 1; i <= selfOperationType.AdditionalCheck; i++)
-                    {
-                        if (!SelfOperationType.TryParse(ExpressionSpan[FirstIndex..(LastIndex + 1 + i)], out SelfOperationType selfOperationType2)) continue;
-                        
-                        LastIndex += i;
-                        AddSelfOperation(content, selfOperationType2);
-                        return true;
-                    }
+                    if (!SelfOperationType.TryParse(ExpressionSpan[FirstIndex..(LastIndex + 1 + i)], out SelfOperationType selfOperationType2)) continue;
+
+                    LastIndex += i;
+                    AddSelfOperation(content, selfOperationType2);
+                    return true;
                 }
-                AddSelfOperation(content, selfOperationType);
-                return true;
             }
-            return false;
+            AddSelfOperation(content, selfOperationType);
+            return true;
         }
 
         private void AddSelfOperation(Content content, SelfOperationType selfOperationType)

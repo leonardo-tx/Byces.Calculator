@@ -19,13 +19,9 @@ namespace Byces.Calculator.Expressions
 
         internal Span<SelfOperation?> SelfOperations { get; }
 
-        private static readonly ReadOnlyMemory<int> FirstPriority = new int[2] { OperationType.Power, OperationType.Root };
-        private static readonly ReadOnlyMemory<int> SecondPriority = new int[3] { OperationType.Multiply, OperationType.Divide, OperationType.Modulus };
-        private static readonly ReadOnlyMemory<int> ThirdPriority = new int[2] {OperationType.Add, OperationType.Subtract };
-
-        internal void Build(ReadOnlySpan<char> expressionSpan)
+        internal void Build(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
         {
-            var contentBuilder = new ContentBuilder(expressionSpan);
+            var contentBuilder = new ContentBuilder(expressionSpan, builderInfo);
             contentBuilder.Build(this);
         }
 
@@ -91,22 +87,23 @@ namespace Byces.Calculator.Expressions
 
         private void CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
         {
-            CalculateOperations(FirstPriority.Span, firstIndex, count);
-            CalculateOperations(SecondPriority.Span, firstIndex, count);
-            CalculateOperations(ThirdPriority.Span, firstIndex, count);
+            CalculateOperations(OperationPriorityType.Special, firstIndex, count);
+            CalculateOperations(OperationPriorityType.First, firstIndex, count);
+            CalculateOperations(OperationPriorityType.Second, firstIndex, count);
+            CalculateOperations(OperationPriorityType.Third, firstIndex, count);
         }
 
-        private void CalculateOperations(ReadOnlySpan<int> operations, int? firstIndex = null, int? count = null)
+        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex = null, int? count = null)
         {
             for (int i = firstIndex ?? 0; i < (count ?? Operations.Length); i++)
             {
                 if (Operations[i] == null) continue;
-                
-                Operation operation = Operations[i]!.Value;
-                if (!operations.CustomContains(operation.Value)) continue;
+
+                OperationType operationType = OperationType.GetOperation(Operations[i]!.Value.Value);
+                if (operationPriority != operationType.Priority) continue;
 
                 int firstNumberIndex = GetFirstNumberIndex(i), secondNumberIndex = GetSecondNumberIndex(i);
-                double result = operation.Operate(Numbers[firstNumberIndex]!.Value.Value, Numbers[secondNumberIndex]!.Value.Value);
+                double result = operationType.Operate(Numbers[firstNumberIndex]!.Value.Value, Numbers[secondNumberIndex]!.Value.Value);
 
                 Operations[i] = null;
                 Numbers[secondNumberIndex] = null;

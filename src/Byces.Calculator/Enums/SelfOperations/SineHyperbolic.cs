@@ -3,7 +3,7 @@ using Byces.Calculator.Enums.Operations;
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class SineHyperbolicType : SelfOperationType
+    internal sealed class SineHyperbolic : SelfOperationType
     {
         protected override int Value => 7;
         internal override string StringRepresentation => "SINH";

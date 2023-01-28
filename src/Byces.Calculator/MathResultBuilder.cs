@@ -10,6 +10,8 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class MathResultBuilder
     {
+        private const int StackLimit = 1024;
+
         /// <summary>
         /// Initializes a new <see cref="MathResultBuilder"/> class.
         /// </summary>
@@ -52,7 +54,7 @@ namespace Byces.Calculator
             if (string.IsNullOrWhiteSpace(expression)) return new MathResult(0, true);
             try
             {
-                return FormatExpression(expression, 1024);
+                return FormatExpression(expression);
             }
             catch (Exception ex)
             {
@@ -60,56 +62,38 @@ namespace Byces.Calculator
             }
         }
 
-        private static MathResult FormatExpression(string expression, int stackLimit)
+        private static MathResult FormatExpression(string expression)
         {
             int spaceCharsCount = expression.AsSpan().CountWhiteSpaces();
-            if (spaceCharsCount == 0) return BuildMathExpression(expression, stackLimit);
+            if (spaceCharsCount == 0) return BuildMathExpression(expression);
             
             int size = expression.Length - spaceCharsCount;
 
-            Span<char> expressionSpan = (size < stackLimit) ? stackalloc char[size] : new char[size];
+            Span<char> expressionSpan = (size < StackLimit) ? stackalloc char[size] : new char[size];
             ReadOnlySpan<char> reference = expression;
             for (int i = 0, j = 0; i < reference.Length; i++)
             {
                 if (char.IsWhiteSpace(reference[i])) continue;
                 expressionSpan[j++] = reference[i];
             }
-            return BuildMathExpression(expressionSpan, stackLimit);
+            return BuildMathExpression(expressionSpan);
         }
 
-        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan, int stackLimit)
+        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
         {
-            CheckParentheses(expressionSpan);
-            (int operationsCount, int selfOperationsCount) = expressionSpan.CountOperationsAndSelfOperations();
+            BuilderInfo builderInfo = new BuilderInfo(expressionSpan);
+            if (builderInfo.UnclosedParentheses < 0) throw new MisplacedParenthesesExpressionException();
+            if (builderInfo.UnclosedParentheses > 0) throw new MissingParenthesesExpressionException();
 
-            Span<Operation?> operations = (operationsCount < stackLimit) ? stackalloc Operation?[operationsCount] : new Operation?[operationsCount];
-            Span<Number?> numbers = (operationsCount + 1 < stackLimit) ? stackalloc Number?[operationsCount + 1] : new Number?[operationsCount + 1];
-            Span<SelfOperation?> selfOperations = (selfOperationsCount < stackLimit) ? stackalloc SelfOperation?[selfOperationsCount] : new SelfOperation?[selfOperationsCount];
+            Span<Operation?> operations = (builderInfo.OperationCount < StackLimit) ? stackalloc Operation?[builderInfo.OperationCount] : new Operation?[builderInfo.OperationCount];
+            Span<Number?> numbers = (builderInfo.OperationCount + 1 < StackLimit) ? stackalloc Number?[builderInfo.OperationCount + 1] : new Number?[builderInfo.OperationCount + 1];
+            Span<SelfOperation?> selfOperations = (builderInfo.SelfOperationCount < StackLimit) ? stackalloc SelfOperation?[builderInfo.SelfOperationCount] : new SelfOperation?[builderInfo.SelfOperationCount];
 
             var content = new Content(numbers, operations, selfOperations);
 
-            content.Build(expressionSpan);
+            content.Build(expressionSpan, builderInfo);
             content.Process();
             return new MathResult(content.Numbers[0]!.Value.Value, true);
-        }
-
-        private static void CheckParentheses(ReadOnlySpan<char> expressionSpan)
-        {
-            int unclosedParentheses = 0;
-            for (int i = 0; i < expressionSpan.Length; i++)
-            {
-                switch (expressionSpan[i])
-                {
-                    case '(':
-                        unclosedParentheses++;
-                        break;
-                    case ')':
-                        unclosedParentheses--;
-                        break;
-                }
-            }
-            if (unclosedParentheses < 0) throw new MisplacedParenthesesExpressionException();
-            if (unclosedParentheses > 0) throw new MissingParenthesesExpressionException();
         }
     }
 }

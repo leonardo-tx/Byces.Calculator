@@ -3,7 +3,7 @@ using System;
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class TangentType : SelfOperationType
+    internal sealed class Tangent : SelfOperationType
     {
         protected override int Value => 5;
         internal override int AdditionalCheck => 1;

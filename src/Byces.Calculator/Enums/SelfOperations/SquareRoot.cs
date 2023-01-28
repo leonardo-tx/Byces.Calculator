@@ -3,7 +3,7 @@ using System;
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class SquareRootType : SelfOperationType
+    internal sealed class SquareRoot : SelfOperationType
     {
         protected override int Value => 1;
         internal override string StringRepresentation => "SQRT";

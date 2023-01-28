@@ -3,7 +3,7 @@ using MathNet.Numerics;
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class FactorialType : SelfOperationType
+    internal sealed class Factorial : SelfOperationType
     {
         protected override int Value => 0;
         internal override string StringRepresentation => "FACT";

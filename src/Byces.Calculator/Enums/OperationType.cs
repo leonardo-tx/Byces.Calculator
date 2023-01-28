@@ -8,13 +8,14 @@ namespace Byces.Calculator.Enums
     {
         public static implicit operator int(OperationType operationType) => operationType.Value;
 
-        public static readonly OperationType Add = new AddType();
-        public static readonly OperationType Subtract = new SubtractType();
-        public static readonly OperationType Multiply = new MultiplyType();
-        public static readonly OperationType Divide = new DivideType();
-        public static readonly OperationType Modulus = new ModulusType();
-        public static readonly OperationType Power = new PowerType();
-        public static readonly OperationType Root = new RootType();
+        public static readonly OperationType Add = new Add();
+        public static readonly OperationType Subtract = new Subtract();
+        public static readonly OperationType Multiply = new Multiply();
+        public static readonly OperationType Divide = new Divide();
+        public static readonly OperationType Modulus = new Modulus();
+        public static readonly OperationType Power = new Power();
+        public static readonly OperationType Root = new Root();
+        public static readonly OperationType Logarithm = new Logarithm();
 
         static OperationType()
         {
@@ -40,6 +41,8 @@ namespace Byces.Calculator.Enums
         internal abstract string StringRepresentation { get; }
 
         internal abstract char CharRepresentation { get; }
+
+        internal abstract OperationPriorityType Priority { get; }
 
         internal abstract double Operate(double firstNumber, double secondNumber);
 

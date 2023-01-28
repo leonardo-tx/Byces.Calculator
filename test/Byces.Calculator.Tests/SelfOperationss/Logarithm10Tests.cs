@@ -4,13 +4,13 @@ using System;
 namespace Byces.Calculator.Tests.SelfOperationss
 {
     [TestClass]
-    public class CubeRootTests
+    public class Logarithm10Tests
     {
         [TestMethod]
-        public void CubeRootTest()
+        public void Logarithm10Test()
         {
-            Evaluator.Validate("cbrt512", Math.Cbrt(512));
-            Evaluator.Validate("cbrt-64", Math.Cbrt(-64));
+            Evaluator.Validate("log10", Math.Log10(10));
+            Evaluator.Validate("log35", Math.Log10(35));
         }
     }
 }

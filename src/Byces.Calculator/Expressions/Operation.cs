@@ -1,6 +1,4 @@
-﻿using Byces.Calculator.Enums;
-
-namespace Byces.Calculator.Expressions
+﻿namespace Byces.Calculator.Expressions
 {
     internal readonly struct Operation
     {
@@ -13,7 +11,5 @@ namespace Byces.Calculator.Expressions
         internal int Value { get; }
 
         internal int Priority { get; }
-
-        internal double Operate(double firstNumber, double secondNumber) => OperationType.GetOperation(Value).Operate(firstNumber, secondNumber);
     }
 }

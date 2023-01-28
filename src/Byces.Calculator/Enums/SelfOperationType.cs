@@ -8,22 +8,23 @@ namespace Byces.Calculator.Enums
     {
         public static implicit operator int(SelfOperationType selfOperationType) => selfOperationType.Value;
 
-        public static readonly SelfOperationType Factorial = new FactorialType();
-        public static readonly SelfOperationType SquareRoot = new SquareRootType();
-        public static readonly SelfOperationType CubeRoot = new CubeRootType();
-        public static readonly SelfOperationType Cosine = new CosineType();
-        public static readonly SelfOperationType Sine = new SineType();
-        public static readonly SelfOperationType Tangent = new TangentType();
-        public static readonly SelfOperationType CosineHyperbolic = new CosineHyperbolicType();
-        public static readonly SelfOperationType SineHyperbolic = new SineHyperbolicType();
-        public static readonly SelfOperationType TangentHyperbolic = new TangentHyperbolicType();
-        public static readonly SelfOperationType Radian = new RadianType();
+        public static readonly SelfOperationType Factorial = new Factorial();
+        public static readonly SelfOperationType SquareRoot = new SquareRoot();
+        public static readonly SelfOperationType CubeRoot = new CubeRoot();
+        public static readonly SelfOperationType Cosine = new Cosine();
+        public static readonly SelfOperationType Sine = new Sine();
+        public static readonly SelfOperationType Tangent = new Tangent();
+        public static readonly SelfOperationType CosineHyperbolic = new CosineHyperbolic();
+        public static readonly SelfOperationType SineHyperbolic = new SineHyperbolic();
+        public static readonly SelfOperationType TangentHyperbolic = new TangentHyperbolic();
+        public static readonly SelfOperationType Radian = new Radian();
+        public static readonly SelfOperationType Logarithm = new Logarithm();
 
         static SelfOperationType()
         {
             Type type = typeof(SelfOperationType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
-
+            
             SelfOperationType[] allSelfOperations = new SelfOperationType[fields.Length];
 
             for (int i = 0; i < fields.Length; i++)

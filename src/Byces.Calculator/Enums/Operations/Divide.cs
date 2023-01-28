@@ -2,11 +2,12 @@
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class DivideType : OperationType
+    internal sealed class Divide : OperationType
     {
         protected override int Value => 3;
         internal override string StringRepresentation => "DIV";
         internal override char CharRepresentation => '/';
+        internal override OperationPriorityType Priority => OperationPriorityType.Second;
 
         internal override double Operate(double firstNumber, double secondNumber)
         {

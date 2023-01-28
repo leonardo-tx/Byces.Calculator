@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class TangentHyperbolicType : SelfOperationType
+    internal sealed class TangentHyperbolic : SelfOperationType
     {
         protected override int Value => 8;
         internal override string StringRepresentation => "TANH";

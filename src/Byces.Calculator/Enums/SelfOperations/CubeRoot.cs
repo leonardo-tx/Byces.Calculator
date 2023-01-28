@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class CubeRootType : SelfOperationType
+    internal sealed class CubeRoot : SelfOperationType
     {
         protected override int Value => 2;
         internal override string StringRepresentation => "CBRT";

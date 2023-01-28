@@ -115,6 +115,12 @@ string expression1 = "2%4%6";
 string expression2 = "2 mod 4 mod 6";
 ```
 
+#### Log (base: firstNumber)
+
+```csharp
+string expression = "2 log 4 log 6";
+```
+
 ### Available self operations
 
 #### Factorial
@@ -176,6 +182,12 @@ string expression = "tanh(3)";
 
 ```csharp
 string expression = "rad(3)";
+```
+
+#### Log (base 10)
+
+```csharp
+string expression = "log(3)";
 ```
 
 ### Available special numbers
