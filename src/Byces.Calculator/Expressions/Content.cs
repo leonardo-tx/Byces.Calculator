@@ -87,7 +87,6 @@ namespace Byces.Calculator.Expressions
 
         private void CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
         {
-            CalculateOperations(OperationPriorityType.Special, firstIndex, count);
             CalculateOperations(OperationPriorityType.First, firstIndex, count);
             CalculateOperations(OperationPriorityType.Second, firstIndex, count);
             CalculateOperations(OperationPriorityType.Third, firstIndex, count);

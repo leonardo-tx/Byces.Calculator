@@ -8,7 +8,7 @@ namespace Byces.Calculator.Enums.Operations
         protected override int Value => 7;
         internal override string StringRepresentation => "LOG";
         internal override char CharRepresentation => default;
-        internal override OperationPriorityType Priority => OperationPriorityType.Special;
+        internal override OperationPriorityType Priority => OperationPriorityType.Second;
 
         internal override double Operate(double firstNumber, double secondNumber)
         {

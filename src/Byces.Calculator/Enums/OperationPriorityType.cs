@@ -5,6 +5,5 @@
         First,
         Second,
         Third,
-        Special
     }
 }
