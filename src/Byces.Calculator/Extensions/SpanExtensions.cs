@@ -55,11 +55,11 @@ namespace Byces.Calculator.Extensions
         }
 
         /// <summary>
-        /// Returns the maximum priority of an <see cref="SelfOperation"/> span.
+        /// Returns the maximum priority of a <see cref="Function"/> span.
         /// </summary>
         /// <param name="source"></param>
         /// <returns>The maximum priority in the sequence, or -1 if source is empty.</returns>
-        internal static int MaxPriority(this Span<SelfOperation?> source)
+        internal static int MaxPriority(this Span<Function?> source)
         {
             int max = -1;
             for (int i = 0; i < source.Length; i++)

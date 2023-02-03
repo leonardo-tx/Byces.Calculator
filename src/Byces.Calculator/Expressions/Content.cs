@@ -6,18 +6,18 @@ namespace Byces.Calculator.Expressions
 {
     internal readonly ref struct Content
     {
-        internal Content(Span<Number?> numbers, Span<Operation?> operations, Span<SelfOperation?> selfOperations)
+        internal Content(Span<double?> numbers, Span<Operation?> operations, Span<Function?> functions)
         {
             Numbers = numbers;
             Operations = operations;
-            SelfOperations = selfOperations;
+            Functions = functions;
         }
 
-        internal Span<Number?> Numbers { get; }
+        internal Span<double?> Numbers { get; }
 
         internal Span<Operation?> Operations { get; }
 
-        internal Span<SelfOperation?> SelfOperations { get; }
+        internal Span<Function?> Functions { get; }
 
         internal void Build(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
         {
@@ -28,7 +28,7 @@ namespace Byces.Calculator.Expressions
         internal void Process()
         {
             CalculatePriorities();
-            CalculateSelfOperations(0);
+            CalculateFunctions(0);
             CalculateOperationsInOrder();
         }
 
@@ -48,7 +48,7 @@ namespace Byces.Calculator.Expressions
                 if (i + 1 != Operations.Length && Operations[i]!.Value.Priority == ((Operations[i + 1] != null) ? Operations[i + 1]!.Value.Priority : -1)) continue;
                 int lastIndex = i;
 
-                CalculateSelfOperations(priority);
+                CalculateFunctions(priority);
                 CalculateOperationsInOrder(firstIndex, lastIndex + 1);
 
                 firstIndex = -1;
@@ -63,25 +63,25 @@ namespace Byces.Calculator.Expressions
             }
         }
 
-        private void CalculateSelfOperations(int minPriority)
+        private void CalculateFunctions(int minPriority)
         {
-            for (int i = SelfOperations.Length - 1; i >= 0; i--)
+            for (int i = Functions.Length - 1; i >= 0; i--)
             {
-                if (SelfOperations[i] == null) continue;
-                if (SelfOperations[i]!.Value.Priority < minPriority) continue;
+                if (Functions[i] == null) continue;
+                if (Functions[i]!.Value.Priority < minPriority) continue;
 
-                int maxPriority = SelfOperations.MaxPriority();
+                int maxPriority = Functions.MaxPriority();
                 while (maxPriority > minPriority)
                 {
-                    CalculateSelfOperations(maxPriority);
-                    maxPriority = SelfOperations.MaxPriority();
+                    CalculateFunctions(maxPriority);
+                    maxPriority = Functions.MaxPriority();
                 }
-                if (SelfOperations[i] == null) continue;
-                int numberIndex = SelfOperations[i]!.Value.NumberIndex;
-                double result = SelfOperations[i]!.Value.Operate(Numbers[numberIndex]!.Value.Value);
+                if (Functions[i] == null) continue;
+                int numberIndex = Functions[i]!.Value.NumberIndex;
+                double result = Functions[i]!.Value.Operate(Numbers[numberIndex]!.Value);
 
-                SelfOperations[i] = null;
-                Numbers[numberIndex] = new Number(result);
+                Functions[i] = null;
+                Numbers[numberIndex] = result;
             }
         }
 
@@ -102,13 +102,13 @@ namespace Byces.Calculator.Expressions
                 if (operationPriority != operationType.Priority) continue;
 
                 int firstNumberIndex = GetFirstNumberIndex(i), secondNumberIndex = GetSecondNumberIndex(i);
-                double result = operationType.Operate(Numbers[firstNumberIndex]!.Value.Value, Numbers[secondNumberIndex]!.Value.Value);
+                double result = operationType.Operate(Numbers[firstNumberIndex]!.Value, Numbers[secondNumberIndex]!.Value);
 
                 Operations[i] = null;
                 Numbers[secondNumberIndex] = null;
-                Numbers[firstNumberIndex] = new Number(result);
+                Numbers[firstNumberIndex] = result;
 
-                SetSelfOperationsToIndex(secondNumberIndex, firstNumberIndex);
+                SetFunctionToIndex(secondNumberIndex, firstNumberIndex);
                 count--;
             }
         }
@@ -133,14 +133,14 @@ namespace Byces.Calculator.Expressions
             throw new IndexOutOfRangeException();
         }
 
-        private void SetSelfOperationsToIndex(int oldIndex, int newIndex)
+        private void SetFunctionToIndex(int oldIndex, int newIndex)
         {
-            for (int i = 0; i < SelfOperations.Length; i++)
+            for (int i = 0; i < Functions.Length; i++)
             {
-                if (SelfOperations[i] == null) continue;
-                if (SelfOperations[i]!.Value.NumberIndex != oldIndex) continue;
+                if (Functions[i] == null) continue;
+                if (Functions[i]!.Value.NumberIndex != oldIndex) continue;
                 
-                SelfOperations[i] = new SelfOperation(newIndex, SelfOperations[i]!.Value.Value, SelfOperations[i]!.Value.Priority);
+                Functions[i] = new Function(newIndex, Functions[i]!.Value.Value, Functions[i]!.Value.Priority);
             }
         }
     }

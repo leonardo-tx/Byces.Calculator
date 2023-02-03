@@ -9,7 +9,7 @@ namespace Byces.Calculator.Expressions
         {
             OperationCount = 0;
             UnclosedParentheses = 0;
-            SelfOperationCount = 0;
+            FunctionCount = 0;
             HasSpecialNumber = false;
 
             bool atNumber = false;
@@ -37,7 +37,7 @@ namespace Byces.Calculator.Expressions
                     isSpecialNumber = false;
                     continue;
                 }
-                if (isSpecialNumber && Number.TryParse(expressionSpan[firstIndex..(i + 1)], out _))
+                if (isSpecialNumber && SpecialNumberType.TryParse(expressionSpan[firstIndex..(i + 1)], out _))
                 {
                     firstIndex = i;
                     atNumber = true;
@@ -53,29 +53,32 @@ namespace Byces.Calculator.Expressions
                     firstIndex = i;
                     continue;
                 }
-                if (!atNumber && SelfOperationType.TryParse(expressionSpan[firstIndex..(i + 1)], out SelfOperationType selfOperationType))
+                if (!atNumber && FunctionType.TryParse(expressionSpan[firstIndex..(i + 1)], out FunctionType functionType))
                 {
-                    if (selfOperationType.AdditionalCheck > 0 && i + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[i + 1]))
+                    if (functionType.AdditionalCheck > 0 && i + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[i + 1]))
                     {
-                        for (int j = 1; j <= selfOperationType.AdditionalCheck; j++)
+                        for (int j = 1; j <= functionType.AdditionalCheck; j++)
                         {
-                            if (!SelfOperationType.TryParse(expressionSpan[firstIndex..(i + 1 + j)], out _)) continue;
+                            if (!FunctionType.TryParse(expressionSpan[firstIndex..(i + 1 + j)], out _)) continue;
                             i += j;
                         }
                     }
-                    SelfOperationCount++;
+                    FunctionCount++;
                     firstIndex = i; continue;
                 }
                 firstIndex--;
             }
+            HasFunction = FunctionCount > 0;
         }
 
         internal int UnclosedParentheses { get; }
 
         internal int OperationCount { get; }
 
-        internal int SelfOperationCount { get; }
+        internal int FunctionCount { get; }
 
         internal bool HasSpecialNumber { get; }
+
+        internal bool HasFunction { get; }
     }
 }

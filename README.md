@@ -47,7 +47,7 @@ else
 
 Before showing some syntax examples, here are some observations:
 
-* Numbers, operations and self operations are not case sensitive
+* Numbers, operations and functions are not case sensitive
 * The builder is not sensitive to whitespace and using it has a low impact on performance
 
 ```csharp
@@ -60,7 +60,7 @@ string expressionExample2 = "((2 + 5) * 2) * 3";
 // You can also represent numbers like this
 string expressionExample3 = "1E+3";
 
-// This is an expression with two operations and two self operations
+// This is an expression with two operations and two functions
 string expressionExample4 = "fact(2 + 3) * fact3";
 ```
 
@@ -121,7 +121,7 @@ string expression2 = "2 mod 4 mod 6";
 string expression = "2 log 4 log 6";
 ```
 
-### Available self operations
+### Available functions
 
 #### Factorial
 

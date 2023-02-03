@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class CosineHyperbolic : SelfOperationType
+    internal sealed class CosineHyperbolic : FunctionType
     {
         protected override int Value => 6;
         internal override string StringRepresentation => "COSH";

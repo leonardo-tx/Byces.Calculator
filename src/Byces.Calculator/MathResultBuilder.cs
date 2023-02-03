@@ -62,9 +62,9 @@ namespace Byces.Calculator
             }
         }
 
-        private static MathResult FormatExpression(string expression)
+        private static MathResult FormatExpression(ReadOnlySpan<char> expression)
         {
-            int spaceCharsCount = expression.AsSpan().CountWhiteSpaces();
+            int spaceCharsCount = expression.CountWhiteSpaces();
             if (spaceCharsCount == 0) return BuildMathExpression(expression);
             
             int size = expression.Length - spaceCharsCount;
@@ -86,14 +86,14 @@ namespace Byces.Calculator
             if (builderInfo.UnclosedParentheses > 0) throw new MissingParenthesesExpressionException();
 
             Span<Operation?> operations = (builderInfo.OperationCount < StackLimit) ? stackalloc Operation?[builderInfo.OperationCount] : new Operation?[builderInfo.OperationCount];
-            Span<Number?> numbers = (builderInfo.OperationCount + 1 < StackLimit) ? stackalloc Number?[builderInfo.OperationCount + 1] : new Number?[builderInfo.OperationCount + 1];
-            Span<SelfOperation?> selfOperations = (builderInfo.SelfOperationCount < StackLimit) ? stackalloc SelfOperation?[builderInfo.SelfOperationCount] : new SelfOperation?[builderInfo.SelfOperationCount];
+            Span<double?> numbers = (builderInfo.OperationCount + 1 < StackLimit) ? stackalloc double?[builderInfo.OperationCount + 1] : new double?[builderInfo.OperationCount + 1];
+            Span<Function?> selfOperations = (builderInfo.FunctionCount < StackLimit) ? stackalloc Function?[builderInfo.FunctionCount] : new Function?[builderInfo.FunctionCount];
 
             var content = new Content(numbers, operations, selfOperations);
 
             content.Build(expressionSpan, builderInfo);
             content.Process();
-            return new MathResult(content.Numbers[0]!.Value.Value, true);
+            return new MathResult(content.Numbers[0]!.Value, true);
         }
     }
 }

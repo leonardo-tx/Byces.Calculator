@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class Radian : SelfOperationType
+    internal sealed class Radian : FunctionType
     {
         protected override int Value => 9;
         internal override string StringRepresentation => "RAD";

@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SpecialNumbers
 {
-    internal sealed class EulerType : SpecialNumberType
+    internal sealed class Euler : SpecialNumberType
     {
         internal override string StringRepresentation => "EULER";
         internal override char CharRepresentation => default;

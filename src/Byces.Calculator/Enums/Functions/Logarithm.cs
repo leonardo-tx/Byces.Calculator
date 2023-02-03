@@ -3,7 +3,7 @@ using System;
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class Logarithm : SelfOperationType
+    internal sealed class Logarithm : FunctionType
     {
         protected override int Value => 10;
         internal override string StringRepresentation => "LOG";

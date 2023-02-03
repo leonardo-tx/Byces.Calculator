@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SpecialNumbers
 {
-    internal sealed class PiType : SpecialNumberType
+    internal sealed class Pi : SpecialNumberType
     {
         internal override string StringRepresentation => "PI";
         internal override char CharRepresentation => 'π';

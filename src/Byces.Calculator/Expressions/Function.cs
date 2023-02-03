@@ -2,12 +2,12 @@
 
 namespace Byces.Calculator.Expressions
 {
-    internal readonly struct SelfOperation
+    internal readonly struct Function
     {
-        internal SelfOperation(int numberIndex, int selfOperation, int priority)
+        internal Function(int numberIndex, int function, int priority)
         {
             NumberIndex = numberIndex;
-            Value = selfOperation;
+            Value = function;
             Priority = priority;
         }
 
@@ -17,6 +17,6 @@ namespace Byces.Calculator.Expressions
 
         internal int Priority { get; }
 
-        internal double Operate(double number) => SelfOperationType.GetSelfOperation(Value).Operate(number);
+        internal double Operate(double number) => FunctionType.GetSelfOperation(Value).Operate(number);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Byces.Calculator.Enums.SelfOperations
 {
-    internal sealed class Sine : SelfOperationType
+    internal sealed class Sine : FunctionType
     {
         protected override int Value => 4;
         internal override int AdditionalCheck => 1;

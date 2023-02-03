@@ -6,8 +6,8 @@ namespace Byces.Calculator.Enums
 {
     internal abstract class SpecialNumberType
     {
-        public static readonly SpecialNumberType Pi = new PiType();
-        public static readonly SpecialNumberType Euler = new EulerType();
+        public static readonly SpecialNumberType Pi = new Pi();
+        public static readonly SpecialNumberType Euler = new Euler();
 
         static SpecialNumberType()
         {
@@ -44,10 +44,9 @@ namespace Byces.Calculator.Enums
 
         internal static bool TryParse(ReadOnlySpan<char> span, out double number)
         {
-            number = 0;
             ReadOnlySpan<char> validSourceSpan = GetValidSourceSpan(span, out bool isNegative);
 
-            if (validSourceSpan.Length == 0) return false;
+            if (validSourceSpan.Length == 0) { number = default; return false; }
             if (validSourceSpan.Length == 1)
             {
                 bool parseResult = TryParse(validSourceSpan[0], out number);
@@ -64,13 +63,12 @@ namespace Byces.Calculator.Enums
                 if (isNegative) number *= -1;
                 return true;
             }
-            return false;
+            number = default; return false;
         }
 
         internal static bool TryParse(char character, out double number)
         {
-            number = 0;
-            if (character == '\0') return false;
+            if (character == '\0') { number = default; return false; }
 
             ReadOnlySpan<SpecialNumberType> reference = _allSpecialNumbers.Span;
             for (int i = 0; i < reference.Length; i++)
@@ -78,7 +76,7 @@ namespace Byces.Calculator.Enums
                 if (character != reference[i].CharRepresentation) continue;
                 number = reference[i].GetNumber(); return true;
             }
-            return false;
+            number = default; return false;
         }
 
         private static ReadOnlySpan<char> GetValidSourceSpan(ReadOnlySpan<char> span, out bool isNegative)
