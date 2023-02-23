@@ -6,12 +6,10 @@ namespace Byces.Calculator.Expressions
 {
     internal ref struct ContentBuilder
     {
-        internal ContentBuilder(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
+        internal ContentBuilder(ReadOnlySpan<char> expressionSpan)
         {
-            HasSpecialNumber = builderInfo.HasSpecialNumber;
-            HasFunction = builderInfo.HasFunction;
             ExpressionSpan = expressionSpan;
-            AtNumber = false;
+            AfterNumber = false;
             FirstIndex = 0;
             LastIndex = 0;
             Priority = 0;
@@ -28,11 +26,7 @@ namespace Byces.Calculator.Expressions
 
         private int Priority { get; set; }
 
-        private bool AtNumber { get; set; }
-
-        private bool HasSpecialNumber { get; }
-
-        private bool HasFunction { get; }
+        private bool AfterNumber { get; set; }
 
         private int AddedNumbers { get; set; }
 
@@ -53,18 +47,24 @@ namespace Byces.Calculator.Expressions
         private void Reset()
         {
             FirstIndex = LastIndex;
-            AtNumber = false;
+            AfterNumber = false;
             CurrentNumber = null;
         }
 
-        internal void Build(Content content)
+        internal void Build(Content content, BuilderInfo builderInfo)
         {
             for (; LastIndex < ExpressionSpan.Length; LastIndex++, FirstIndex++)
             {
-                if (FindParentheses()) continue;
-                if (!AtNumber && (FindNumber() || FindSpecialNumber())) { AtNumber = true; continue; }
-                if (AtNumber && FindOperation(content)) continue;
-                if (HasFunction && FindFunction(content)) { FirstIndex = LastIndex; continue; }
+                if (builderInfo.HasPriority && FindParentheses()) continue;
+                if (!AfterNumber)
+                {
+                    if (FindNumber() || (builderInfo.HasSpecialNumber && FindSpecialNumber())) { AfterNumber = true; continue; }
+                    if (builderInfo.HasFunction && FindFunction(content)) { FirstIndex = LastIndex; continue; }
+                }
+                else
+                {
+                    if (FindOperation(content)) { Reset(); continue; }
+                }
                 FirstIndex--;
             }
             AddNumber(content);
@@ -113,7 +113,7 @@ namespace Byces.Calculator.Expressions
 
         private bool FindSpecialNumber()
         {
-            if (!HasSpecialNumber || !SpecialNumberType.TryParse(CurrentSpan, out double number)) return false;
+            if (LastIndex == ExpressionSpan.Length || !SpecialNumberType.TryParse(CurrentSpan, out double number)) return false;
 
             CurrentNumber = number;
             FirstIndex = LastIndex;
@@ -121,34 +121,9 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
-        private bool FindOperation(Content content)
-        {
-            if (OperationType.TryParse(CurrentSpan, out var operationType))
-            {
-                AddNumber(content);
-                AddOperation(content, operationType);
-                Reset();
-
-                return true;
-            }
-            return false;
-        }
-
-        private void AddNumber(Content content)
-        {
-            if (CurrentNumber == null) throw new IncompleteExpressionException();
-            content.Numbers[AddedNumbers++] = CurrentNumber.Value;
-        }
-
-        private void AddOperation(Content content, OperationType operationType)
-        {
-            Operation operation = new Operation(operationType, Priority);
-            content.Operations[AddedOperations++] = operation;
-        }
-
         private bool FindFunction(Content content)
         {
-            if (AtNumber || !FunctionType.TryParse(CurrentSpan, out FunctionType functionType)) return false;
+            if (LastIndex == ExpressionSpan.Length || !FunctionType.TryParse(CurrentSpan, out FunctionType functionType)) return false;
             if (functionType.AdditionalCheck > 0 && !IsLastIndex() && char.IsLetter(NextChar))
             {
                 for (int i = 1; i <= functionType.AdditionalCheck; i++)
@@ -168,6 +143,29 @@ namespace Byces.Calculator.Expressions
         {
             Function function = new Function(AddedNumbers, functionType, Priority);
             content.Functions[AddedFunctions++] = function;
+        }
+
+        private bool FindOperation(Content content)
+        {
+            if (OperationType.TryParse(CurrentSpan, out var operationType))
+            {
+                AddNumber(content);
+                AddOperation(content, operationType);
+                return true;
+            }
+            return false;
+        }
+
+        private void AddNumber(Content content)
+        {
+            if (CurrentNumber == null) throw new IncompleteExpressionException();
+            content.Numbers[AddedNumbers++] = CurrentNumber.Value;
+        }
+
+        private void AddOperation(Content content, OperationType operationType)
+        {
+            Operation operation = new Operation(operationType, Priority);
+            content.Operations[AddedOperations++] = operation;
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class TangentHyperbolic : FunctionType
     {
         protected override int Value => 8;
-        internal override string StringRepresentation => "TANH";
-        internal override char CharRepresentation => default;
+        protected override string StringRepresentation => "TANH";
+        protected override char CharRepresentation => default;
 
         internal override double Operate(double number) => Math.Tanh(number);
     }

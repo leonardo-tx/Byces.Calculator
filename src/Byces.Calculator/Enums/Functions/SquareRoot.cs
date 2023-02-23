@@ -1,13 +1,13 @@
 ﻿using Byces.Calculator.Exceptions;
 using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class SquareRoot : FunctionType
     {
         protected override int Value => 1;
-        internal override string StringRepresentation => "SQRT";
-        internal override char CharRepresentation => '√';
+        protected override string StringRepresentation => "SQRT";
+        protected override char CharRepresentation => '√';
 
         internal override double Operate(double number)
         {

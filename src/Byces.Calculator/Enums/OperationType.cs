@@ -7,6 +7,7 @@ namespace Byces.Calculator.Enums
     internal abstract class OperationType
     {
         public static implicit operator int(OperationType operationType) => operationType.Value;
+        public static explicit operator OperationType(int value) => GetOperation(value);
 
         public static readonly OperationType Add = new Add();
         public static readonly OperationType Subtract = new Subtract();
@@ -23,29 +24,23 @@ namespace Byces.Calculator.Enums
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
 
             OperationType[] allOperations = new OperationType[fields.Length];
-            char[] allCharRepresentations = new char[fields.Length];
-
             for (int i = 0; i < fields.Length; i++)
             {
                 var operationType = (OperationType)fields[i].GetValue(null)!;
                 if (allOperations[operationType.Value] != null) throw new Exception("There are fields with duplicate int values");
 
                 allOperations[operationType.Value] = operationType;
-                allCharRepresentations[operationType.Value] = operationType.CharRepresentation;
             }
-            _allCharRepresentations = allCharRepresentations;
-            _allOperations = allOperations;
+            _items = allOperations;
         }
 
-        private static readonly ReadOnlyMemory<char> _allCharRepresentations;
-
-        private static readonly ReadOnlyMemory<OperationType> _allOperations;
+        private static readonly OperationType[] _items;
 
         protected abstract int Value { get; }
 
-        internal abstract string StringRepresentation { get; }
+        protected abstract string StringRepresentation { get; }
 
-        internal abstract char CharRepresentation { get; }
+        protected abstract char CharRepresentation { get; }
 
         internal abstract OperationPriorityType Priority { get; }
 
@@ -55,28 +50,28 @@ namespace Byces.Calculator.Enums
         {
             if (span.Length == 1) return TryParse(span[0], out operationType);
 
-            ReadOnlySpan<OperationType> reference = _allOperations.Span;
+            ReadOnlySpan<OperationType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (!span.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
                 operationType = reference[i]; return true;
             }
-            operationType = Add; return false;
+            operationType = default!; return false;
         }
 
         internal static bool TryParse(char character, out OperationType operationType)
         {
-            if (character == '\0') { operationType = Add; return false; }
+            if (character == '\0') { operationType = default!; return false; }
 
-            ReadOnlySpan<char> reference = _allCharRepresentations.Span;
+            ReadOnlySpan<OperationType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
-                if (character != reference[i]) continue;
-                operationType = _allOperations.Span[i]; return true;
+                if (character != reference[i].CharRepresentation) continue;
+                operationType = reference[i]; return true;
             }
-            operationType = Add; return false;
+            operationType = default!; return false;
         }
 
-        internal static OperationType GetOperation(int value) => _allOperations.Span[value];
+        internal static OperationType GetOperation(int value) => _items[value];
     }
 }

@@ -6,8 +6,8 @@ namespace Byces.Calculator.Enums.Operations
     internal sealed class Root : OperationType
     {
         protected override int Value => 6;
-        internal override string StringRepresentation => "RT";
-        internal override char CharRepresentation => '√';
+        protected override string StringRepresentation => "RT";
+        protected override char CharRepresentation => '√';
         internal override OperationPriorityType Priority => OperationPriorityType.First;
 
         internal override double Operate(double firstNumber, double secondNumber)

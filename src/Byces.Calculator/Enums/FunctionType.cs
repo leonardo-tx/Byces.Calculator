@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Reflection;
-using Byces.Calculator.Enums.SelfOperations;
+using Byces.Calculator.Enums.Functions;
 
 namespace Byces.Calculator.Enums
 {
     internal abstract class FunctionType
     {
         public static implicit operator int(FunctionType functionType) => functionType.Value;
+        public static explicit operator FunctionType(int value) => GetFunction(value);
 
         public static readonly FunctionType Factorial = new Factorial();
         public static readonly FunctionType SquareRoot = new SquareRoot();
@@ -26,7 +27,6 @@ namespace Byces.Calculator.Enums
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
             
             FunctionType[] allFunctions = new FunctionType[fields.Length];
-
             for (int i = 0; i < fields.Length; i++)
             {
                 var functionType = (FunctionType)fields[i].GetValue(null)!;
@@ -34,18 +34,18 @@ namespace Byces.Calculator.Enums
 
                 allFunctions[functionType.Value] = functionType;
             }
-            _allFunctions = allFunctions;
+            _items = allFunctions;
         }
 
-        private static readonly ReadOnlyMemory<FunctionType> _allFunctions;
+        private static readonly FunctionType[] _items;
 
         protected abstract int Value { get; }
 
+        protected abstract string StringRepresentation { get; }
+
+        protected abstract char CharRepresentation { get; }
+
         internal virtual int AdditionalCheck => 0;
-
-        internal abstract string StringRepresentation { get; }
-
-        internal abstract char CharRepresentation { get; }
 
         internal abstract double Operate(double number);
 
@@ -53,28 +53,28 @@ namespace Byces.Calculator.Enums
         {
             if (span.Length == 1) return TryParse(span[0], out functionType);
 
-            ReadOnlySpan<FunctionType> reference = _allFunctions.Span;
+            ReadOnlySpan<FunctionType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (!span.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
                 functionType = reference[i]; return true;
             }
-            functionType = Factorial; return false;
+            functionType = default!; return false;
         }
 
-        internal static bool TryParse(char character, out FunctionType operationType)
+        internal static bool TryParse(char character, out FunctionType functionType)
         {
-            if (character == '\0') { operationType = Factorial; return false; }
+            if (character == '\0') { functionType = default!; return false; }
 
-            ReadOnlySpan<FunctionType> reference = _allFunctions.Span;
+            ReadOnlySpan<FunctionType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (character != reference[i].CharRepresentation) continue;
-                operationType = reference[i]; return true;
+                functionType = reference[i]; return true;
             }
-            operationType = Factorial; return false;
+            functionType = default!; return false;
         }
 
-        internal static FunctionType GetSelfOperation(int value) => _allFunctions.Span[value];
+        internal static FunctionType GetFunction(int value) => _items[value];
     }
 }

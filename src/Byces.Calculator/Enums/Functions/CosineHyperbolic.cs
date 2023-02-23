@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class CosineHyperbolic : FunctionType
     {
         protected override int Value => 6;
-        internal override string StringRepresentation => "COSH";
-        internal override char CharRepresentation => default;
+        protected override string StringRepresentation => "COSH";
+        protected override char CharRepresentation => default;
 
         internal override double Operate(double number) => Math.Cosh(number);
     }

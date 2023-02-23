@@ -5,8 +5,8 @@ namespace Byces.Calculator.Enums.Operations
     internal sealed class Power : OperationType
     {
         protected override int Value => 5;
-        internal override string StringRepresentation => "POW";
-        internal override char CharRepresentation => '^';
+        protected override string StringRepresentation => "POW";
+        protected override char CharRepresentation => '^';
         internal override OperationPriorityType Priority => OperationPriorityType.First;
 
         internal override double Operate(double firstNumber, double secondNumber) => Math.Pow(firstNumber, secondNumber);

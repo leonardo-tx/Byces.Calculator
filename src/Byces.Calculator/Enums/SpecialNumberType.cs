@@ -19,42 +19,27 @@ namespace Byces.Calculator.Enums
             {
                 specialNumbers[i] = (SpecialNumberType)fields[i].GetValue(null)!;
             }
-            _allSpecialNumbers = specialNumbers;
+            _items = specialNumbers;
         }
 
-        private static readonly ReadOnlyMemory<SpecialNumberType> _allSpecialNumbers;
+        private static readonly SpecialNumberType[] _items;
 
-        internal abstract string StringRepresentation { get; }
+        protected abstract string StringRepresentation { get; }
 
-        internal abstract char CharRepresentation { get; }
+        protected abstract char CharRepresentation { get; }
 
-        internal abstract double GetNumber();
-        
-        internal static double Parse(ReadOnlySpan<char> span)
-        {
-            if (TryParse(span, out double number)) return number;
-            throw new ArgumentException("Could not parse the given number");
-        }
-
-        internal static double Parse(char character)
-        {
-            if (TryParse(character, out double number)) return number;
-            throw new ArgumentException("Could not parse the given number");
-        }
+        protected abstract double GetNumber();
 
         internal static bool TryParse(ReadOnlySpan<char> span, out double number)
         {
             ReadOnlySpan<char> validSourceSpan = GetValidSourceSpan(span, out bool isNegative);
-
-            if (validSourceSpan.Length == 0) { number = default; return false; }
             if (validSourceSpan.Length == 1)
             {
                 bool parseResult = TryParse(validSourceSpan[0], out number);
                 if (isNegative) number *= -1;
                 return parseResult;
             }
-            ReadOnlySpan<SpecialNumberType> reference = _allSpecialNumbers.Span;
-
+            ReadOnlySpan<SpecialNumberType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (!validSourceSpan.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
@@ -70,7 +55,7 @@ namespace Byces.Calculator.Enums
         {
             if (character == '\0') { number = default; return false; }
 
-            ReadOnlySpan<SpecialNumberType> reference = _allSpecialNumbers.Span;
+            ReadOnlySpan<SpecialNumberType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
             {
                 if (character != reference[i].CharRepresentation) continue;
@@ -81,17 +66,16 @@ namespace Byces.Calculator.Enums
 
         private static ReadOnlySpan<char> GetValidSourceSpan(ReadOnlySpan<char> span, out bool isNegative)
         {
-            isNegative = false;
-            if (span.Length == 0) return span;
-
             switch (span[0])
             {
                 case '+':
+                    isNegative = false;
                     return span[1..];
                 case '-':
                     isNegative = true;
                     return span[1..];
                 default:
+                    isNegative = false;
                     return span;
             };
         }

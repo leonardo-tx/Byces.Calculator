@@ -3,8 +3,8 @@
     internal sealed class Modulus : OperationType
     {
         protected override int Value => 4;
-        internal override string StringRepresentation => "MOD";
-        internal override char CharRepresentation => '%';
+        protected override string StringRepresentation => "MOD";
+        protected override char CharRepresentation => '%';
         internal override OperationPriorityType Priority => OperationPriorityType.Second;
 
         internal override double Operate(double firstNumber, double secondNumber)

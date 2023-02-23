@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class CubeRoot : FunctionType
     {
         protected override int Value => 2;
-        internal override string StringRepresentation => "CBRT";
-        internal override char CharRepresentation => default;
+        protected override string StringRepresentation => "CBRT";
+        protected override char CharRepresentation => default;
 
         internal override double Operate(double number) => Math.Cbrt(number);
     }

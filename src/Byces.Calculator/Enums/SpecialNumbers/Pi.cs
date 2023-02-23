@@ -4,9 +4,9 @@ namespace Byces.Calculator.Enums.SpecialNumbers
 {
     internal sealed class Pi : SpecialNumberType
     {
-        internal override string StringRepresentation => "PI";
-        internal override char CharRepresentation => 'π';
+        protected override string StringRepresentation => "PI";
+        protected override char CharRepresentation => 'π';
 
-        internal override double GetNumber() => Math.PI;
+        protected override double GetNumber() => Math.PI;
     }
 }

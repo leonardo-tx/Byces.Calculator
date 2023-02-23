@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Cosine : FunctionType
     {
         protected override int Value => 3;
+        protected override string StringRepresentation => "COS";
+        protected override char CharRepresentation => default;
         internal override int AdditionalCheck => 1;
-        internal override string StringRepresentation => "COS";
-        internal override char CharRepresentation => default;
 
         internal override double Operate(double number)
         {

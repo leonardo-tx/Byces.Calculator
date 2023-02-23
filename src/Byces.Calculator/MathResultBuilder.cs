@@ -81,15 +81,15 @@ namespace Byces.Calculator
 
         private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
         {
-            BuilderInfo builderInfo = new BuilderInfo(expressionSpan);
+            var builderInfo = BuilderInfo.GetInfo(expressionSpan);
             if (builderInfo.UnclosedParentheses < 0) throw new MisplacedParenthesesExpressionException();
             if (builderInfo.UnclosedParentheses > 0) throw new MissingParenthesesExpressionException();
 
-            Span<Operation?> operations = (builderInfo.OperationCount < StackLimit) ? stackalloc Operation?[builderInfo.OperationCount] : new Operation?[builderInfo.OperationCount];
-            Span<double?> numbers = (builderInfo.OperationCount + 1 < StackLimit) ? stackalloc double?[builderInfo.OperationCount + 1] : new double?[builderInfo.OperationCount + 1];
-            Span<Function?> selfOperations = (builderInfo.FunctionCount < StackLimit) ? stackalloc Function?[builderInfo.FunctionCount] : new Function?[builderInfo.FunctionCount];
+            Span<Operation?> operations = builderInfo.OperationCount < StackLimit ? stackalloc Operation?[builderInfo.OperationCount] : new Operation?[builderInfo.OperationCount];
+            Span<double?> numbers = builderInfo.OperationCount + 1 < StackLimit ? stackalloc double?[builderInfo.OperationCount + 1] : new double?[builderInfo.OperationCount + 1];
+            Span<Function?> functions = builderInfo.FunctionCount < StackLimit ? stackalloc Function?[builderInfo.FunctionCount] : new Function?[builderInfo.FunctionCount];
 
-            var content = new Content(numbers, operations, selfOperations);
+            var content = new Content(numbers, operations, functions);
 
             content.Build(expressionSpan, builderInfo);
             content.Process();

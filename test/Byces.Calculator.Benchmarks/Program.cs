@@ -1,4 +1,13 @@
 ﻿using BenchmarkDotNet.Running;
 using Byces.Calculator.Benchmarks.Benchmarks;
 
-BenchmarkRunner.Run<CalculatorBenchmark>();
+namespace Byces.Calculator.Benchmarks
+{
+    public class Program
+    {
+        public static void Main()
+        {
+            BenchmarkRunner.Run<CalculatorBenchmark>();
+        }
+    }
+}

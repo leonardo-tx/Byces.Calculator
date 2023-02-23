@@ -1,13 +1,13 @@
 ﻿using Byces.Calculator.Exceptions;
 using System;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Logarithm : FunctionType
     {
         protected override int Value => 10;
-        internal override string StringRepresentation => "LOG";
-        internal override char CharRepresentation => default;
+        protected override string StringRepresentation => "LOG";
+        protected override char CharRepresentation => default;
 
         internal override double Operate(double number)
         {

@@ -21,8 +21,8 @@ namespace Byces.Calculator.Expressions
 
         internal void Build(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
         {
-            var contentBuilder = new ContentBuilder(expressionSpan, builderInfo);
-            contentBuilder.Build(this);
+            var contentBuilder = new ContentBuilder(expressionSpan);
+            contentBuilder.Build(this, builderInfo);
         }
 
         internal void Process()
@@ -41,7 +41,7 @@ namespace Byces.Calculator.Expressions
 
             for (int i = 0, firstIndex = -1; i < Operations.Length; i++)
             {
-                if (Operations[i] == null) continue;
+                if (!Operations[i].HasValue) continue;
                 if (Operations[i]!.Value.Priority != priority) continue;
                 if (firstIndex == -1) firstIndex = i;
 
@@ -67,7 +67,7 @@ namespace Byces.Calculator.Expressions
         {
             for (int i = Functions.Length - 1; i >= 0; i--)
             {
-                if (Functions[i] == null) continue;
+                if (!Functions[i].HasValue) continue;
                 if (Functions[i]!.Value.Priority < minPriority) continue;
 
                 int maxPriority = Functions.MaxPriority();
@@ -92,13 +92,13 @@ namespace Byces.Calculator.Expressions
             CalculateOperations(OperationPriorityType.Third, firstIndex, count);
         }
 
-        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex = null, int? count = null)
+        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex, int? count)
         {
             for (int i = firstIndex ?? 0; i < (count ?? Operations.Length); i++)
             {
-                if (Operations[i] == null) continue;
+                if (!Operations[i].HasValue) continue;
 
-                OperationType operationType = OperationType.GetOperation(Operations[i]!.Value.Value);
+                OperationType operationType = (OperationType)Operations[i]!.Value.Value;
                 if (operationPriority != operationType.Priority) continue;
 
                 int firstNumberIndex = GetFirstNumberIndex(i), secondNumberIndex = GetSecondNumberIndex(i);
@@ -117,7 +117,7 @@ namespace Byces.Calculator.Expressions
         {
             for (int i = operationIndex; i >= 0; i--)
             {
-                if (Numbers[i] == null) continue;
+                if (!Numbers[i].HasValue) continue;
                 return i;
             }
             throw new IndexOutOfRangeException();
@@ -127,7 +127,7 @@ namespace Byces.Calculator.Expressions
         {
             for (int i = operationIndex + 1; i < Numbers.Length; i++)
             {
-                if (Numbers[i] == null) continue;
+                if (!Numbers[i].HasValue) continue;
                 return i;
             }
             throw new IndexOutOfRangeException();
@@ -137,7 +137,7 @@ namespace Byces.Calculator.Expressions
         {
             for (int i = 0; i < Functions.Length; i++)
             {
-                if (Functions[i] == null) continue;
+                if (!Functions[i].HasValue) continue;
                 if (Functions[i]!.Value.NumberIndex != oldIndex) continue;
                 
                 Functions[i] = new Function(newIndex, Functions[i]!.Value.Value, Functions[i]!.Value.Priority);

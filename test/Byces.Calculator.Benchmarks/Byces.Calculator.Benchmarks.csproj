@@ -2,17 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFrameworks>netcoreapp3.1;net6.0;net7.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Byces.Calculator\Byces.Calculator.csproj" />
+    <PackageReference Include="Byces.Calculator" Version="1.1.2" />
   </ItemGroup>
 
 </Project>

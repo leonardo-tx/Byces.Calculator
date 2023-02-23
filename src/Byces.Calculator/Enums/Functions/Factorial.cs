@@ -1,13 +1,13 @@
 ﻿using Byces.Calculator.Exceptions;
 using MathNet.Numerics;
 
-namespace Byces.Calculator.Enums.SelfOperations
+namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Factorial : FunctionType
     {
         protected override int Value => 0;
-        internal override string StringRepresentation => "FACT";
-        internal override char CharRepresentation => default;
+        protected override string StringRepresentation => "FACT";
+        protected override char CharRepresentation => default;
 
         internal override double Operate(double number)
         {
