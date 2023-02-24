@@ -1,28 +1,36 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Extensions;
 using System;
+using System.Collections.Generic;
 
 namespace Byces.Calculator.Expressions
 {
-    internal readonly ref struct Content
+    internal sealed class Content
     {
-        internal Content(Span<double?> numbers, Span<Operation?> operations, Span<Function?> functions)
+        public Content()
         {
-            Numbers = numbers;
-            Operations = operations;
-            Functions = functions;
+            Numbers = new List<double>();
+            Operations = new List<Operation>();
+            Functions = new List<Function>();
         }
 
-        internal Span<double?> Numbers { get; }
+        internal List<double> Numbers { get; }
 
-        internal Span<Operation?> Operations { get; }
+        internal List<Operation> Operations { get; }
 
-        internal Span<Function?> Functions { get; }
+        internal List<Function> Functions { get; }
 
-        internal void Build(ReadOnlySpan<char> expressionSpan, BuilderInfo builderInfo)
+        internal void Build(ReadOnlySpan<char> expressionSpan)
         {
             var contentBuilder = new ContentBuilder(expressionSpan);
-            contentBuilder.Build(this, builderInfo);
+            contentBuilder.Build(this);
+        }
+
+        internal void Clear()
+        {
+            Numbers.Clear();
+            Operations.Clear();
+            Functions.Clear();
         }
 
         internal void Process()
@@ -34,18 +42,17 @@ namespace Byces.Calculator.Expressions
 
         private void CalculatePriorities()
         {
-            if (Operations.Length == 0) return;
+            if (Operations.Count == 0) return;
 
             int priority = Operations.MaxPriority();
             if (priority == 0) return;
 
-            for (int i = 0, firstIndex = -1; i < Operations.Length; i++)
+            for (int i = 0, firstIndex = -1; i < Operations.Count; i++)
             {
-                if (!Operations[i].HasValue) continue;
-                if (Operations[i]!.Value.Priority != priority) continue;
+                if (Operations[i].Priority != priority) continue;
                 if (firstIndex == -1) firstIndex = i;
 
-                if (i + 1 != Operations.Length && Operations[i]!.Value.Priority == ((Operations[i + 1] != null) ? Operations[i + 1]!.Value.Priority : -1)) continue;
+                if (i + 1 != Operations.Count && Operations[i].Priority == Operations[i + 1].Priority) continue;
                 int lastIndex = i;
 
                 CalculateFunctions(priority);
@@ -53,22 +60,21 @@ namespace Byces.Calculator.Expressions
 
                 firstIndex = -1;
 
-                if (Operations.Length == 0) return;
+                if (Operations.Count == 0) return;
                 int newPriority = Operations.MaxPriority();
 
                 if (newPriority == priority) continue;
                 if (newPriority == 0) return;
-                
+
                 priority = newPriority; i = -1; continue;
             }
         }
 
         private void CalculateFunctions(int minPriority)
         {
-            for (int i = Functions.Length - 1; i >= 0; i--)
+            for (int i = Functions.Count - 1; i >= 0; i--)
             {
-                if (!Functions[i].HasValue) continue;
-                if (Functions[i]!.Value.Priority < minPriority) continue;
+                if (Functions[i].Priority < minPriority) continue;
 
                 int maxPriority = Functions.MaxPriority();
                 while (maxPriority > minPriority)
@@ -76,71 +82,47 @@ namespace Byces.Calculator.Expressions
                     CalculateFunctions(maxPriority);
                     maxPriority = Functions.MaxPriority();
                 }
-                if (Functions[i] == null) continue;
-                int numberIndex = Functions[i]!.Value.NumberIndex;
-                double result = Functions[i]!.Value.Operate(Numbers[numberIndex]!.Value);
+                while (i >= Functions.Count) i--;
 
-                Functions[i] = null;
+                int numberIndex = Functions[i].NumberIndex;
+                double result = Functions[i].Operate(Numbers[numberIndex]);
+
+                Functions.RemoveAt(i);
                 Numbers[numberIndex] = result;
             }
         }
 
         private void CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
         {
-            CalculateOperations(OperationPriorityType.First, firstIndex, count);
-            CalculateOperations(OperationPriorityType.Second, firstIndex, count);
-            CalculateOperations(OperationPriorityType.Third, firstIndex, count);
+            CalculateOperations(OperationPriorityType.First, firstIndex, ref count);
+            CalculateOperations(OperationPriorityType.Second, firstIndex, ref count);
+            CalculateOperations(OperationPriorityType.Third, firstIndex, ref count);
         }
 
-        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex, int? count)
+        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex, ref int? count)
         {
-            for (int i = firstIndex ?? 0; i < (count ?? Operations.Length); i++)
+            for (int i = firstIndex ?? 0; i < (count ?? Operations.Count); i++)
             {
-                if (!Operations[i].HasValue) continue;
-
-                OperationType operationType = (OperationType)Operations[i]!.Value.Value;
+                OperationType operationType = (OperationType)Operations[i].Value;
                 if (operationPriority != operationType.Priority) continue;
 
-                int firstNumberIndex = GetFirstNumberIndex(i), secondNumberIndex = GetSecondNumberIndex(i);
-                double result = operationType.Operate(Numbers[firstNumberIndex]!.Value, Numbers[secondNumberIndex]!.Value);
+                double result = operationType.Operate(Numbers[i], Numbers[i + 1]);
 
-                Operations[i] = null;
-                Numbers[secondNumberIndex] = null;
-                Numbers[firstNumberIndex] = result;
+                Numbers[i] = result;
+                Operations.RemoveAt(i);
+                Numbers.RemoveAt(i + 1);
 
-                SetFunctionToIndex(secondNumberIndex, firstNumberIndex);
-                count--;
+                SetFunctionToIndex(i + 1, i);
+                count--; i--;
             }
-        }
-
-        private int GetFirstNumberIndex(int operationIndex)
-        {
-            for (int i = operationIndex; i >= 0; i--)
-            {
-                if (!Numbers[i].HasValue) continue;
-                return i;
-            }
-            throw new IndexOutOfRangeException();
-        }
-
-        private int GetSecondNumberIndex(int operationIndex)
-        {
-            for (int i = operationIndex + 1; i < Numbers.Length; i++)
-            {
-                if (!Numbers[i].HasValue) continue;
-                return i;
-            }
-            throw new IndexOutOfRangeException();
         }
 
         private void SetFunctionToIndex(int oldIndex, int newIndex)
         {
-            for (int i = 0; i < Functions.Length; i++)
+            for (int i = 0; i < Functions.Count; i++)
             {
-                if (!Functions[i].HasValue) continue;
-                if (Functions[i]!.Value.NumberIndex != oldIndex) continue;
-                
-                Functions[i] = new Function(newIndex, Functions[i]!.Value.Value, Functions[i]!.Value.Priority);
+                if (Functions[i].NumberIndex != oldIndex) continue;
+                Functions[i] = new Function(newIndex, Functions[i].Value, Functions[i].Priority);
             }
         }
     }

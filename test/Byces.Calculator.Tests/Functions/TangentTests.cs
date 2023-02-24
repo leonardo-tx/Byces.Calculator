@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Byces.Calculator.Tests.SelfOperationss
+namespace Byces.Calculator.Tests.Functions
 {
     [TestClass]
     public class TangentTests

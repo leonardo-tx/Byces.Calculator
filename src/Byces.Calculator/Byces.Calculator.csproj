@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.3" />
   </ItemGroup>
 
   <ItemGroup>

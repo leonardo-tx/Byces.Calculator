@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Byces.Calculator.Tests.SelfOperationss
+namespace Byces.Calculator.Tests.Functions
 {
     [TestClass]
     public class FactorialTests

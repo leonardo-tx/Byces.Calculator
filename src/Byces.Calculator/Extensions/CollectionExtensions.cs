@@ -1,9 +1,11 @@
 ﻿using Byces.Calculator.Expressions;
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Extensions
 {
-    internal static class SpanExtensions
+    internal static class CollectionExtensions
     {
         internal static int Count(this ReadOnlySpan<char> source, ReadOnlySpan<char> characters)
         {
@@ -38,35 +40,39 @@ namespace Byces.Calculator.Extensions
             return count;
         }
 
-        /// <summary>
-        /// Returns the maximum priority of an <see cref="Operation"/> span.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns>The maximum priority in the sequence, or -1 if source is empty.</returns>
-        internal static int MaxPriority(this Span<Operation?> source)
+        internal static int MaxPriority(this List<Operation> source)
         {
             int max = -1;
-            for (int i = 0; i < source.Length; i++)
+#if NET5_0_OR_GREATER
+            ReadOnlySpan<Operation> span = CollectionsMarshal.AsSpan(source);
+            for (int i = 0; i < span.Length; i++)
             {
-                if (source[i] == null) continue;
-                if (source[i]!.Value.Priority > max) max = source[i]!.Value.Priority;
+                if (span[i].Priority > max) max = span[i].Priority;
             }
+#else
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (source[i].Priority > max) max = source[i].Priority;
+            }
+#endif
             return max;
         }
 
-        /// <summary>
-        /// Returns the maximum priority of a <see cref="Function"/> span.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns>The maximum priority in the sequence, or -1 if source is empty.</returns>
-        internal static int MaxPriority(this Span<Function?> source)
+        internal static int MaxPriority(this List<Function> source)
         {
             int max = -1;
-            for (int i = 0; i < source.Length; i++)
+#if NET5_0_OR_GREATER
+            ReadOnlySpan<Function> span = CollectionsMarshal.AsSpan(source);
+            for (int i = 0; i < span.Length; i++)
             {
-                if (source[i] == null) continue;
-                if (source[i]!.Value.Priority > max) max = source[i]!.Value.Priority;
+                if (span[i].Priority > max) max = span[i].Priority;
             }
+#else
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (source[i].Priority > max) max = source[i].Priority;
+            }
+#endif
             return max;
         }
     }

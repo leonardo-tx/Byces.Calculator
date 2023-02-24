@@ -13,11 +13,9 @@ namespace Byces.Calculator.Expressions
             FirstIndex = 0;
             LastIndex = 0;
             Priority = 0;
-            AddedNumbers = 0;
-            AddedOperations = 0;
-            AddedFunctions = 0;
             CurrentNumber = null;
         }
+
         private ReadOnlySpan<char> ExpressionSpan { get; }
 
         private int FirstIndex { get; set; }
@@ -27,12 +25,6 @@ namespace Byces.Calculator.Expressions
         private int Priority { get; set; }
 
         private bool AfterNumber { get; set; }
-
-        private int AddedNumbers { get; set; }
-
-        private int AddedOperations { get; set; }
-
-        private int AddedFunctions { get; set; }
 
         private double? CurrentNumber { get; set; }
 
@@ -51,15 +43,15 @@ namespace Byces.Calculator.Expressions
             CurrentNumber = null;
         }
 
-        internal void Build(Content content, BuilderInfo builderInfo)
+        internal void Build(Content content)
         {
             for (; LastIndex < ExpressionSpan.Length; LastIndex++, FirstIndex++)
             {
-                if (builderInfo.HasPriority && FindParentheses()) continue;
+                if (FindParentheses()) continue;
                 if (!AfterNumber)
                 {
-                    if (FindNumber() || (builderInfo.HasSpecialNumber && FindSpecialNumber())) { AfterNumber = true; continue; }
-                    if (builderInfo.HasFunction && FindFunction(content)) { FirstIndex = LastIndex; continue; }
+                    if (FindNumber() || FindSpecialNumber()) { AfterNumber = true; continue; }
+                    if (FindFunction(content)) { FirstIndex = LastIndex; continue; }
                 }
                 else
                 {
@@ -89,7 +81,7 @@ namespace Byces.Calculator.Expressions
         {
             if (LastIndex != FirstIndex) return false;
             bool hasSignal = CurrentChar == '+' || CurrentChar == '-';
-            
+
             if (hasSignal) LastIndex++;
             while (LastIndex < ExpressionSpan.Length && (char.IsDigit(CurrentChar) || CurrentChar == '.' || CurrentChar == ','))
             {
@@ -99,7 +91,7 @@ namespace Byces.Calculator.Expressions
                 {
                     if (IsLastIndex()) throw new UnknownNumberExpressionException();
                     if (NextChar != '+' && NextChar != '-') throw new UnknownNumberExpressionException();
-                    
+
                     LastIndex += 2;
                 }
             }
@@ -141,8 +133,8 @@ namespace Byces.Calculator.Expressions
 
         private void AddFunction(Content content, FunctionType functionType)
         {
-            Function function = new Function(AddedNumbers, functionType, Priority);
-            content.Functions[AddedFunctions++] = function;
+            Function function = new Function(content.Numbers.Count, functionType, Priority);
+            content.Functions.Add(function);
         }
 
         private bool FindOperation(Content content)
@@ -159,13 +151,13 @@ namespace Byces.Calculator.Expressions
         private void AddNumber(Content content)
         {
             if (CurrentNumber == null) throw new IncompleteExpressionException();
-            content.Numbers[AddedNumbers++] = CurrentNumber.Value;
+            content.Numbers.Add(CurrentNumber.Value);
         }
 
         private void AddOperation(Content content, OperationType operationType)
         {
             Operation operation = new Operation(operationType, Priority);
-            content.Operations[AddedOperations++] = operation;
+            content.Operations.Add(operation);
         }
     }
 }

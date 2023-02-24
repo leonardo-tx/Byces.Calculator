@@ -1,7 +1,7 @@
 ﻿using System;
-using Byces.Calculator.Exceptions;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Extensions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Byces.Calculator
 {
@@ -10,6 +10,8 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class MathResultBuilder
     {
+        private readonly static ObjectPool<Content> contentPool = ObjectPool.Create<Content>();
+
         private const int StackLimit = 1024;
 
         /// <summary>
@@ -51,10 +53,12 @@ namespace Byces.Calculator
         /// <returns>The built result.</returns>
         public static MathResult GetMathResult(string expression)
         {
-            if (string.IsNullOrWhiteSpace(expression)) return new MathResult(0, true);
+            ReadOnlySpan<char> expressionSpan = expression.AsSpan();
+            if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult(0, true);
+
             try
             {
-                return FormatExpression(expression);
+                return FormatExpression(expressionSpan);
             }
             catch (Exception ex)
             {
@@ -81,19 +85,18 @@ namespace Byces.Calculator
 
         private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
         {
-            var builderInfo = BuilderInfo.GetInfo(expressionSpan);
-            if (builderInfo.UnclosedParentheses < 0) throw new MisplacedParenthesesExpressionException();
-            if (builderInfo.UnclosedParentheses > 0) throw new MissingParenthesesExpressionException();
-
-            Span<Operation?> operations = builderInfo.OperationCount < StackLimit ? stackalloc Operation?[builderInfo.OperationCount] : new Operation?[builderInfo.OperationCount];
-            Span<double?> numbers = builderInfo.OperationCount + 1 < StackLimit ? stackalloc double?[builderInfo.OperationCount + 1] : new double?[builderInfo.OperationCount + 1];
-            Span<Function?> functions = builderInfo.FunctionCount < StackLimit ? stackalloc Function?[builderInfo.FunctionCount] : new Function?[builderInfo.FunctionCount];
-
-            var content = new Content(numbers, operations, functions);
-
-            content.Build(expressionSpan, builderInfo);
-            content.Process();
-            return new MathResult(content.Numbers[0]!.Value, true);
+            var content = contentPool.Get();
+            try
+            {
+                content.Build(expressionSpan);
+                content.Process();
+                return new MathResult(content.Numbers[0], true);
+            }
+            finally
+            {
+                content.Clear();
+                contentPool.Return(content);
+            }
         }
     }
 }
