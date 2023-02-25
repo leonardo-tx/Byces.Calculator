@@ -4,159 +4,133 @@ using System;
 
 namespace Byces.Calculator.Expressions
 {
-    internal ref struct ContentBuilder
+    internal static class ContentBuilder
     {
-        internal ContentBuilder(ReadOnlySpan<char> expressionSpan)
+        internal static void Build(Content content, ReadOnlySpan<char> expressionSpan)
         {
-            ExpressionSpan = expressionSpan;
-            AfterNumber = false;
-            FirstIndex = 0;
-            LastIndex = 0;
-            Priority = 0;
-            CurrentNumber = null;
-        }
-
-        private ReadOnlySpan<char> ExpressionSpan { get; }
-
-        private int FirstIndex { get; set; }
-
-        private int LastIndex { get; set; }
-
-        private int Priority { get; set; }
-
-        private bool AfterNumber { get; set; }
-
-        private double? CurrentNumber { get; set; }
-
-        private ReadOnlySpan<char> CurrentSpan => ExpressionSpan[FirstIndex..(LastIndex + 1)];
-
-        private char CurrentChar => ExpressionSpan[LastIndex];
-
-        private char NextChar => ExpressionSpan[LastIndex + 1];
-
-        private bool IsLastIndex() => LastIndex + 1 == ExpressionSpan.Length;
-
-        private void Reset()
-        {
-            FirstIndex = LastIndex;
-            AfterNumber = false;
-            CurrentNumber = null;
-        }
-
-        internal void Build(Content content)
-        {
-            for (; LastIndex < ExpressionSpan.Length; LastIndex++, FirstIndex++)
+            int priority = 0; double currentNumber = double.NaN; bool afterNumber = false;
+            for (int firstIndex = 0, lastIndex = 0; lastIndex < expressionSpan.Length; lastIndex++, firstIndex++)
             {
-                if (FindParentheses()) continue;
-                if (!AfterNumber)
+                if (FindParentheses(expressionSpan[lastIndex], ref priority)) continue;
+                if (!afterNumber)
                 {
-                    if (FindNumber() || FindSpecialNumber()) { AfterNumber = true; continue; }
-                    if (FindFunction(content)) { FirstIndex = LastIndex; continue; }
+                    if (FindNumber(expressionSpan, firstIndex, ref lastIndex, out currentNumber) || 
+                        FindSpecialNumber(expressionSpan, firstIndex, lastIndex, out currentNumber))
+                    {
+                        afterNumber = true; firstIndex = lastIndex;
+                        continue;
+                    }
+                    if (FindFunction(content, expressionSpan, priority, firstIndex, ref lastIndex)) { firstIndex = lastIndex; continue; }
                 }
                 else
                 {
-                    if (FindOperation(content)) { Reset(); continue; }
+                    if (FindOperation(content, expressionSpan[firstIndex..(lastIndex + 1)], currentNumber, priority))
+                    {
+                        firstIndex = lastIndex; afterNumber = false; currentNumber = double.NaN;
+                        continue;
+                    }
                 }
-                FirstIndex--;
+                firstIndex--;
             }
-            AddNumber(content);
+            if (priority > 0) throw new MissingParenthesesExpressionException();
+            AddNumber(content, currentNumber);
         }
 
-        private bool FindParentheses()
+        private static bool FindParentheses(char currentChar, ref int priority)
         {
-            if (CurrentChar == '(')
+            if (currentChar == '(')
             {
-                Priority++;
+                priority++;
                 return true;
             }
-            if (CurrentChar == ')')
+            if (currentChar == ')')
             {
-                Priority--;
+                if (--priority < 0) throw new MisplacedParenthesesExpressionException();
                 return true;
             }
             return false;
         }
 
-        private bool FindNumber()
+        private static bool FindNumber(ReadOnlySpan<char> expressionSpan, int firstIndex, ref int lastIndex, out double currentNumber)
         {
-            if (LastIndex != FirstIndex) return false;
-            bool hasSignal = CurrentChar == '+' || CurrentChar == '-';
+            if (lastIndex != firstIndex) { currentNumber = double.NaN; return false; }
+            bool hasSignal = expressionSpan[lastIndex] == '+' || expressionSpan[lastIndex] == '-';
 
-            if (hasSignal) LastIndex++;
-            while (LastIndex < ExpressionSpan.Length && (char.IsDigit(CurrentChar) || CurrentChar == '.' || CurrentChar == ','))
+            if (hasSignal) lastIndex++;
+            while (lastIndex < expressionSpan.Length && (char.IsDigit(expressionSpan[lastIndex]) || expressionSpan[lastIndex] == '.' || expressionSpan[lastIndex] == ','))
             {
-                LastIndex++;
-                if (LastIndex == ExpressionSpan.Length) break;
-                if (CurrentChar == 'E' || CurrentChar == 'e')
+                lastIndex++;
+                if (lastIndex == expressionSpan.Length) break;
+                if (expressionSpan[lastIndex] == 'E' || expressionSpan[lastIndex] == 'e')
                 {
-                    if (IsLastIndex()) throw new UnknownNumberExpressionException();
-                    if (NextChar != '+' && NextChar != '-') throw new UnknownNumberExpressionException();
+                    if (lastIndex + 2 >= expressionSpan.Length) throw new UnknownNumberExpressionException();
+                    if (expressionSpan[lastIndex + 1] != '+' && expressionSpan[lastIndex + 1] != '-') throw new UnknownNumberExpressionException();
+                    if (!char.IsDigit(expressionSpan[lastIndex + 2])) throw new UnknownNumberExpressionException();
 
-                    LastIndex += 2;
+                    lastIndex += 3;
                 }
             }
-            if (LastIndex == FirstIndex) return false;
-            if (LastIndex - FirstIndex == 1 && hasSignal) return false;
+            if (lastIndex == firstIndex) { currentNumber = double.NaN; return false; }
+            if (lastIndex - firstIndex == 1 && hasSignal) { currentNumber = double.NaN; return false; }
 
-            CurrentNumber = double.Parse(ExpressionSpan[FirstIndex..(--LastIndex + 1)]);
-            FirstIndex = LastIndex;
+            currentNumber = double.Parse(expressionSpan[firstIndex..(--lastIndex + 1)]);
             return true;
         }
 
-        private bool FindSpecialNumber()
+        private static bool FindSpecialNumber(ReadOnlySpan<char> expressionSpan, int firstIndex, int lastIndex, out double currentNumber)
         {
-            if (LastIndex == ExpressionSpan.Length || !SpecialNumberType.TryParse(CurrentSpan, out double number)) return false;
-
-            CurrentNumber = number;
-            FirstIndex = LastIndex;
-
+            if (lastIndex == expressionSpan.Length || !SpecialNumberType.TryParse(expressionSpan[firstIndex..(lastIndex + 1)], out currentNumber))
+            {
+                currentNumber = double.NaN;
+                return false;
+            }
             return true;
         }
 
-        private bool FindFunction(Content content)
+        private static bool FindFunction(Content content, ReadOnlySpan<char> expressionSpan, int priority, int firstIndex, ref int lastIndex)
         {
-            if (LastIndex == ExpressionSpan.Length || !FunctionType.TryParse(CurrentSpan, out FunctionType functionType)) return false;
-            if (functionType.AdditionalCheck > 0 && !IsLastIndex() && char.IsLetter(NextChar))
+            if (lastIndex == expressionSpan.Length || !FunctionType.TryParse(expressionSpan[firstIndex..(lastIndex + 1)], out FunctionType functionType)) return false;
+            if (functionType.AdditionalCheck > 0 && lastIndex + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[lastIndex + 1]))
             {
                 for (int i = 1; i <= functionType.AdditionalCheck; i++)
                 {
-                    if (!FunctionType.TryParse(ExpressionSpan[FirstIndex..(LastIndex + 1 + i)], out FunctionType functionType2)) continue;
+                    if (!FunctionType.TryParse(expressionSpan[firstIndex..(lastIndex + 1 + i)], out FunctionType functionType2)) continue;
 
-                    LastIndex += i;
-                    AddFunction(content, functionType2);
+                    lastIndex += i;
+                    AddFunction(content, functionType2, priority);
                     return true;
                 }
             }
-            AddFunction(content, functionType);
+            AddFunction(content, functionType, priority);
             return true;
         }
 
-        private void AddFunction(Content content, FunctionType functionType)
+        private static void AddFunction(Content content, FunctionType functionType, int priority)
         {
-            Function function = new Function(content.Numbers.Count, functionType, Priority);
+            Function function = new Function(content.Numbers.Count, functionType, priority);
             content.Functions.Add(function);
         }
 
-        private bool FindOperation(Content content)
+        private static bool FindOperation(Content content, ReadOnlySpan<char> currentSpan, double currentNumber, int priority)
         {
-            if (OperationType.TryParse(CurrentSpan, out var operationType))
+            if (OperationType.TryParse(currentSpan, out var operationType))
             {
-                AddNumber(content);
-                AddOperation(content, operationType);
+                AddNumber(content, currentNumber);
+                AddOperation(content, operationType, priority);
                 return true;
             }
             return false;
         }
 
-        private void AddNumber(Content content)
+        private static void AddNumber(Content content, double currentNumber)
         {
-            if (CurrentNumber == null) throw new IncompleteExpressionException();
-            content.Numbers.Add(CurrentNumber.Value);
+            if (double.IsNaN(currentNumber)) throw new IncompleteExpressionException();
+            content.Numbers.Add(currentNumber);
         }
 
-        private void AddOperation(Content content, OperationType operationType)
+        private static void AddOperation(Content content, OperationType operationType, int priority)
         {
-            Operation operation = new Operation(operationType, Priority);
+            Operation operation = new Operation(operationType, priority);
             content.Operations.Add(operation);
         }
     }

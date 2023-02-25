@@ -53,12 +53,9 @@ namespace Byces.Calculator
         /// <returns>The built result.</returns>
         public static MathResult GetMathResult(string expression)
         {
-            ReadOnlySpan<char> expressionSpan = expression.AsSpan();
-            if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult(0, true);
-
             try
             {
-                return FormatExpression(expressionSpan);
+                return FormatExpression(expression);
             }
             catch (Exception ex)
             {
@@ -85,6 +82,7 @@ namespace Byces.Calculator
 
         private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
         {
+            if (expressionSpan.IsEmpty) return new MathResult(0, true);
             var content = contentPool.Get();
             try
             {

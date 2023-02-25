@@ -22,8 +22,7 @@ namespace Byces.Calculator.Expressions
 
         internal void Build(ReadOnlySpan<char> expressionSpan)
         {
-            var contentBuilder = new ContentBuilder(expressionSpan);
-            contentBuilder.Build(this);
+            ContentBuilder.Build(this, expressionSpan);
         }
 
         internal void Clear()
@@ -66,7 +65,7 @@ namespace Byces.Calculator.Expressions
                 if (newPriority == priority) continue;
                 if (newPriority == 0) return;
 
-                priority = newPriority; i = -1; continue;
+                priority = newPriority; i = -1;
             }
         }
 
