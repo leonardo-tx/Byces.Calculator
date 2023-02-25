@@ -34,20 +34,14 @@ namespace Byces.Calculator.Expressions
 
         internal void Process()
         {
-            CalculatePriorities();
-            CalculateFunctions(0);
-            CalculateOperationsInOrder(0);
-        }
-
-        private void CalculatePriorities()
-        {
             int priority = Operations.MaxPriority();
-            while (priority > 0)
+            while (priority >= 0)
             {
                 CalculateFunctions(priority);
                 CalculateOperationsInOrder(priority);
                 priority = Operations.MaxPriority();
             }
+            CalculateFunctions(0);
         }
 
         private void CalculateFunctions(int minPriority)
