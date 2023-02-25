@@ -36,36 +36,17 @@ namespace Byces.Calculator.Expressions
         {
             CalculatePriorities();
             CalculateFunctions(0);
-            CalculateOperationsInOrder();
+            CalculateOperationsInOrder(0);
         }
 
         private void CalculatePriorities()
         {
-            if (Operations.Count == 0) return;
-
             int priority = Operations.MaxPriority();
-            if (priority == 0) return;
-
-            for (int i = 0, firstIndex = -1; i < Operations.Count; i++)
+            while (priority > 0)
             {
-                if (Operations[i].Priority != priority) continue;
-                if (firstIndex == -1) firstIndex = i;
-
-                if (i + 1 != Operations.Count && Operations[i].Priority == Operations[i + 1].Priority) continue;
-                int lastIndex = i;
-
                 CalculateFunctions(priority);
-                CalculateOperationsInOrder(firstIndex, lastIndex + 1);
-
-                firstIndex = -1;
-
-                if (Operations.Count == 0) return;
-                int newPriority = Operations.MaxPriority();
-
-                if (newPriority == priority) continue;
-                if (newPriority == 0) return;
-
-                priority = newPriority; i = -1;
+                CalculateOperationsInOrder(priority);
+                priority = Operations.MaxPriority();
             }
         }
 
@@ -91,17 +72,20 @@ namespace Byces.Calculator.Expressions
             }
         }
 
-        private void CalculateOperationsInOrder(int? firstIndex = null, int? count = null)
+        private void CalculateOperationsInOrder(int priority)
         {
-            CalculateOperations(OperationPriorityType.First, firstIndex, ref count);
-            CalculateOperations(OperationPriorityType.Second, firstIndex, ref count);
-            CalculateOperations(OperationPriorityType.Third, firstIndex, ref count);
+            CalculateOperations(OperationPriorityType.First, priority);
+            CalculateOperations(OperationPriorityType.Second, priority);
+            CalculateOperations(OperationPriorityType.Third, priority);
         }
 
-        private void CalculateOperations(OperationPriorityType operationPriority, int? firstIndex, ref int? count)
+        private void CalculateOperations(OperationPriorityType operationPriority, int priority)
         {
-            for (int i = firstIndex ?? 0; i < (count ?? Operations.Count); i++)
+            int count = Operations.Count;
+            for (int i = 0; i < count; i++)
             {
+                if (Operations[i].Priority != priority) continue;
+
                 OperationType operationType = (OperationType)Operations[i].Value;
                 if (operationPriority != operationType.Priority) continue;
 
@@ -118,7 +102,8 @@ namespace Byces.Calculator.Expressions
 
         private void SetFunctionToIndex(int oldIndex, int newIndex)
         {
-            for (int i = 0; i < Functions.Count; i++)
+            int count = Functions.Count;
+            for (int i = 0; i < count; i++)
             {
                 if (Functions[i].NumberIndex != oldIndex) continue;
                 Functions[i] = new Function(newIndex, Functions[i].Value, Functions[i].Priority);

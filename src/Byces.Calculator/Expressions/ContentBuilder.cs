@@ -57,18 +57,21 @@ namespace Byces.Calculator.Expressions
             bool hasSignal = expressionSpan[lastIndex] == '+' || expressionSpan[lastIndex] == '-';
 
             if (hasSignal) lastIndex++;
-            while (lastIndex < expressionSpan.Length && (char.IsDigit(expressionSpan[lastIndex]) || expressionSpan[lastIndex] == '.' || expressionSpan[lastIndex] == ','))
+            if (expressionSpan[lastIndex] == 'e' || expressionSpan[lastIndex] == 'E') { currentNumber = double.NaN; return false; }
+            for (; lastIndex < expressionSpan.Length; lastIndex++)
             {
-                lastIndex++;
-                if (lastIndex == expressionSpan.Length) break;
-                if (expressionSpan[lastIndex] == 'E' || expressionSpan[lastIndex] == 'e')
+                char currentChar = expressionSpan[lastIndex];
+
+                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') continue;
+                if (currentChar == 'E' || currentChar == 'e')
                 {
                     if (lastIndex + 2 >= expressionSpan.Length) throw new UnknownNumberExpressionException();
                     if (expressionSpan[lastIndex + 1] != '+' && expressionSpan[lastIndex + 1] != '-') throw new UnknownNumberExpressionException();
                     if (!char.IsDigit(expressionSpan[lastIndex + 2])) throw new UnknownNumberExpressionException();
 
-                    lastIndex += 3;
+                    lastIndex += 3; continue;
                 }
+                break;
             }
             if (lastIndex == firstIndex) { currentNumber = double.NaN; return false; }
             if (lastIndex - firstIndex == 1 && hasSignal) { currentNumber = double.NaN; return false; }

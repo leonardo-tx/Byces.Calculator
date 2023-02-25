@@ -11,6 +11,7 @@ namespace Byces.Calculator
     public sealed class MathResultBuilder
     {
         private readonly static ObjectPool<Content> contentPool = ObjectPool.Create<Content>();
+        private readonly static ObjectPool<StoredResult> resultPool = ObjectPool.Create<StoredResult>();
 
         private const int StackLimit = 1024;
 
@@ -63,37 +64,47 @@ namespace Byces.Calculator
             }
         }
 
-        private static MathResult FormatExpression(ReadOnlySpan<char> expression)
+        private static MathResult FormatExpression(string expression)
         {
-            int spaceCharsCount = expression.CountWhiteSpaces();
-            if (spaceCharsCount == 0) return BuildMathExpression(expression);
+            ReadOnlySpan<char> rawExpressionSpan = expression;
+
+            int spaceCharsCount = rawExpressionSpan.CountWhiteSpaces();
+            if (spaceCharsCount == 0) return BuildMathExpression(rawExpressionSpan, expression);
             
             int size = expression.Length - spaceCharsCount;
 
             Span<char> expressionSpan = (size < StackLimit) ? stackalloc char[size] : new char[size];
-            ReadOnlySpan<char> reference = expression;
-            for (int i = 0, j = 0; i < reference.Length; i++)
+            for (int i = 0, j = 0; i < rawExpressionSpan.Length; i++)
             {
-                if (char.IsWhiteSpace(reference[i])) continue;
-                expressionSpan[j++] = reference[i];
+                if (char.IsWhiteSpace(rawExpressionSpan[i])) continue;
+                expressionSpan[j++] = rawExpressionSpan[i];
             }
-            return BuildMathExpression(expressionSpan);
+            return BuildMathExpression(expressionSpan, expression);
         }
 
-        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan)
+        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan, string expression)
         {
             if (expressionSpan.IsEmpty) return new MathResult(0, true);
+            
+            var lastResult = resultPool.Get();
+            if (lastResult.Expression == expression) { try { return new MathResult(lastResult.Result, true); } finally { resultPool.Return(lastResult); } }
+
             var content = contentPool.Get();
             try
             {
                 content.Build(expressionSpan);
                 content.Process();
-                return new MathResult(content.Numbers[0], true);
+                
+                lastResult.Expression = expression;
+                lastResult.Result = content.Numbers[0];
+
+                return new MathResult(lastResult.Result, true);
             }
             finally
             {
                 content.Clear();
                 contentPool.Return(content);
+                resultPool.Return(lastResult);
             }
         }
     }
