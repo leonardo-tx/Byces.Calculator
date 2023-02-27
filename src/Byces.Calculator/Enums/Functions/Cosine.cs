@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Byces.Calculator.Exceptions;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
@@ -14,5 +15,7 @@ namespace Byces.Calculator.Enums.Functions
             double result = Math.Cos(number);
             return Math.Round(result, 15);
         }
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

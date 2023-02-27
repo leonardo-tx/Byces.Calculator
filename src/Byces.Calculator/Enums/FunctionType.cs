@@ -20,21 +20,25 @@ namespace Byces.Calculator.Enums
         public static readonly FunctionType TangentHyperbolic = new TangentHyperbolic();
         public static readonly FunctionType Radian = new Radian();
         public static readonly FunctionType Logarithm = new Logarithm();
+        public static readonly FunctionType Add = new Add();
 
         static FunctionType()
         {
             Type type = typeof(FunctionType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
-            
+
+            int maxStringSize = 0;
             FunctionType[] allFunctions = new FunctionType[fields.Length];
             for (int i = 0; i < fields.Length; i++)
             {
                 var functionType = (FunctionType)fields[i].GetValue(null)!;
                 if (allFunctions[functionType.Value] != null) throw new Exception("There are fields with duplicate int values");
+                if (functionType.StringRepresentation.Length > maxStringSize) maxStringSize = functionType.StringRepresentation.Length;
 
                 allFunctions[functionType.Value] = functionType;
             }
             _items = allFunctions;
+            MaxStringSize = maxStringSize;
         }
 
         private static readonly FunctionType[] _items;
@@ -47,7 +51,11 @@ namespace Byces.Calculator.Enums
 
         internal virtual int AdditionalCheck => 0;
 
+        internal static int MaxStringSize { get; }
+
         internal abstract double Operate(double number);
+
+        internal abstract double Operate(ReadOnlySpan<double> numbers);
 
         internal static bool TryParse(ReadOnlySpan<char> span, out FunctionType functionType)
         {

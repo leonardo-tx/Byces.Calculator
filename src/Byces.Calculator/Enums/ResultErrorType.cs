@@ -1,7 +1,7 @@
 ﻿namespace Byces.Calculator.Enums
 {
     /// <summary>
-    /// Specifies the error type of a <see cref="MathResult"/> instance.
+    /// Specifies the error type of a <see cref="MathResult{T}"/> instance.
     /// </summary>
     public enum ResultErrorType
     {
@@ -32,6 +32,14 @@
         /// <summary>
         /// Represents an error from an invalid calculation attempt.
         /// </summary>
-        Arithmetic
+        Arithmetic,
+        /// <summary>
+        /// Represents an unsupported function operation attempt.
+        /// </summary>
+        UnsupportedFunction,
+        /// <summary>
+        /// Represents the use of semicolons in a non-function location.
+        /// </summary>
+        MissingFunction
     }
 }

@@ -19,5 +19,7 @@ namespace Byces.Calculator.Enums.Functions
 
             return Math.Round(result, 15);
         }
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

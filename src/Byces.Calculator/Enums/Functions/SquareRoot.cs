@@ -14,5 +14,7 @@ namespace Byces.Calculator.Enums.Functions
             if (number < 0) throw new ArithmeticExpressionException("Attempted to square root a negative number");
             return Math.Sqrt(number);
         }
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

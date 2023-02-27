@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Byces.Calculator.Exceptions;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
@@ -9,5 +10,7 @@ namespace Byces.Calculator.Enums.Functions
         protected override char CharRepresentation => default;
 
         internal override double Operate(double number) => Math.Tanh(number);
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

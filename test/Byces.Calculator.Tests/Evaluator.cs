@@ -5,9 +5,11 @@ namespace Byces.Calculator.Tests
 {
     internal static class Evaluator
     {
+        private readonly static ICalculator _calculator = new CalculatorBuilder().WithResultPool(false).Build();
+
         internal static void Validate(string expressionAsString, double expectedValue)
         {
-            var result = MathResultBuilder.GetMathResult(expressionAsString);
+            var result = _calculator.GetDoubleResult(expressionAsString);
             if (!result.IsValid) Assert.Fail(result.ErrorMessage);
 
             Assert.AreEqual(expectedValue, result.Result);
@@ -15,7 +17,7 @@ namespace Byces.Calculator.Tests
 
         internal static void ValidateApproximately(string expressionAsString, double expectedValue, double delta = 1E-4)
         {
-            var result = MathResultBuilder.GetMathResult(expressionAsString);
+            var result = _calculator.GetDoubleResult(expressionAsString);
             if (!result.IsValid) Assert.Fail(result.ErrorMessage);
 
             Assert.AreEqual(expectedValue, result.Result, delta);
@@ -23,7 +25,7 @@ namespace Byces.Calculator.Tests
 
         internal static void ValidateException(string expressionAsString, ResultErrorType expectedValue)
         {
-            var result = MathResultBuilder.GetMathResult(expressionAsString);
+            var result = _calculator.GetDoubleResult(expressionAsString);
             Assert.AreEqual(expectedValue, result.ErrorType);
         }
     }

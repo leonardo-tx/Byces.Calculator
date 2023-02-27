@@ -1,19 +1,17 @@
 ﻿using System;
 using Byces.Calculator.Expressions;
-using Byces.Calculator.Extensions;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Byces.Calculator
 {
     /// <summary>
-    /// This class provides the direct building of a <see cref="MathResult"/> in a simplified way.
+    /// This class provides the direct building of a <see cref="MathResult{T}"/> in a simplified way.
     /// </summary>
+    [Obsolete("This class is deprecated and will be removed in some future release. Use this class instead: CalculatorBuilder.")]
     public sealed class MathResultBuilder
     {
         private readonly static ObjectPool<Content> contentPool = ObjectPool.Create<Content>();
         private readonly static ObjectPool<StoredResult> resultPool = ObjectPool.Create<StoredResult>();
-
-        private const int StackLimit = 1024;
 
         /// <summary>
         /// Initializes a new <see cref="MathResultBuilder"/> class.
@@ -39,66 +37,49 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Builds the <see cref="MathResult"/> with the given information.
+        /// Builds the <see cref="MathResult{T}"/> with the given information.
         /// </summary>
         /// <returns>The built result.</returns>
-        public MathResult Build()
+        public MathResult<double> Build()
         {
             return GetMathResult(Expression);
         }
 
         /// <summary>
-        /// Gets the <see cref="MathResult"/> without having to create a <see cref="MathResultBuilder"/> object.
+        /// Gets the <see cref="MathResult{T}"/> without having to create a <see cref="MathResultBuilder"/> object.
         /// </summary>
         /// <param name="expression">The mathematical expression.</param>
         /// <returns>The built result.</returns>
-        public static MathResult GetMathResult(string expression)
+        public static MathResult<double> GetMathResult(string expression)
         {
             try
             {
-                return FormatExpression(expression);
+                return BuildMathExpression(expression);
             }
             catch (Exception ex)
             {
-                return new MathResult(ex);
+                return new MathResult<double>(ex, double.NaN);
             }
         }
 
-        private static MathResult FormatExpression(string expression)
+        private static MathResult<double> BuildMathExpression(string expression)
         {
-            ReadOnlySpan<char> rawExpressionSpan = expression;
-
-            int spaceCharsCount = rawExpressionSpan.CountWhiteSpaces();
-            if (spaceCharsCount == 0) return BuildMathExpression(rawExpressionSpan, expression);
-            
-            int size = expression.Length - spaceCharsCount;
-
-            Span<char> expressionSpan = (size < StackLimit) ? stackalloc char[size] : new char[size];
-            for (int i = 0, j = 0; i < rawExpressionSpan.Length; i++)
-            {
-                if (char.IsWhiteSpace(rawExpressionSpan[i])) continue;
-                expressionSpan[j++] = rawExpressionSpan[i];
-            }
-            return BuildMathExpression(expressionSpan, expression);
-        }
-
-        private static MathResult BuildMathExpression(ReadOnlySpan<char> expressionSpan, string expression)
-        {
-            if (expressionSpan.IsEmpty) return new MathResult(0, true);
+            ReadOnlySpan<char> expressionSpan = expression;
+            if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult<double>(0, true);
             
             var lastResult = resultPool.Get();
-            if (lastResult.Expression == expression) { try { return new MathResult(lastResult.Result, true); } finally { resultPool.Return(lastResult); } }
+            if (expressionSpan.Equals(lastResult.Expression, StringComparison.Ordinal)) { try { return new MathResult<double>(lastResult.Result, true); } finally { resultPool.Return(lastResult); } }
 
             var content = contentPool.Get();
             try
             {
-                content.Build(expressionSpan);
+                content.Build(expressionSpan, true);
                 content.Process();
                 
                 lastResult.Expression = expression;
                 lastResult.Result = content.Numbers[0];
 
-                return new MathResult(lastResult.Result, true);
+                return new MathResult<double>(lastResult.Result, true);
             }
             finally
             {

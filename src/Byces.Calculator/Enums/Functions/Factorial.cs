@@ -1,5 +1,6 @@
 ﻿using Byces.Calculator.Exceptions;
 using MathNet.Numerics;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
@@ -18,5 +19,7 @@ namespace Byces.Calculator.Enums.Functions
 
             return SpecialFunctions.Gamma(number + 1);
         }
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

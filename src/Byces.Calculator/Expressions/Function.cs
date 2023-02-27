@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator.Enums;
+using System;
 
 namespace Byces.Calculator.Expressions
 {
@@ -18,5 +19,7 @@ namespace Byces.Calculator.Expressions
         internal int Priority { get; }
 
         internal double Operate(double number) => ((FunctionType)Value).Operate(number);
+
+        internal double Operate(ReadOnlySpan<double> numbers) => ((FunctionType)Value).Operate(numbers);
     }
 }

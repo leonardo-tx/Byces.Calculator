@@ -17,21 +17,25 @@ namespace Byces.Calculator.Enums
         public static readonly OperationType Power = new Power();
         public static readonly OperationType Root = new Root();
         public static readonly OperationType Logarithm = new Logarithm();
+        public static readonly OperationType SemiColon = new SemiColon();
 
         static OperationType()
         {
             Type type = typeof(OperationType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
 
+            int maxStringSize = 0;
             OperationType[] allOperations = new OperationType[fields.Length];
             for (int i = 0; i < fields.Length; i++)
             {
                 var operationType = (OperationType)fields[i].GetValue(null)!;
                 if (allOperations[operationType.Value] != null) throw new Exception("There are fields with duplicate int values");
+                if (operationType.StringRepresentation.Length > maxStringSize) maxStringSize = operationType.StringRepresentation.Length;
 
                 allOperations[operationType.Value] = operationType;
             }
             _items = allOperations;
+            MaxStringSize = maxStringSize;
         }
 
         private static readonly OperationType[] _items;
@@ -43,6 +47,8 @@ namespace Byces.Calculator.Enums
         protected abstract char CharRepresentation { get; }
 
         internal abstract OperationPriorityType Priority { get; }
+
+        internal static int MaxStringSize { get; }
 
         internal abstract double Operate(double firstNumber, double secondNumber);
 

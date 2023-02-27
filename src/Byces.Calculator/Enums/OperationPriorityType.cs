@@ -5,5 +5,6 @@
         First,
         Second,
         Third,
+        SemiColon,
     }
 }

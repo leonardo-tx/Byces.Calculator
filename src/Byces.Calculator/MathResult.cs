@@ -5,11 +5,11 @@ using System;
 namespace Byces.Calculator
 {
     /// <summary>
-    /// Represents the result of a mathematical expression generated in <see cref="MathResultBuilder"/>.
+    /// Represents the result of a mathematical expression.
     /// </summary>
-    public readonly struct MathResult
+    public readonly struct MathResult<T>
     {
-        internal MathResult(double result, bool isValid, string? errorMessage = null)
+        internal MathResult(T result, bool isValid, string? errorMessage = null)
         {
             Result = result;
             IsValid = isValid;
@@ -17,9 +17,9 @@ namespace Byces.Calculator
             ErrorType = ResultErrorType.None;
         }
 
-        internal MathResult(Exception exception)
+        internal MathResult(Exception exception, T result)
         {
-            Result = double.NaN;
+            Result = result;
             IsValid = false;
             ErrorMessage = exception.Message;
             if (exception is ExpressionException expressionException)
@@ -31,7 +31,7 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Gets the validity of the <see cref="MathResult"/> instance.
+        /// Gets the validity of the <see cref="MathResult{T}"/> instance.
         /// </summary>
         /// <returns>True if the expression is valid, false otherwise.</returns>
         public bool IsValid { get; }
@@ -52,6 +52,6 @@ namespace Byces.Calculator
         /// Gets the expression result.
         /// </summary>
         /// <returns>The expression result.</returns>
-        public double Result { get; }
+        public T Result { get; }
     }
 }

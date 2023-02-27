@@ -1,5 +1,5 @@
 ﻿using System;
-using Byces.Calculator.Enums.Operations;
+using Byces.Calculator.Exceptions;
 
 namespace Byces.Calculator.Enums.Functions
 {
@@ -10,5 +10,7 @@ namespace Byces.Calculator.Enums.Functions
         protected override char CharRepresentation => default;
 
         internal override double Operate(double number) => Math.Sinh(number);
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

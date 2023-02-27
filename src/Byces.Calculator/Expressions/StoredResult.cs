@@ -1,11 +1,11 @@
 ﻿namespace Byces.Calculator.Expressions
 {
-    internal class StoredResult
+    internal sealed class StoredResult
     {
         public StoredResult()
         {
             Expression = string.Empty;
-            Result = 0;
+            Result = default!;
         }
 
         internal string Expression { get; set; }

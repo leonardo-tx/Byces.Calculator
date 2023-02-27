@@ -1,139 +1,252 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
+using Byces.Calculator.Extensions;
 using System;
 
 namespace Byces.Calculator.Expressions
 {
-    internal static class ContentBuilder
+    internal ref struct ContentBuilder
     {
-        internal static void Build(Content content, ReadOnlySpan<char> expressionSpan)
+        private const int StackAllocationLimit = 512;
+
+        internal ContentBuilder(bool hasWhiteSpaceRemover)
         {
-            int priority = 0; double currentNumber = double.NaN; bool afterNumber = false;
-            for (int firstIndex = 0, lastIndex = 0; lastIndex < expressionSpan.Length; lastIndex++, firstIndex++)
+            HasWhiteSpaceRemover = hasWhiteSpaceRemover;
+            FirstIndex = 0;
+            LastIndex = 0;
+            Priority = 0;
+            AfterNumber = false;
+            CurrentNumber = double.NaN;
+        }
+
+        private int FirstIndex;
+
+        private int LastIndex;
+
+        private int Priority;
+
+        private bool AfterNumber;
+
+        private readonly bool HasWhiteSpaceRemover;
+
+        private double CurrentNumber;
+
+        internal void Build(Content content, ReadOnlySpan<char> expressionSpan)
+        {
+            for (; LastIndex < expressionSpan.Length; LastIndex++, FirstIndex++)
             {
-                if (FindParentheses(expressionSpan[lastIndex], ref priority)) continue;
-                if (!afterNumber)
+                if (HasWhiteSpaceRemover && FindWhiteSpace(expressionSpan[LastIndex])) continue;
+                if (FindParentheses(expressionSpan[LastIndex])) continue;
+                if (!AfterNumber)
                 {
-                    if (FindNumber(expressionSpan, firstIndex, ref lastIndex, out currentNumber) || 
-                        FindSpecialNumber(expressionSpan, firstIndex, lastIndex, out currentNumber))
+                    if (FindNumber(expressionSpan) || FindSpecialNumber(expressionSpan))
                     {
-                        afterNumber = true; firstIndex = lastIndex;
+                        AfterNumber = true; FirstIndex = LastIndex;
                         continue;
                     }
-                    if (FindFunction(content, expressionSpan, priority, firstIndex, ref lastIndex)) { firstIndex = lastIndex; continue; }
+                    if (FindFunction(content, expressionSpan)) { FirstIndex = LastIndex; continue; }
                 }
                 else
                 {
-                    if (FindOperation(content, expressionSpan[firstIndex..(lastIndex + 1)], currentNumber, priority))
+                    if (FindOperation(content, expressionSpan))
                     {
-                        firstIndex = lastIndex; afterNumber = false; currentNumber = double.NaN;
+                        FirstIndex = LastIndex; AfterNumber = false; CurrentNumber = double.NaN;
                         continue;
                     }
                 }
-                firstIndex--;
+                FirstIndex--;
             }
-            if (priority > 0) throw new MissingParenthesesExpressionException();
-            AddNumber(content, currentNumber);
+            if (Priority > 0) throw new MissingParenthesesExpressionException();
+            AddNumber(content);
         }
 
-        private static bool FindParentheses(char currentChar, ref int priority)
+        private bool FindWhiteSpace(char currentChar)
+        {
+            if (!char.IsWhiteSpace(currentChar)) return false;
+            if (FirstIndex != LastIndex) FirstIndex--;
+
+            return true;
+        }
+
+        private bool FindParentheses(char currentChar)
         {
             if (currentChar == '(')
             {
-                priority++;
+                Priority++;
                 return true;
             }
             if (currentChar == ')')
             {
-                if (--priority < 0) throw new MisplacedParenthesesExpressionException();
+                if (--Priority < 0) throw new MisplacedParenthesesExpressionException();
                 return true;
             }
             return false;
         }
 
-        private static bool FindNumber(ReadOnlySpan<char> expressionSpan, int firstIndex, ref int lastIndex, out double currentNumber)
+        private bool FindNumber(ReadOnlySpan<char> expressionSpan)
         {
-            if (lastIndex != firstIndex) { currentNumber = double.NaN; return false; }
-            bool hasSignal = expressionSpan[lastIndex] == '+' || expressionSpan[lastIndex] == '-';
+            if (FirstIndex != LastIndex) return false;
+            bool hasSignal = expressionSpan[LastIndex] == '+' || expressionSpan[LastIndex] == '-';
 
-            if (hasSignal) lastIndex++;
-            if (expressionSpan[lastIndex] == 'e' || expressionSpan[lastIndex] == 'E') { currentNumber = double.NaN; return false; }
-            for (; lastIndex < expressionSpan.Length; lastIndex++)
+            if (hasSignal) LastIndex++;
+            if (expressionSpan[LastIndex] == 'e' || expressionSpan[LastIndex] == 'E') return false;
+            int whiteSpaceCount = 0;
+            for (bool foundNumber = false; LastIndex < expressionSpan.Length; LastIndex++)
             {
-                char currentChar = expressionSpan[lastIndex];
-
-                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') continue;
+                char currentChar = expressionSpan[LastIndex];
+                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') { foundNumber = true; continue; }
                 if (currentChar == 'E' || currentChar == 'e')
                 {
-                    if (lastIndex + 2 >= expressionSpan.Length) throw new UnknownNumberExpressionException();
-                    if (expressionSpan[lastIndex + 1] != '+' && expressionSpan[lastIndex + 1] != '-') throw new UnknownNumberExpressionException();
-                    if (!char.IsDigit(expressionSpan[lastIndex + 2])) throw new UnknownNumberExpressionException();
+                    if (LastIndex + 2 >= expressionSpan.Length) throw new UnknownNumberExpressionException();
+                    char nextChar = expressionSpan[LastIndex + 1];
+                    if (nextChar != '+' && nextChar != '-') throw new UnknownNumberExpressionException();
+                    if (!char.IsDigit(expressionSpan[LastIndex + 2])) throw new UnknownNumberExpressionException();
 
-                    lastIndex += 3; continue;
+                    LastIndex += 3; continue;
                 }
+                if (HasWhiteSpaceRemover && foundNumber && char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
                 break;
             }
-            if (lastIndex == firstIndex) { currentNumber = double.NaN; return false; }
-            if (lastIndex - firstIndex == 1 && hasSignal) { currentNumber = double.NaN; return false; }
-
-            currentNumber = double.Parse(expressionSpan[firstIndex..(--lastIndex + 1)]);
-            return true;
+            return ParseNumber(expressionSpan[FirstIndex..LastIndex], hasSignal, whiteSpaceCount);
         }
 
-        private static bool FindSpecialNumber(ReadOnlySpan<char> expressionSpan, int firstIndex, int lastIndex, out double currentNumber)
+        private bool ParseNumber(ReadOnlySpan<char> currentSpan, bool hasSignal, int whiteSpaceCount)
         {
-            if (lastIndex == expressionSpan.Length || !SpecialNumberType.TryParse(expressionSpan[firstIndex..(lastIndex + 1)], out currentNumber))
-            {
-                currentNumber = double.NaN;
-                return false;
-            }
-            return true;
-        }
+            if (FirstIndex == LastIndex || (LastIndex - FirstIndex == 1 && hasSignal)) return false;
+            LastIndex--;
 
-        private static bool FindFunction(Content content, ReadOnlySpan<char> expressionSpan, int priority, int firstIndex, ref int lastIndex)
-        {
-            if (lastIndex == expressionSpan.Length || !FunctionType.TryParse(expressionSpan[firstIndex..(lastIndex + 1)], out FunctionType functionType)) return false;
-            if (functionType.AdditionalCheck > 0 && lastIndex + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[lastIndex + 1]))
+            bool parseResult; double result;
+            if (whiteSpaceCount == 0) parseResult = double.TryParse(currentSpan, out result);
+            else
             {
-                for (int i = 1; i <= functionType.AdditionalCheck; i++)
+                int count = currentSpan.Length - whiteSpaceCount;
+                Span<char> span = (StackAllocationLimit >= count) ? stackalloc char[count] : new char[count];
+                for (int i = 0, j = 0; i < currentSpan.Length; i++)
                 {
-                    if (!FunctionType.TryParse(expressionSpan[firstIndex..(lastIndex + 1 + i)], out FunctionType functionType2)) continue;
-
-                    lastIndex += i;
-                    AddFunction(content, functionType2, priority);
-                    return true;
+                    if (!char.IsWhiteSpace(currentSpan[i])) span[j++] = currentSpan[i];
                 }
+                parseResult = double.TryParse(span, out result);
             }
-            AddFunction(content, functionType, priority);
-            return true;
+            if (!parseResult) throw new UnknownNumberExpressionException();
+            CurrentNumber = result; return true;
         }
 
-        private static void AddFunction(Content content, FunctionType functionType, int priority)
+        private bool FindSpecialNumber(ReadOnlySpan<char> expressionSpan)
         {
-            Function function = new Function(content.Numbers.Count, functionType, priority);
+            if (LastIndex == expressionSpan.Length) return false;
+
+            ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
+            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+            
+            if (currentSpan.Length - whiteSpaceCount > SpecialNumberType.MaxStringSize + 1) return false;
+            bool parseResult; double result;
+            if (whiteSpaceCount == 0) parseResult = SpecialNumberType.TryParse(currentSpan, out result);
+            else
+            {
+                Span<char> span = stackalloc char[currentSpan.Length - whiteSpaceCount];
+                for (int i = 0, j = 0; i < currentSpan.Length; i++)
+                {
+                    if (!char.IsWhiteSpace(currentSpan[i])) span[j++] = currentSpan[i];
+                }
+                parseResult = SpecialNumberType.TryParse(span, out result);
+            }
+            CurrentNumber = result; return parseResult;
+        }
+
+        private bool FindFunction(Content content, ReadOnlySpan<char> expressionSpan)
+        {
+            if (LastIndex == expressionSpan.Length) return false;
+
+            ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
+            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+
+            if (currentSpan.Length - whiteSpaceCount > FunctionType.MaxStringSize + 1) return false;
+            if (whiteSpaceCount == 0)
+            {
+                if (!FunctionType.TryParse(currentSpan, out var functionType)) return false;
+                if (functionType.AdditionalCheck > 0 && LastIndex + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[LastIndex + 1]))
+                {
+                    for (int i = 1; i <= functionType.AdditionalCheck; i++)
+                    {
+                        if (!FunctionType.TryParse(expressionSpan[FirstIndex..(LastIndex + 1 + i)], out FunctionType functionType2)) continue;
+
+                        LastIndex += i;
+                        AddFunction(content, functionType2);
+                        return true;
+                    }
+                }
+                AddFunction(content, functionType);
+                return true;
+            }
+            else
+            {
+                Span<char> span = stackalloc char[currentSpan.Length - whiteSpaceCount];
+                for (int i = 0, j = 0; i < currentSpan.Length; i++)
+                {
+                    if (!char.IsWhiteSpace(currentSpan[i])) span[j++] = currentSpan[i];
+                }
+
+                if (!FunctionType.TryParse(span, out var functionType)) return false;
+                while (char.IsWhiteSpace(expressionSpan[++LastIndex])) { whiteSpaceCount++; continue; }
+                LastIndex--;
+                if (functionType.AdditionalCheck > 0 && LastIndex + 1 != expressionSpan.Length && char.IsLetter(expressionSpan[LastIndex + 1]))
+                {
+                    for (int i = 1, whiteSpaceCount2 = 0; i <= functionType.AdditionalCheck; i++)
+                    {
+                        if (char.IsWhiteSpace(expressionSpan[LastIndex + i])) { i--; whiteSpaceCount2++; continue; }
+                        currentSpan = expressionSpan[FirstIndex..(LastIndex + 1 + i + whiteSpaceCount2)];
+                        span = stackalloc char[currentSpan.Length - whiteSpaceCount2 - whiteSpaceCount];
+                        for (int j = 0, k = 0; j < currentSpan.Length; j++)
+                        {
+                            if (!char.IsWhiteSpace(currentSpan[j])) span[k++] = currentSpan[j];
+                        }
+                        if (!FunctionType.TryParse(span, out var functionType2)) continue;
+                        LastIndex += i;
+                        AddFunction(content, functionType2);
+                        return true;
+                    }
+                }
+                AddFunction(content, functionType);
+                return true;
+            }
+        }
+
+        private bool FindOperation(Content content, ReadOnlySpan<char> expressionSpan)
+        {
+            ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
+            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+
+            if (currentSpan.Length - whiteSpaceCount > OperationType.MaxStringSize) return false;
+            bool parseResult; OperationType result;
+            if (whiteSpaceCount == 0) parseResult = OperationType.TryParse(currentSpan, out result);
+            else
+            {
+                Span<char> span = stackalloc char[currentSpan.Length - whiteSpaceCount];
+                for (int i = 0, j = 0; i < currentSpan.Length; i++)
+                {
+                    if (!char.IsWhiteSpace(currentSpan[i])) span[j++] = currentSpan[i];
+                }
+                parseResult = OperationType.TryParse(span, out result);
+            }
+            if (parseResult) { AddNumber(content); AddOperation(content, result); }
+            return parseResult;
+        }
+
+        private void AddFunction(Content content, FunctionType functionType)
+        {
+            Function function = new Function(content.Numbers.Count, functionType, Priority);
             content.Functions.Add(function);
         }
 
-        private static bool FindOperation(Content content, ReadOnlySpan<char> currentSpan, double currentNumber, int priority)
+        private void AddNumber(Content content)
         {
-            if (OperationType.TryParse(currentSpan, out var operationType))
-            {
-                AddNumber(content, currentNumber);
-                AddOperation(content, operationType, priority);
-                return true;
-            }
-            return false;
+            if (double.IsNaN(CurrentNumber)) throw new IncompleteExpressionException();
+            content.Numbers.Add(CurrentNumber);
         }
 
-        private static void AddNumber(Content content, double currentNumber)
+        private void AddOperation(Content content, OperationType operationType)
         {
-            if (double.IsNaN(currentNumber)) throw new IncompleteExpressionException();
-            content.Numbers.Add(currentNumber);
-        }
-
-        private static void AddOperation(Content content, OperationType operationType, int priority)
-        {
-            Operation operation = new Operation(operationType, priority);
+            Operation operation = new Operation(operationType, Priority);
             content.Operations.Add(operation);
         }
     }

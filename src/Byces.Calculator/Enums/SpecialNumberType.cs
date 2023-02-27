@@ -14,12 +14,17 @@ namespace Byces.Calculator.Enums
             Type type = typeof(SpecialNumberType);
             ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
 
+            int maxStringSize = 0;
             SpecialNumberType[] specialNumbers = new SpecialNumberType[fields.Length];
             for (int i = 0; i < fields.Length; i++)
             {
-                specialNumbers[i] = (SpecialNumberType)fields[i].GetValue(null)!;
+                var specialNumberType = (SpecialNumberType)fields[i].GetValue(null)!;
+                if (specialNumberType.StringRepresentation.Length > maxStringSize) maxStringSize = specialNumberType.StringRepresentation.Length;
+
+                specialNumbers[i] = specialNumberType;
             }
             _items = specialNumbers;
+            MaxStringSize = maxStringSize;
         }
 
         private static readonly SpecialNumberType[] _items;
@@ -29,6 +34,8 @@ namespace Byces.Calculator.Enums
         protected abstract char CharRepresentation { get; }
 
         protected abstract double GetNumber();
+
+        internal static int MaxStringSize { get; }
 
         internal static bool TryParse(ReadOnlySpan<char> span, out double number)
         {
@@ -48,12 +55,12 @@ namespace Byces.Calculator.Enums
                 if (isNegative) number *= -1;
                 return true;
             }
-            number = default; return false;
+            number = double.NaN; return false;
         }
 
         internal static bool TryParse(char character, out double number)
         {
-            if (character == '\0') { number = default; return false; }
+            if (character == '\0') { number = double.NaN; return false; }
 
             ReadOnlySpan<SpecialNumberType> reference = _items;
             for (int i = 0; i < reference.Length; i++)
@@ -61,7 +68,7 @@ namespace Byces.Calculator.Enums
                 if (character != reference[i].CharRepresentation) continue;
                 number = reference[i].GetNumber(); return true;
             }
-            number = default; return false;
+            number = double.NaN; return false;
         }
 
         private static ReadOnlySpan<char> GetValidSourceSpan(ReadOnlySpan<char> span, out bool isNegative)

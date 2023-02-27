@@ -14,5 +14,7 @@ namespace Byces.Calculator.Enums.Functions
             if (number <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {number}");
             return Math.Log10(number);
         }
+
+        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

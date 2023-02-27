@@ -3,15 +3,26 @@
 namespace Byces.Calculator.Benchmarks.Benchmarks
 {
     [MemoryDiagnoser]
-    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
-    [RankColumn]
     public class CalculatorBenchmark
     {
-#pragma warning disable CA1822
+        [Params(false, true)]
+        public bool WithResultPool;
+
+        [Params(true)]
+        public bool HasWhiteSpaceRemover;
+
+        private ICalculator calculator;
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            calculator = new CalculatorBuilder().WithResultPool(WithResultPool).WithWhiteSpaceRemover(HasWhiteSpaceRemover).Build();
+        }
+
         [Benchmark]
         public void SimpleCalculation()
         {
-            MathResultBuilder.GetMathResult("2 + 5 * 6");
+            calculator.GetDoubleResult("2 + 5 * 6");
         }
 
         [Benchmark]
@@ -19,7 +30,7 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         {
             for (int i = 0; i <= 1_000; i++)
             {
-                MathResultBuilder.GetMathResult("2 + 5 * 6");
+                calculator.GetDoubleResult("2 + 5 * 6");
             }
         }
 
@@ -28,63 +39,68 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         {
             for (int i = 0; i <= 1_000_000; i++)
             {
-                MathResultBuilder.GetMathResult("2 + 5 * 6");
+                calculator.GetDoubleResult("2 + 5 * 6");
             }
         }
 
         [Benchmark]
         public void EulerPlusEulerPlusEuler()
         {
-            MathResultBuilder.GetMathResult("EULER + EULER + EULER");
-        }
-
-        [Benchmark]
-        public void PartialMemoryAllocation2()
-        {
-            MathResultBuilder.GetMathResult("2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2 + 2");
+            calculator.GetDoubleResult("EULER + EULER + EULER");
         }
 
         [Benchmark]
         public void ComplexCalculation()
         {
-            MathResultBuilder.GetMathResult("2 ^ 2 + (4 + 5 * (2 √ 9))");
+            calculator.GetDoubleResult("2 ^ 2 + (4 + 5 * (2 √ 9))");
         }
 
         [Benchmark]
         public void HeavyCalculation()
         {
-            MathResultBuilder.GetMathResult("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))");
+            calculator.GetDoubleResult("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))");
         }
 
         [Benchmark]
         public void HeavyCalculationNoWhiteSpace()
         {
-            MathResultBuilder.GetMathResult("(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))");
+            calculator.GetDoubleResult("(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))");
         }
 
         [Benchmark]
         public void ManyParenthesesCalculation()
         {
-            MathResultBuilder.GetMathResult("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
+            calculator.GetDoubleResult("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
         }
 
         [Benchmark]
         public void FactorialCalculation()
         {
-            MathResultBuilder.GetMathResult("fact2 + (fact2 + fact(fact2 + 2))");
+            calculator.GetDoubleResult("fact2 + (fact2 + fact(fact2 + 2))");
         }
 
         [Benchmark]
         public void SquareRootStringCalculation()
         {
-            MathResultBuilder.GetMathResult("SQRT9");
+            calculator.GetDoubleResult("SQRT9");
         }
 
         [Benchmark]
         public void SquareRootCharCalculation()
         {
-            MathResultBuilder.GetMathResult("√9");
+            calculator.GetDoubleResult("√9");
         }
-#pragma warning restore CA1822
+
+        [Benchmark]
+        public void AddFunctionCalculation()
+        {
+            calculator.GetDoubleResult("add(1;2;3)");
+        }
+
+        [Benchmark]
+        public void AddOperationCalculation()
+        {
+            calculator.GetDoubleResult("1+2+3");
+        }
     }
 }
