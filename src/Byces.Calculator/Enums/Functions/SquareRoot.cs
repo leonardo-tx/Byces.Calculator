@@ -5,16 +5,15 @@ namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class SquareRoot : FunctionType
     {
-        protected override int Value => 1;
         protected override string StringRepresentation => "SQRT";
         protected override char CharRepresentation => '√';
 
-        internal override double Operate(double number)
+        public override double Operate(double number)
         {
             if (number < 0) throw new ArithmeticExpressionException("Attempted to square root a negative number");
             return Math.Sqrt(number);
         }
 
-        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
+        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

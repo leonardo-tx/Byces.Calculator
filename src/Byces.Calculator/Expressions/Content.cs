@@ -23,9 +23,9 @@ namespace Byces.Calculator.Expressions
 
         internal List<Function> Functions { get; }
 
-        internal void Build(ReadOnlySpan<char> expressionSpan, bool hasWhiteSpaceRemover)
+        internal void Build(ReadOnlySpan<char> expressionSpan)
         {
-            ContentBuilder builder = new ContentBuilder(hasWhiteSpaceRemover);
+            ContentBuilder builder = new ContentBuilder();
             builder.Build(this, expressionSpan);
         }
 
@@ -94,7 +94,7 @@ namespace Byces.Calculator.Expressions
                 Operations.RemoveAt(i);
                 Numbers.RemoveAt(i + 1);
 
-                SetFunctionToIndex(i + 1, i);
+                ReduceNumerIndexToFunctions(i + 1, 1);
                 count--; i--;
             }
         }
@@ -104,7 +104,14 @@ namespace Byces.Calculator.Expressions
             int? firstIndex = null, lastIndex = null;
             for (int i = 0; i < Operations.Count; i++)
             {
-                if (firstIndex.HasValue && Operations[i].Priority != priority) { lastIndex = i; break; }
+                if (firstIndex.HasValue && Operations[i].Priority != priority)
+                {
+                    lastIndex = i;
+                    int count = (int)lastIndex - (int)firstIndex + 1;
+                    CalculateMultipleArgsFunction((int)firstIndex!, count);
+
+                    lastIndex = null; firstIndex = null; i -= count; continue;
+                }
                 if (Operations[i].Priority == priority && !firstIndex.HasValue) { firstIndex = i; continue; }
             }
             if (!firstIndex.HasValue) return;
@@ -127,12 +134,13 @@ namespace Byces.Calculator.Expressions
             Operations.RemoveRange(firstIndex, count - 1);
             Numbers.RemoveRange(firstIndex + 1, count - 1);
             Functions.RemoveAt(functionIndex);
+
+            ReduceNumerIndexToFunctions(firstIndex + 1, count - 1);
         }
 
         private int FindFunctionIndex(int numberIndex)
         {
-            int count = Functions.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Functions.Count; i++)
             {
                 if (Functions[i].NumberIndex != numberIndex) continue;
                 return i;
@@ -140,13 +148,12 @@ namespace Byces.Calculator.Expressions
             return -1;
         }
 
-        private void SetFunctionToIndex(int oldIndex, int newIndex)
+        private void ReduceNumerIndexToFunctions(int initialNumberIndex, int removedCount)
         {
-            int count = Functions.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Functions.Count; i++)
             {
-                if (Functions[i].NumberIndex != oldIndex) continue;
-                Functions[i] = new Function(newIndex, Functions[i].Value, Functions[i].Priority);
+                if (Functions[i].NumberIndex < initialNumberIndex) continue;
+                Functions[i] = new Function(Functions[i].NumberIndex - removedCount, Functions[i].Value, Functions[i].Priority);
             }
         }
     }

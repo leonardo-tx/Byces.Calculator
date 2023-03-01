@@ -5,18 +5,19 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
     [MemoryDiagnoser]
     public class CalculatorBenchmark
     {
-        [Params(false, true)]
+        [Params(false)]
         public bool WithResultPool;
 
-        [Params(true)]
-        public bool HasWhiteSpaceRemover;
-
+#pragma warning disable CS8618
         private ICalculator calculator;
+#pragma warning restore CS8618
 
         [GlobalSetup]
         public void Setup()
         {
-            calculator = new CalculatorBuilder().WithResultPool(WithResultPool).WithWhiteSpaceRemover(HasWhiteSpaceRemover).Build();
+            calculator = new CalculatorBuilder()
+                .WithResultPool(WithResultPool)
+                .Build();
         }
 
         [Benchmark]
@@ -94,7 +95,7 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         [Benchmark]
         public void AddFunctionCalculation()
         {
-            calculator.GetDoubleResult("add(1;2;3)");
+            calculator.GetDoubleResult("ADD(1;2;3)");
         }
 
         [Benchmark]

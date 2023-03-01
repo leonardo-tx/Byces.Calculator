@@ -73,7 +73,7 @@ namespace Byces.Calculator
             var content = contentPool.Get();
             try
             {
-                content.Build(expressionSpan, true);
+                content.Build(expressionSpan);
                 content.Process();
                 
                 lastResult.Expression = expression;

@@ -9,16 +9,6 @@ namespace Byces.Calculator.Expressions
     {
         private const int StackAllocationLimit = 512;
 
-        internal ContentBuilder(bool hasWhiteSpaceRemover)
-        {
-            HasWhiteSpaceRemover = hasWhiteSpaceRemover;
-            FirstIndex = 0;
-            LastIndex = 0;
-            Priority = 0;
-            AfterNumber = false;
-            CurrentNumber = double.NaN;
-        }
-
         private int FirstIndex;
 
         private int LastIndex;
@@ -27,16 +17,15 @@ namespace Byces.Calculator.Expressions
 
         private bool AfterNumber;
 
-        private readonly bool HasWhiteSpaceRemover;
-
         private double CurrentNumber;
 
         internal void Build(Content content, ReadOnlySpan<char> expressionSpan)
         {
+            CurrentNumber = double.NaN;
             for (; LastIndex < expressionSpan.Length; LastIndex++, FirstIndex++)
             {
-                if (HasWhiteSpaceRemover && FindWhiteSpace(expressionSpan[LastIndex])) continue;
-                if (FindParentheses(expressionSpan[LastIndex])) continue;
+                if (FindWhiteSpace(expressionSpan[LastIndex])) continue;
+                if (FindParentheses(content, expressionSpan[LastIndex])) continue;
                 if (!AfterNumber)
                 {
                     if (FindNumber(expressionSpan) || FindSpecialNumber(expressionSpan))
@@ -68,10 +57,17 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
-        private bool FindParentheses(char currentChar)
+        private bool FindParentheses(Content content, char currentChar)
         {
             if (currentChar == '(')
             {
+                if (AfterNumber)
+                {
+                    AddNumber(content);
+                    AddOperation(content, OperationType.Multiply);
+                    
+                    AfterNumber = false; CurrentNumber = double.NaN;
+                }
                 Priority++;
                 return true;
             }
@@ -104,7 +100,7 @@ namespace Byces.Calculator.Expressions
 
                     LastIndex += 3; continue;
                 }
-                if (HasWhiteSpaceRemover && foundNumber && char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
+                if (foundNumber && char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
                 break;
             }
             return ParseNumber(expressionSpan[FirstIndex..LastIndex], hasSignal, whiteSpaceCount);
@@ -136,9 +132,10 @@ namespace Byces.Calculator.Expressions
             if (LastIndex == expressionSpan.Length) return false;
 
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
-            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+            int whiteSpaceCount = currentSpan.CountWhiteSpaces();
             
             if (currentSpan.Length - whiteSpaceCount > SpecialNumberType.MaxStringSize + 1) return false;
+            
             bool parseResult; double result;
             if (whiteSpaceCount == 0) parseResult = SpecialNumberType.TryParse(currentSpan, out result);
             else
@@ -158,7 +155,7 @@ namespace Byces.Calculator.Expressions
             if (LastIndex == expressionSpan.Length) return false;
 
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
-            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+            int whiteSpaceCount = currentSpan.CountWhiteSpaces();
 
             if (currentSpan.Length - whiteSpaceCount > FunctionType.MaxStringSize + 1) return false;
             if (whiteSpaceCount == 0)
@@ -214,7 +211,7 @@ namespace Byces.Calculator.Expressions
         private bool FindOperation(Content content, ReadOnlySpan<char> expressionSpan)
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
-            int whiteSpaceCount = (HasWhiteSpaceRemover) ? currentSpan.CountWhiteSpaces() : 0;
+            int whiteSpaceCount = currentSpan.CountWhiteSpaces();
 
             if (currentSpan.Length - whiteSpaceCount > OperationType.MaxStringSize) return false;
             bool parseResult; OperationType result;

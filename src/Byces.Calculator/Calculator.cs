@@ -9,26 +9,24 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator(bool hasResultPool, bool hasWhiteSpaceRemover)
+        internal Calculator(bool hasResultPool)
         {
             if (hasResultPool) _resultPool = ObjectPool.Create<StoredResult>();
             _contentPool = ObjectPool.Create<Content>();
-            _hasWhiteSpaceRemover = hasWhiteSpaceRemover;
         }
 
         private readonly ObjectPool<Content> _contentPool;
         private readonly ObjectPool<StoredResult>? _resultPool;
-        private readonly bool _hasWhiteSpaceRemover;
 
         /// <summary>
-        /// Gets the <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
+        /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
         /// </summary>
         /// <param name="expression">The mathematical expression.</param>
         /// <returns>The built result.</returns>
         public MathResult<double> GetDoubleResult(string expression)
         {
             ReadOnlySpan<char> expressionSpan = expression;
-            if (expressionSpan.IsEmpty || (_hasWhiteSpaceRemover && expressionSpan.IsWhiteSpace())) return new MathResult<double>(0, true);
+            if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult<double>(0, true);
             try
             {
                 double result = GetResultFromExpression(expression, expressionSpan);
@@ -46,7 +44,7 @@ namespace Byces.Calculator
             var content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan, _hasWhiteSpaceRemover);
+                content.Build(expressionSpan);
                 content.Process();
 
                 return content.Numbers[0];
@@ -70,7 +68,7 @@ namespace Byces.Calculator
             var content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan, _hasWhiteSpaceRemover);
+                content.Build(expressionSpan);
                 content.Process();
 
                 storedResult.Expression = expression;

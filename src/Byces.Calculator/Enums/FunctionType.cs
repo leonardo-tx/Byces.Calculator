@@ -1,49 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
-using Byces.Calculator.Enums.Functions;
 
 namespace Byces.Calculator.Enums
 {
     internal abstract class FunctionType
     {
-        public static implicit operator int(FunctionType functionType) => functionType.Value;
+        public static implicit operator int(FunctionType functionType) => functionType.value;
         public static explicit operator FunctionType(int value) => GetFunction(value);
-
-        public static readonly FunctionType Factorial = new Factorial();
-        public static readonly FunctionType SquareRoot = new SquareRoot();
-        public static readonly FunctionType CubeRoot = new CubeRoot();
-        public static readonly FunctionType Cosine = new Cosine();
-        public static readonly FunctionType Sine = new Sine();
-        public static readonly FunctionType Tangent = new Tangent();
-        public static readonly FunctionType CosineHyperbolic = new CosineHyperbolic();
-        public static readonly FunctionType SineHyperbolic = new SineHyperbolic();
-        public static readonly FunctionType TangentHyperbolic = new TangentHyperbolic();
-        public static readonly FunctionType Radian = new Radian();
-        public static readonly FunctionType Logarithm = new Logarithm();
-        public static readonly FunctionType Add = new Add();
 
         static FunctionType()
         {
-            Type type = typeof(FunctionType);
-            ReadOnlySpan<FieldInfo> fields = type.GetFields(BindingFlags.Static | BindingFlags.Public);
+            Type mainType = typeof(FunctionType);
+            Assembly libraryAssembly = mainType.Assembly;
 
-            int maxStringSize = 0;
-            FunctionType[] allFunctions = new FunctionType[fields.Length];
-            for (int i = 0; i < fields.Length; i++)
+            ReadOnlySpan<Type> libraryTypes = libraryAssembly.GetTypes();
+            List<Type> functionTypes = new List<Type>();
+            for (int i = 0; i < libraryTypes.Length; i++)
             {
-                var functionType = (FunctionType)fields[i].GetValue(null)!;
-                if (allFunctions[functionType.Value] != null) throw new Exception("There are fields with duplicate int values");
-                if (functionType.StringRepresentation.Length > maxStringSize) maxStringSize = functionType.StringRepresentation.Length;
-
-                allFunctions[functionType.Value] = functionType;
+                if (libraryTypes[i].IsAbstract || !libraryTypes[i].IsSubclassOf(mainType)) continue;
+                functionTypes.Add(libraryTypes[i]);
             }
-            _items = allFunctions;
-            MaxStringSize = maxStringSize;
+
+            int index = 0;
+            _items = new FunctionType[functionTypes.Count];
+            foreach (Type type in functionTypes)
+            {
+                var instance = (FunctionType)Activator.CreateInstance(type)!;
+                instance.value = index;
+
+                if (instance.StringRepresentation.Length > MaxStringSize) MaxStringSize = instance.StringRepresentation.Length;
+                for (int i = 0; i < _items.Length; i++)
+                {
+                    if (_items[i] == null) break;
+                    if (_items[i].StringRepresentation == instance.StringRepresentation) 
+                        throw new Exception($"Unable to initialize the functions. The {type.FullName} class has a string representation identical to another function.");
+                }
+
+                _items[index++] = instance;
+            }
         }
 
         private static readonly FunctionType[] _items;
 
-        protected abstract int Value { get; }
+        private int value;
 
         protected abstract string StringRepresentation { get; }
 
@@ -53,9 +53,9 @@ namespace Byces.Calculator.Enums
 
         internal static int MaxStringSize { get; }
 
-        internal abstract double Operate(double number);
+        public abstract double Operate(double number);
 
-        internal abstract double Operate(ReadOnlySpan<double> numbers);
+        public abstract double Operate(ReadOnlySpan<double> numbers);
 
         internal static bool TryParse(ReadOnlySpan<char> span, out FunctionType functionType)
         {

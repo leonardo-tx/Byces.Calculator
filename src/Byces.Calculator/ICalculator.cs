@@ -6,7 +6,7 @@
     public interface ICalculator
     {
         /// <summary>
-        /// Gets the <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
+        /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
         /// </summary>
         /// <param name="expression">The mathematical expression.</param>
         /// <returns>The built result.</returns>

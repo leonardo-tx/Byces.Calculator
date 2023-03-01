@@ -6,11 +6,10 @@ namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Factorial : FunctionType
     {
-        protected override int Value => 0;
         protected override string StringRepresentation => "FACT";
         protected override char CharRepresentation => default;
 
-        internal override double Operate(double number)
+        public override double Operate(double number)
         {
             if (number < 0) throw new ArithmeticExpressionException("Attempted to factorial a negative number.");
 
@@ -20,6 +19,6 @@ namespace Byces.Calculator.Enums.Functions
             return SpecialFunctions.Gamma(number + 1);
         }
 
-        internal override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
+        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }
