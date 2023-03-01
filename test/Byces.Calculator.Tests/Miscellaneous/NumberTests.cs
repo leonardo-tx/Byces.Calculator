@@ -24,6 +24,14 @@ namespace Byces.Calculator.Tests.Miscellaneous
         }
 
         [TestMethod]
+        public void ScientificNotationTest()
+        {
+            Evaluator.Validate("2E+1", 2E+1);
+            Evaluator.Validate("-2E-2", -2E-2);
+            Evaluator.Validate("3E+3 + 3", 3E+3 + 3);
+        }
+
+        [TestMethod]
         public void NumberDecimalSeparatorTest()
         {
             switch (Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator[0])

@@ -87,20 +87,13 @@ namespace Byces.Calculator.Expressions
             if (hasSignal) LastIndex++;
             if (expressionSpan[LastIndex] == 'e' || expressionSpan[LastIndex] == 'E') return false;
             int whiteSpaceCount = 0;
-            for (bool foundNumber = false; LastIndex < expressionSpan.Length; LastIndex++)
+            for (bool atScientificNotation = false, hasSignal2 = false; LastIndex < expressionSpan.Length; LastIndex++)
             {
                 char currentChar = expressionSpan[LastIndex];
-                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') { foundNumber = true; continue; }
-                if (currentChar == 'E' || currentChar == 'e')
-                {
-                    if (LastIndex + 2 >= expressionSpan.Length) throw new UnknownNumberExpressionException();
-                    char nextChar = expressionSpan[LastIndex + 1];
-                    if (nextChar != '+' && nextChar != '-') throw new UnknownNumberExpressionException();
-                    if (!char.IsDigit(expressionSpan[LastIndex + 2])) throw new UnknownNumberExpressionException();
-
-                    LastIndex += 3; continue;
-                }
-                if (foundNumber && char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
+                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') { continue; }
+                if (char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
+                if (!atScientificNotation && (currentChar == 'E' || currentChar == 'e')) { atScientificNotation = true; continue; }
+                if (atScientificNotation && !hasSignal2 && (currentChar == '+' || currentChar == '-')) { hasSignal2 = true; continue; }
                 break;
             }
             return ParseNumber(expressionSpan[FirstIndex..LastIndex], hasSignal, whiteSpaceCount);
