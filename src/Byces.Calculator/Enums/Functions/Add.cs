@@ -1,20 +1,21 @@
-﻿using System;
+﻿using Byces.Calculator.Expressions;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Add : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "ADD";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number) => number;
+        public override Value Operate(Value value) => value.Number;
 
-        public override double Operate(ReadOnlySpan<double> numbers)
+        public override Value Operate(ReadOnlySpan<Value> values)
         {
             double result = 0;
-            for (int i = 0; i < numbers.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
-                result += numbers[i];
+                result += values[i].Number;
             }
             return result;
         }

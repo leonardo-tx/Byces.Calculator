@@ -1,15 +1,13 @@
 ﻿using System;
-using Byces.Calculator.Exceptions;
+using Byces.Calculator.Expressions;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class SineHyperbolic : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "SINH";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number) => Math.Sinh(number);
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
+        public override Value Operate(Value value) => Math.Sinh(value.Number);
     }
 }

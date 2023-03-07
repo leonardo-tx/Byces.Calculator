@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using Byces.Calculator.Interfaces;
 
 namespace Byces.Calculator.Benchmarks.Benchmarks
 {

@@ -1,19 +1,19 @@
 ﻿using Byces.Calculator.Exceptions;
+using Byces.Calculator.Expressions;
 using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class SquareRoot : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "SQRT";
         protected override char CharRepresentation => '√';
 
-        public override double Operate(double number)
+        public override Value Operate(Value value)
         {
-            if (number < 0) throw new ArithmeticExpressionException("Attempted to square root a negative number");
-            return Math.Sqrt(number);
+            if (value.Number < 0) throw new ArithmeticExpressionException("Attempted to square root a negative number");
+            return Math.Sqrt(value.Number);
         }
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

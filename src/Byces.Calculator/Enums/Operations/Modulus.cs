@@ -1,30 +1,33 @@
-﻿namespace Byces.Calculator.Enums.Operations
+﻿using Byces.Calculator.Expressions;
+using System;
+
+namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class Modulus : OperationType
     {
-        protected override int Value => 4;
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "MOD";
         protected override char CharRepresentation => '%';
         internal override OperationPriorityType Priority => OperationPriorityType.Second;
 
-        internal override double Operate(double firstNumber, double secondNumber)
+        internal override Value Operate(Value firstValue, Value secondValue)
         {
-            if (secondNumber == 0) return firstNumber;
-            if (firstNumber < 0 && secondNumber > 0)
+            if (secondValue.Number == 0) return firstValue.Number;
+            if (firstValue.Number < 0 && secondValue.Number > 0)
             {
-                double result = secondNumber - firstNumber * -1 % secondNumber;
-                if (result == secondNumber) return 0;
+                double result = secondValue.Number - firstValue.Number * -1 % secondValue.Number;
+                if (result == secondValue.Number) return 0;
                 
                 return result;
             }
-            if (firstNumber > 0 && secondNumber < 0)
+            if (firstValue.Number > 0 && secondValue.Number < 0)
             {
-                double result = secondNumber - firstNumber % secondNumber * -1;
-                if (result == secondNumber) return 0;
+                double result = secondValue.Number - firstValue.Number % secondValue.Number * -1;
+                if (result == secondValue.Number) return 0;
 
                 return result;
             }
-            return firstNumber % secondNumber;
+            return firstValue.Number % secondValue.Number;
         }
     }
 }

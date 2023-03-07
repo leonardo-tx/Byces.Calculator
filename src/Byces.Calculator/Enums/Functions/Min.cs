@@ -1,20 +1,21 @@
-﻿using System;
+﻿using Byces.Calculator.Expressions;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Min : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "MIN";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number) => number;
+        public override Value Operate(Value value) => value.Number;
 
-        public override double Operate(ReadOnlySpan<double> numbers)
+        public override Value Operate(ReadOnlySpan<Value> values)
         {
-            double min = numbers[0];
-            for (int i = 1; i < numbers.Length; i++)
+            double min = values[0].Number;
+            for (int i = 1; i < values.Length; i++)
             {
-                if (numbers[i] < min) min = numbers[i];
+                if (values[i].Number < min) min = values[i].Number;
             }
             return min;
         }

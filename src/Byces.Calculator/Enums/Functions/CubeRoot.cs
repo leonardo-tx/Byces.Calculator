@@ -1,15 +1,13 @@
-﻿using Byces.Calculator.Exceptions;
+﻿using Byces.Calculator.Expressions;
 using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class CubeRoot : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "CBRT";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number) => Math.Cbrt(number);
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
+        public override Value Operate(Value value) => Math.Cbrt(value.Number);
     }
 }

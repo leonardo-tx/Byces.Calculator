@@ -18,8 +18,8 @@ namespace Byces.Calculator.Expressions
 
         internal int Priority { get; }
 
-        internal double Operate(double number) => ((FunctionType)Value).Operate(number);
+        internal Value Operate(Value value) => ((FunctionType)Value).Operate(value);
 
-        internal double Operate(ReadOnlySpan<double> numbers) => ((FunctionType)Value).Operate(numbers);
+        internal Value Operate(ReadOnlySpan<Value> values) => ((FunctionType)Value).Operate(values);
     }
 }

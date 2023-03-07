@@ -7,29 +7,6 @@ namespace Byces.Calculator.Extensions
 {
     internal static class CollectionExtensions
     {
-        internal static int Count(this ReadOnlySpan<char> source, ReadOnlySpan<char> characters)
-        {
-            int count = 0;
-            for (int i = 0; i < source.Length; i++)
-            {
-                for (int j = 0; j < characters.Length; j++)
-                {
-                    if (source[i] == characters[j]) count++;
-                }
-            }
-            return count;
-        }
-
-        internal static int Count(this ReadOnlySpan<char> source, char character)
-        {
-            int count = 0;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (source[i] == character) count++;
-            }
-            return count;
-        }
-
         internal static int CountWhiteSpaces(this ReadOnlySpan<char> source)
         {
             int count = 0;
@@ -58,6 +35,16 @@ namespace Byces.Calculator.Extensions
             return max;
         }
 
+        internal static int MaxPriority(this Span<Operation> source)
+        {
+            int max = -1;
+            for (int i = 0; i < source.Length; i++)
+            {
+                if (source[i].Priority > max) max = source[i].Priority;
+            }
+            return max;
+        }
+
         internal static int MaxPriority(this List<Function> source)
         {
             int max = -1;
@@ -73,6 +60,16 @@ namespace Byces.Calculator.Extensions
                 if (source[i].Priority > max) max = source[i].Priority;
             }
 #endif
+            return max;
+        }
+
+        internal static int MaxPriority(this Span<Function> source)
+        {
+            int max = -1;
+            for (int i = 0; i < source.Length; i++)
+            {
+                if (source[i].Priority > max) max = source[i].Priority;
+            }
             return max;
         }
     }

@@ -1,19 +1,18 @@
 ﻿using Byces.Calculator.Exceptions;
+using Byces.Calculator.Expressions;
 using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Logarithm : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "LOG";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number)
+        public override Value Operate(Value value)
         {
-            if (number <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {number}");
-            return Math.Log10(number);
+            if (value.Number <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {value.Number}");
+            return Math.Log10(value.Number);
         }
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

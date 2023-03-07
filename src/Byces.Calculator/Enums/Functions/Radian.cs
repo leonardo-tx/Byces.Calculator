@@ -1,16 +1,13 @@
-﻿using Byces.Calculator.Exceptions;
+﻿using Byces.Calculator.Expressions;
 using MathNet.Numerics;
-using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Radian : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "RAD";
-        protected override char CharRepresentation => default;
 
-        public override double Operate(double number) => number * Constants.Pi2 / 360;
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
+        public override Value Operate(Value value) => value.Number * Constants.Pi2 / 360;
     }
 }

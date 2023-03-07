@@ -1,4 +1,7 @@
-﻿using Byces.Calculator.Expressions;
+﻿using Byces.Calculator.Enums;
+using Byces.Calculator.Expressions;
+using Byces.Calculator.Interfaces;
+using Byces.Calculator.Results;
 using Microsoft.Extensions.ObjectPool;
 using System;
 
@@ -11,12 +14,12 @@ namespace Byces.Calculator
     {
         internal Calculator(bool hasResultPool)
         {
-            if (hasResultPool) _resultPool = ObjectPool.Create<StoredResult>();
+            if (hasResultPool) _resultPool = ObjectPool.Create<ContentResult>();
             _contentPool = ObjectPool.Create<Content>();
         }
 
         private readonly ObjectPool<Content> _contentPool;
-        private readonly ObjectPool<StoredResult>? _resultPool;
+        private readonly ObjectPool<ContentResult>? _resultPool;
 
         /// <summary>
         /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
@@ -27,28 +30,20 @@ namespace Byces.Calculator
         {
             ReadOnlySpan<char> expressionSpan = expression;
             if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult<double>(0, true);
+
+            Content content = _contentPool.Get();
             try
             {
-                double result = GetResultFromExpression(expression, expressionSpan);
-                return new MathResult<double>(result, true);
+                content.Build(expressionSpan, ResultType.Number);
+                content.Process();
+
+                if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Number) return new MathResult<double>(0, true);
+                return new MathResult<double>(content.Values[0].Number, true);
             }
             catch (Exception ex)
             {
                 return new MathResult<double>(ex, double.NaN);
             }
-        }
-
-        private double GetResultFromExpression(string expression, ReadOnlySpan<char> expressionSpan)
-        {
-            if (_resultPool != null) { return GetResultFromExpressionWithResultPool(expression, expressionSpan); }
-            var content = _contentPool.Get();
-            try
-            {
-                content.Build(expressionSpan);
-                content.Process();
-
-                return content.Numbers[0];
-            }
             finally
             {
                 content.Clear();
@@ -56,32 +51,34 @@ namespace Byces.Calculator
             }
         }
 
-        private double GetResultFromExpressionWithResultPool(string expression, ReadOnlySpan<char> expressionSpan)
+        /// <summary>
+        /// Gets a <see langword="bool"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
+        /// </summary>
+        /// <param name="expression">The mathematical expression.</param>
+        /// <returns>The built result.</returns>
+        public MathResult<bool> GetBooleanResult(string expression)
         {
-            var storedResult = _resultPool!.Get();
-            if (expressionSpan.Equals(storedResult.Expression, StringComparison.Ordinal))
-            {
-                try { return storedResult.Result; }
-                finally { _resultPool.Return(storedResult); }
-            }
+            ReadOnlySpan<char> expressionSpan = expression;
+            if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult<bool>(false, true);
 
-            var content = _contentPool.Get();
+            Content content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan);
+                content.Build(expressionSpan, ResultType.Boolean);
                 content.Process();
-
-                storedResult.Expression = expression;
-                storedResult.Result = content.Numbers[0];
-
-                return content.Numbers[0];
+                
+                if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Boolean) return new MathResult<bool>(false, true);
+                return new MathResult<bool>(content.Values[0].Boolean, true);
+            }
+            catch (Exception ex)
+            {
+                return new MathResult<bool>(ex, false);
             }
             finally
             {
                 content.Clear();
                 _contentPool.Return(content);
-                _resultPool.Return(storedResult);
             }
-        }
+        }    
     }
 }

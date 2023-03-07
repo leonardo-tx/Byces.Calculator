@@ -10,6 +10,7 @@ namespace Byces.Calculator.Tests.Miscellaneous
         public void FunctionSpacingTest()
         {
             Evaluator.Validate("c os(ra d9 0)", 0);
+            Evaluator.Validate("cos h(90)", Math.Cosh(90));
             Evaluator.Validate("fa c t (    5 )", 120);
             Evaluator.Validate(" a d d     ( 9 ; 5 ; 3 ) * m i  n ( 5 ; 2 )", 34);
         }
@@ -22,7 +23,7 @@ namespace Byces.Calculator.Tests.Miscellaneous
         }
 
         [TestMethod]
-        public void SpecialNumberSpacingTest()
+        public void VariableSpacingTest()
         {
             Evaluator.Validate("     P         I   ", Math.PI);
             Evaluator.Validate("2 * E u l    ER", Math.E * 2);

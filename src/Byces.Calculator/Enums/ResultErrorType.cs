@@ -40,6 +40,10 @@
         /// <summary>
         /// Represents the use of semicolons in a non-function location.
         /// </summary>
-        MissingFunction
+        MissingFunction,
+        /// <summary>
+        /// Represents the use of an invalid argument parameter, in a function or operation.
+        /// </summary>
+        InvalidArgument
     }
 }

@@ -1,20 +1,17 @@
-﻿using Byces.Calculator.Exceptions;
+﻿using Byces.Calculator.Expressions;
 using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
     internal sealed class Cosine : FunctionType
     {
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "COS";
-        protected override char CharRepresentation => default;
-        internal override int AdditionalCheck => 1;
 
-        public override double Operate(double number)
+        public override Value Operate(Value value)
         {
-            double result = Math.Cos(number);
+            double result = Math.Cos(value.Number);
             return Math.Round(result, 15);
         }
-
-        public override double Operate(ReadOnlySpan<double> numbers) => throw new UnsupportedFunctionExpressionException();
     }
 }

@@ -190,7 +190,7 @@ string expression = "rad(3)";
 string expression = "log(3)";
 ```
 
-### Available special numbers
+### Available variables
 
 #### PI
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Byces.Calculator.Tests.SpecialNumbers
+namespace Byces.Calculator.Tests.Variables
 {
     [TestClass]
     public class PiTests

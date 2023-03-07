@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator.Enums;
+using Byces.Calculator.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Byces.Calculator.Tests

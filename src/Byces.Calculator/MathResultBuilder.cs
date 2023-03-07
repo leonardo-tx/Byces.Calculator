@@ -1,5 +1,7 @@
 ﻿using System;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
+using Byces.Calculator.Results;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Byces.Calculator
@@ -10,8 +12,8 @@ namespace Byces.Calculator
     [Obsolete("This class is deprecated and will be removed in some future release. Use this class instead: CalculatorBuilder.")]
     public sealed class MathResultBuilder
     {
-        private readonly static ObjectPool<Content> contentPool = ObjectPool.Create<Content>();
-        private readonly static ObjectPool<StoredResult> resultPool = ObjectPool.Create<StoredResult>();
+        private readonly static ObjectPool<Content> _contentPool = ObjectPool.Create<Content>();
+        private readonly static ObjectPool<ContentResult> _resultPool = ObjectPool.Create<ContentResult>();
 
         /// <summary>
         /// Initializes a new <see cref="MathResultBuilder"/> class.
@@ -54,7 +56,7 @@ namespace Byces.Calculator
         {
             try
             {
-                return BuildMathExpression(expression);
+                return BuildMathResult(expression);
             }
             catch (Exception ex)
             {
@@ -62,30 +64,28 @@ namespace Byces.Calculator
             }
         }
 
-        private static MathResult<double> BuildMathExpression(string expression)
+        private static MathResult<double> BuildMathResult(string expression)
         {
             ReadOnlySpan<char> expressionSpan = expression;
             if (expressionSpan.IsEmpty || expressionSpan.IsWhiteSpace()) return new MathResult<double>(0, true);
-            
-            var lastResult = resultPool.Get();
-            if (expressionSpan.Equals(lastResult.Expression, StringComparison.Ordinal)) { try { return new MathResult<double>(lastResult.Result, true); } finally { resultPool.Return(lastResult); } }
 
-            var content = contentPool.Get();
+            Content content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan);
+                content.Build(expressionSpan, ResultType.Number);
                 content.Process();
-                
-                lastResult.Expression = expression;
-                lastResult.Result = content.Numbers[0];
 
-                return new MathResult<double>(lastResult.Result, true);
+                if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Number) return new MathResult<double>(0, true);
+                return new MathResult<double>(content.Values[0].Number, true);
+            }
+            catch (Exception ex)
+            {
+                return new MathResult<double>(ex, double.NaN);
             }
             finally
             {
                 content.Clear();
-                contentPool.Return(content);
-                resultPool.Return(lastResult);
+                _contentPool.Return(content);
             }
         }
     }

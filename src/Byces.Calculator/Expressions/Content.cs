@@ -3,35 +3,33 @@ using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Expressions
 {
     internal sealed class Content
     {
-        public Content()
-        {
-            Numbers = new List<double>();
-            Operations = new List<Operation>();
-            Functions = new List<Function>();
-        }
+        private const int StackAllocationLimit = 256;
 
-        private const int StackAllocationLimit = 1024;
+        internal List<Value> Values { get; } = new List<Value>();
 
-        internal List<double> Numbers { get; }
+        internal List<Operation> Operations { get; } = new List<Operation>();
 
-        internal List<Operation> Operations { get; }
+        internal List<Function> Functions { get; } = new List<Function>();
 
-        internal List<Function> Functions { get; }
+        internal ResultType ExpectedResult { get; set; }
 
-        internal void Build(ReadOnlySpan<char> expressionSpan)
+        internal void Build(ReadOnlySpan<char> expressionSpan, ResultType expectedResult)
         {
             ContentBuilder builder = new ContentBuilder();
             builder.Build(this, expressionSpan);
+
+            ExpectedResult = expectedResult;
         }
 
         internal void Clear()
         {
-            Numbers.Clear();
+            Values.Clear();
             Operations.Clear();
             Functions.Clear();
         }
@@ -41,11 +39,24 @@ namespace Byces.Calculator.Expressions
             int priority = Operations.MaxPriority();
             while (priority >= 0)
             {
-                CalculateFunctions(priority);
-                CalculateOperationsInOrder(priority);
-                priority = Operations.MaxPriority();
+                CalculateInOrder(priority);
+                int newPriority = Operations.MaxPriority();
+
+                if (newPriority == priority) break;
+                priority = newPriority;
             }
             CalculateFunctions(0);
+        }
+
+        private void CalculateInOrder(int priority)
+        {
+            CalculateFunctions(priority);
+            int count = ExpectedResult == ResultType.Boolean ? (int)OperationPriorityType.SemiColon : (int)OperationPriorityType.Fourth;
+            for (int i = (int)OperationPriorityType.First; i < count; i++)
+            {
+                CalculateOperations((OperationPriorityType)i, priority);
+            }
+            FindSemiColon(priority);
         }
 
         private void CalculateFunctions(int minPriority)
@@ -61,41 +72,29 @@ namespace Byces.Calculator.Expressions
                     maxPriority = Functions.MaxPriority();
                 }
                 while (i >= Functions.Count) i--;
-
                 int numberIndex = Functions[i].NumberIndex;
-                double result = Functions[i].Operate(Numbers[numberIndex]);
 
+                Values[numberIndex] = Functions[i].Operate(Values[numberIndex]);
                 Functions.RemoveAt(i);
-                Numbers[numberIndex] = result;
             }
-        }
-
-        private void CalculateOperationsInOrder(int priority)
-        {
-            CalculateOperations(OperationPriorityType.First, priority);
-            CalculateOperations(OperationPriorityType.Second, priority);
-            CalculateOperations(OperationPriorityType.Third, priority);
-            FindSemiColon(priority);
         }
 
         private void CalculateOperations(OperationPriorityType operationPriority, int priority)
         {
-            int count = Operations.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Operations.Count; i++)
             {
-                if (Operations[i].Priority != priority) continue;
+                Operation operation = Operations[i];
+                if (operation.Priority != priority) continue;
 
-                OperationType operationType = (OperationType)Operations[i].Value;
+                OperationType operationType = (OperationType)operation.Value;
                 if (operationPriority != operationType.Priority) continue;
 
-                double result = operationType.Operate(Numbers[i], Numbers[i + 1]);
-
-                Numbers[i] = result;
+                Values[i] = operationType.Operate(Values[i], Values[i + 1]);
                 Operations.RemoveAt(i);
-                Numbers.RemoveAt(i + 1);
+                Values.RemoveAt(i + 1);
 
                 ReduceNumerIndexToFunctions(i + 1, 1);
-                count--; i--;
+                i--;
             }
         }
 
@@ -104,7 +103,9 @@ namespace Byces.Calculator.Expressions
             int? firstIndex = null, lastIndex = null;
             for (int i = 0; i < Operations.Count; i++)
             {
-                if (firstIndex.HasValue && Operations[i].Priority != priority)
+                Operation operation = Operations[i];
+                OperationPriorityType operationPriorityType = ((OperationType)operation.Value).Priority;
+                if (firstIndex.HasValue && (operation.Priority != priority || operationPriorityType != OperationPriorityType.SemiColon))
                 {
                     lastIndex = i;
                     int count = (int)lastIndex - (int)firstIndex + 1;
@@ -112,49 +113,75 @@ namespace Byces.Calculator.Expressions
 
                     lastIndex = null; firstIndex = null; i -= count; continue;
                 }
-                if (Operations[i].Priority == priority && !firstIndex.HasValue) { firstIndex = i; continue; }
+                if (!firstIndex.HasValue && operation.Priority == priority && operationPriorityType == OperationPriorityType.SemiColon) { firstIndex = i; continue; }
             }
             if (!firstIndex.HasValue) return;
-            CalculateMultipleArgsFunction((int)firstIndex!, (lastIndex.HasValue) ? (int)lastIndex - (int)firstIndex + 1 : Numbers.Count - (int)firstIndex);
+            CalculateMultipleArgsFunction((int)firstIndex!, lastIndex.HasValue ? (int)lastIndex - (int)firstIndex + 1 : Values.Count - (int)firstIndex);
         }
 
         private void CalculateMultipleArgsFunction(int firstIndex, int count)
         {
             int functionIndex = FindFunctionIndex(firstIndex);
             if (functionIndex == -1) throw new MissingFunctionExpressionException();
-
-            Span<double> numbers = (StackAllocationLimit >= count) ? stackalloc double[count] : new double[count];
+#if NET5_0_OR_GREATER
+            ReadOnlySpan<Value> values = CollectionsMarshal.AsSpan(Values).Slice(firstIndex, count);
+#else
+            Span<Value> values = StackAllocationLimit >= count ? stackalloc Value[count] : new Value[count];
             for (int i = 0; i < count; i++)
             {
-                numbers[i] = Numbers[firstIndex + i];
+                values[i] = Values[firstIndex + i];
             }
-            double result = Functions[functionIndex].Operate(numbers);
-
-            Numbers[firstIndex] = result;
+#endif
+            Values[firstIndex] = Functions[functionIndex].Operate(values);
             Operations.RemoveRange(firstIndex, count - 1);
-            Numbers.RemoveRange(firstIndex + 1, count - 1);
+            Values.RemoveRange(firstIndex + 1, count - 1);
             Functions.RemoveAt(functionIndex);
 
             ReduceNumerIndexToFunctions(firstIndex + 1, count - 1);
         }
 
-        private int FindFunctionIndex(int numberIndex)
+#if NET5_0_OR_GREATER
+        internal int FindFunctionIndex(int numberIndex)
         {
-            for (int i = 0; i < Functions.Count; i++)
+            ReadOnlySpan<Function> span = CollectionsMarshal.AsSpan(Functions);
+            for (int i = span.Length - 1; i >= 0; i--)
             {
-                if (Functions[i].NumberIndex != numberIndex) continue;
-                return i;
+                if (span[i].NumberIndex == numberIndex) return i;
             }
             return -1;
         }
 
         private void ReduceNumerIndexToFunctions(int initialNumberIndex, int removedCount)
         {
-            for (int i = 0; i < Functions.Count; i++)
+            Span<Function> span = CollectionsMarshal.AsSpan(Functions);
+            for (int i = span.Length - 1; i >= 0; i--)
             {
-                if (Functions[i].NumberIndex < initialNumberIndex) continue;
-                Functions[i] = new Function(Functions[i].NumberIndex - removedCount, Functions[i].Value, Functions[i].Priority);
+                Function function = span[i];
+
+                if (function.NumberIndex < initialNumberIndex) break;
+                span[i] = new Function(function.NumberIndex - removedCount, function.Value, function.Priority);
             }
         }
+#else
+        internal int FindFunctionIndex(int numberIndex)
+        {
+            for (int i = Functions.Count - 1; i >= 0; i--)
+            {
+                if (Functions[i].NumberIndex == numberIndex) return i;
+            }
+            return -1;
+        }
+
+        private void ReduceNumerIndexToFunctions(int initialNumberIndex, int removedCount)
+        {
+            for (int i = Functions.Count - 1; i >= 0; i--)
+            {
+                Function function = Functions[i];
+
+                if (function.NumberIndex < initialNumberIndex) break;
+                Functions[i] = new Function(function.NumberIndex - removedCount, function.Value, function.Priority);
+            }
+        }
+#endif
     }
 }

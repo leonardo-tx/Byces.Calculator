@@ -1,12 +1,14 @@
-﻿namespace Byces.Calculator.Enums.Operations
+﻿using Byces.Calculator.Expressions;
+
+namespace Byces.Calculator.Enums.Operations
 {
     internal sealed class Add : OperationType
     {
-        protected override int Value => 0;
+        public override ResultType ResultType => ResultType.Number;
         protected override string StringRepresentation => "ADD";
         protected override char CharRepresentation => '+';
         internal override OperationPriorityType Priority => OperationPriorityType.Third;
 
-        internal override double Operate(double firstNumber, double secondNumber) => firstNumber + secondNumber;
+        internal override Value Operate(Value firstValue, Value secondValue) => firstValue.Number + secondValue.Number;
     }
 }
