@@ -10,22 +10,7 @@
         /// </summary>
         public CalculatorBuilder()
         {
-            HasResultPool = true;
-        }
 
-        /// <summary>
-        /// Gets or sets the use of object pooling for the results of a <see cref="Calculator"/>.
-        /// </summary>
-        /// <returns>The stored boolean, or <see langword="true"/> if none is set.</returns>
-        public bool HasResultPool { get; set; }
-
-        /// <summary>
-        /// Sets the use of object pooling for the results.
-        /// </summary>
-        public CalculatorBuilder WithResultPool(bool b)
-        {
-            HasResultPool = b;
-            return this;
         }
 
         /// <summary>
@@ -34,7 +19,7 @@
         /// <returns>The built calculator.</returns>
         public Calculator Build()
         {
-            return new Calculator(HasResultPool);
+            return new Calculator();
         }
     }
 }

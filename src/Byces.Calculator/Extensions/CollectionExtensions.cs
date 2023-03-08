@@ -7,6 +7,28 @@ namespace Byces.Calculator.Extensions
 {
     internal static class CollectionExtensions
     {
+        internal static bool ContainsAny(this ReadOnlySpan<char> source, ReadOnlySpan<char> chars)
+        {
+            for (int i = 0; i < chars.Length; i++)
+            {
+                char c = chars[i];
+                for (int j = 0; j < source.Length; j++)
+                {
+                    if (c == source[j]) return true;
+                }
+            }
+            return false;
+        }
+
+        internal static bool ContainsWhiteSpace(this ReadOnlySpan<char> source)
+        {
+            for (int i = 0; i < source.Length; i++)
+            {
+                if (char.IsWhiteSpace(source[i])) return true;
+            }
+            return false;
+        }
+
         internal static int CountWhiteSpaces(this ReadOnlySpan<char> source)
         {
             int count = 0;
@@ -60,16 +82,6 @@ namespace Byces.Calculator.Extensions
                 if (source[i].Priority > max) max = source[i].Priority;
             }
 #endif
-            return max;
-        }
-
-        internal static int MaxPriority(this Span<Function> source)
-        {
-            int max = -1;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (source[i].Priority > max) max = source[i].Priority;
-            }
             return max;
         }
     }

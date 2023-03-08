@@ -9,9 +9,9 @@ namespace Byces.Calculator.Tests.Variables
         [TestMethod]
         public void EulerTest()
         {
-            Evaluator.Validate("Euler", Math.E);
-            Evaluator.Validate("-Euler", -Math.E);
-            Evaluator.Validate("2 * Euler", Math.E * 2);
+            Evaluator.ValidateNumber("Euler", Math.E);
+            Evaluator.ValidateNumber("-Euler", -Math.E);
+            Evaluator.ValidateNumber("2 * Euler", Math.E * 2);
         }
     }
 }

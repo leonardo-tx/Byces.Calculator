@@ -10,8 +10,8 @@ namespace Byces.Calculator.Tests.Operations
         [TestMethod]
         public void LogarithmTest()
         {
-            Evaluator.Validate("2 log 4", 2);
-            Evaluator.Validate("5 log 91", Math.Log(91, 5));
+            Evaluator.ValidateNumber("2 log 4", 2);
+            Evaluator.ValidateNumber("5 log 91", Math.Log(91, 5));
         }
 
         [TestMethod]

@@ -17,14 +17,10 @@ namespace Byces.Calculator.Expressions
 
         internal List<Function> Functions { get; } = new List<Function>();
 
-        internal ResultType ExpectedResult { get; set; }
-
-        internal void Build(ReadOnlySpan<char> expressionSpan, ResultType expectedResult)
+        internal void Build(ReadOnlySpan<char> expressionSpan)
         {
             ContentBuilder builder = new ContentBuilder();
             builder.Build(this, expressionSpan);
-
-            ExpectedResult = expectedResult;
         }
 
         internal void Clear()
@@ -51,8 +47,7 @@ namespace Byces.Calculator.Expressions
         private void CalculateInOrder(int priority)
         {
             CalculateFunctions(priority);
-            int count = ExpectedResult == ResultType.Boolean ? (int)OperationPriorityType.SemiColon : (int)OperationPriorityType.Fourth;
-            for (int i = (int)OperationPriorityType.First; i < count; i++)
+            for (int i = (int)OperationPriorityType.First; i < (int)OperationPriorityType.SemiColon; i++)
             {
                 CalculateOperations((OperationPriorityType)i, priority);
             }

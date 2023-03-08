@@ -1,7 +1,6 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Interfaces;
-using Byces.Calculator.Results;
 using Microsoft.Extensions.ObjectPool;
 using System;
 
@@ -12,14 +11,12 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator(bool hasResultPool)
+        internal Calculator()
         {
-            if (hasResultPool) _resultPool = ObjectPool.Create<ContentResult>();
             _contentPool = ObjectPool.Create<Content>();
         }
 
         private readonly ObjectPool<Content> _contentPool;
-        private readonly ObjectPool<ContentResult>? _resultPool;
 
         /// <summary>
         /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
@@ -34,7 +31,7 @@ namespace Byces.Calculator
             Content content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan, ResultType.Number);
+                content.Build(expressionSpan);
                 content.Process();
 
                 if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Number) return new MathResult<double>(0, true);
@@ -64,7 +61,7 @@ namespace Byces.Calculator
             Content content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan, ResultType.Boolean);
+                content.Build(expressionSpan);
                 content.Process();
                 
                 if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Boolean) return new MathResult<bool>(false, true);
@@ -79,6 +76,6 @@ namespace Byces.Calculator
                 content.Clear();
                 _contentPool.Return(content);
             }
-        }    
+        }
     }
 }

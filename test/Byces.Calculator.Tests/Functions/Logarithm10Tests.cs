@@ -9,8 +9,8 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void Logarithm10Test()
         {
-            Evaluator.Validate("log10", Math.Log10(10));
-            Evaluator.Validate("log35", Math.Log10(35));
+            Evaluator.ValidateNumber("log10", Math.Log10(10));
+            Evaluator.ValidateNumber("log35", Math.Log10(35));
         }
     }
 }

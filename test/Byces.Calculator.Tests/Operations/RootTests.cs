@@ -9,29 +9,29 @@ namespace Byces.Calculator.Tests.Operations
         [TestMethod]
         public void RootTest1()
         {
-            Evaluator.Validate("2√9", 3);
-            Evaluator.Validate("2 √ 9 √ 64", 4);
+            Evaluator.ValidateNumber("2√9", 3);
+            Evaluator.ValidateNumber("2 √ 9 √ 64", 4);
         }
 
         [TestMethod]
         public void RootTest2()
         {
-            Evaluator.Validate("2rt9", 3);
-            Evaluator.Validate("2 rt 9 rt 64", 4);
+            Evaluator.ValidateNumber("2rt9", 3);
+            Evaluator.ValidateNumber("2 rt 9 rt 64", 4);
         }
 
         [TestMethod]
         public void RootWithSignsTest1()
         {
-            Evaluator.Validate("3√-64", -4);
-            Evaluator.Validate("+5 √ -1024", -4);
+            Evaluator.ValidateNumber("3√-64", -4);
+            Evaluator.ValidateNumber("+5 √ -1024", -4);
         }
 
         [TestMethod]
         public void RootWithSignsTest2()
         {
-            Evaluator.Validate("3rt-64", -4);
-            Evaluator.Validate("+5 rt -1024", -4);
+            Evaluator.ValidateNumber("3rt-64", -4);
+            Evaluator.ValidateNumber("+5 rt -1024", -4);
         }
 
         [TestMethod]

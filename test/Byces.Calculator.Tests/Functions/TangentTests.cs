@@ -10,9 +10,9 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void TangentTest()
         {
-            Evaluator.ValidateApproximately("tan(rad 60)", Math.Sqrt(3), 1E-15);
-            Evaluator.ValidateApproximately("tan(rad 120)", Math.Sqrt(3) * -1, 1E-15);
-            Evaluator.Validate("tan(rad 45)", 1);
+            Evaluator.ValidateNumberApproximately("tan(rad 60)", Math.Sqrt(3), 1E-15);
+            Evaluator.ValidateNumberApproximately("tan(rad 120)", Math.Sqrt(3) * -1, 1E-15);
+            Evaluator.ValidateNumber("tan(rad 45)", 1);
         }
 
         [TestMethod]

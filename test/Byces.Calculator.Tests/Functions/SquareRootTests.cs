@@ -9,13 +9,13 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void SquareRootTest1()
         {
-            Evaluator.Validate("√9", 3);
+            Evaluator.ValidateNumber("√9", 3);
         }
 
         [TestMethod]
         public void SquareRootTest2()
         {
-            Evaluator.Validate("sqrt(9)", 3);
+            Evaluator.ValidateNumber("sqrt(9)", 3);
         }
 
         [TestMethod]

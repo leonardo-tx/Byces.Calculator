@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Byces.Calculator.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -30,18 +31,21 @@ namespace Byces.Calculator.Enums
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
             bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
             bool charIsDefault = CharRepresentation == '\0';
+
+            if (!charIsDefault && char.IsWhiteSpace(CharRepresentation))
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a whitespace char representation.");
+            if (!stringIsDefault && spanRepresentation.Length > StringSizeLimit)
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation above the allowed limit of {StringSizeLimit}");
+            if (!stringIsDefault && (spanRepresentation.ContainsWhiteSpace() || spanRepresentation.ContainsAny("()")))
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with illegal characters");
             for (int i = 0; i < _items.Length; i++)
             {
                 ReadOnlySpan<char> itemSpanRepresentation = _items[i].StringRepresentation;
+
                 if (!charIsDefault && _items[i].CharRepresentation == CharRepresentation)
                     throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a char representation identical to another type.");
-                if (!charIsDefault && char.IsWhiteSpace(CharRepresentation))
-                    throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a whitespace char representation.");
-                if (!stringIsDefault && spanRepresentation.Length > StringSizeLimit)
-                    throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation above the allowed limit of {StringSizeLimit}");
                 if (!stringIsDefault && spanRepresentation.Equals(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
                     throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation identical to another type.");
-                
                 if (!stringIsDefault)
                 {
                     if (itemSpanRepresentation.StartsWith(spanRepresentation))
@@ -80,16 +84,12 @@ namespace Byces.Calculator.Enums
                 }
             }
             if (spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
-
-            T[] updatedItems = new T[_items.Length + 1];
-            Array.Copy(_items, updatedItems, _items.Length);
-
-            updatedItems[^1] = (T)this;
+            Array.Resize(ref _items, _items.Length + 1);
+            _items[^1] = (T)this;
 #if NETCOREAPP3_0_OR_GREATER
-            if (!stringIsDefault) _stringToType.Add(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase), updatedItems[^1]);
-            if (!charIsDefault) _charToType.Add(CharRepresentation.GetHashCode(), updatedItems[^1]);
+            if (!stringIsDefault) _stringToType.Add(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase), _items[^1]);
+            if (!charIsDefault) _charToType.Add(CharRepresentation.GetHashCode(), _items[^1]);
 #endif
-            _items = updatedItems;
         }
 
         private static T[] _items = Array.Empty<T>();

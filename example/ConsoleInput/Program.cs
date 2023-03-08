@@ -1,6 +1,7 @@
 ﻿using Byces.Calculator;
 using Byces.Calculator.Interfaces;
 using System.Diagnostics;
+using System.Text;
 
 namespace ConsoleInput;
 
@@ -15,16 +16,14 @@ public class Program
             Console.Write("Enter a math expression: ");
             string input = Console.ReadLine() ?? string.Empty;
             
-            long initialTime = Stopwatch.GetTimestamp();
             var result = _calculator.GetDoubleResult(input);
-            TimeSpan timeSpan = Stopwatch.GetElapsedTime(initialTime);
 
             if (!result.IsValid)
             {
                 Console.WriteLine($"\n{result.ErrorMessage} ({result.ErrorType})\n");
                 continue;
             }
-            Console.WriteLine($"\nResult in {timeSpan.TotalMilliseconds} ms: {result.Result}\n");
+            Console.WriteLine($"\nResult: {result.Result}\n");
         }
     }
 }

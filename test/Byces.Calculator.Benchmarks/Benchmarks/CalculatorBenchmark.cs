@@ -6,9 +6,6 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
     [MemoryDiagnoser]
     public class CalculatorBenchmark
     {
-        [Params(false)]
-        public bool WithResultPool;
-
 #pragma warning disable CS8618
         private ICalculator calculator;
 #pragma warning restore CS8618
@@ -16,9 +13,7 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            calculator = new CalculatorBuilder()
-                .WithResultPool(WithResultPool)
-                .Build();
+            calculator = new CalculatorBuilder().Build();
         }
 
         [Benchmark]

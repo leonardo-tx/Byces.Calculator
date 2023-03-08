@@ -1,7 +1,6 @@
 ﻿using System;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
-using Byces.Calculator.Results;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Byces.Calculator
@@ -13,7 +12,6 @@ namespace Byces.Calculator
     public sealed class MathResultBuilder
     {
         private readonly static ObjectPool<Content> _contentPool = ObjectPool.Create<Content>();
-        private readonly static ObjectPool<ContentResult> _resultPool = ObjectPool.Create<ContentResult>();
 
         /// <summary>
         /// Initializes a new <see cref="MathResultBuilder"/> class.
@@ -72,7 +70,7 @@ namespace Byces.Calculator
             Content content = _contentPool.Get();
             try
             {
-                content.Build(expressionSpan, ResultType.Number);
+                content.Build(expressionSpan);
                 content.Process();
 
                 if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Number) return new MathResult<double>(0, true);

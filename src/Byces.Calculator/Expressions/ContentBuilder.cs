@@ -2,6 +2,7 @@
 using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Byces.Calculator.Expressions
 {
@@ -48,6 +49,7 @@ namespace Byces.Calculator.Expressions
             if (!AfterNumber) throw new IncompleteExpressionException();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindWhiteSpace(char currentChar)
         {
             if (!char.IsWhiteSpace(currentChar)) return false;
@@ -56,6 +58,7 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindParentheses(Content content, char currentChar)
         {
             if (currentChar == '(')
@@ -78,6 +81,7 @@ namespace Byces.Calculator.Expressions
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindNumber(Content content, ReadOnlySpan<char> expressionSpan)
         {
             if (FirstIndex != LastIndex) return false;
@@ -100,6 +104,7 @@ namespace Byces.Calculator.Expressions
             return ParseNumber(content, expressionSpan[FirstIndex..LastIndex], whiteSpaceCount);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ParseNumber(Content content, ReadOnlySpan<char> currentSpan, int whiteSpaceCount)
         {
             if (FirstIndex == LastIndex) return false;
@@ -123,6 +128,7 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindSpecialNumber(Content content, ReadOnlySpan<char> expressionSpan)
         {
             var parseResult = FindGeneric<VariableType>(expressionSpan);
@@ -140,6 +146,7 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindFunction(Content content, ReadOnlySpan<char> expressionSpan)
         {
             var parseResult = FindGeneric<FunctionType>(expressionSpan);
@@ -149,6 +156,7 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindOperation(Content content, ReadOnlySpan<char> expressionSpan)
         {
             var parseResult = FindGeneric<OperationType>(expressionSpan);
@@ -158,6 +166,7 @@ namespace Byces.Calculator.Expressions
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T? FindGeneric<T>(ReadOnlySpan<char> expressionSpan) where T : ExpressionType<T>
         {
             if (LastIndex == expressionSpan.Length) { return null; }
@@ -176,6 +185,7 @@ namespace Byces.Calculator.Expressions
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T? FindGenericNoWhiteSpace<T>(ReadOnlySpan<char> expressionSpan) where T : ExpressionType<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
@@ -196,6 +206,7 @@ namespace Byces.Calculator.Expressions
             return type;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T? FindGenericWithWhiteSpace<T>(ReadOnlySpan<char> expressionSpan, int whiteSpaceCount) where T : ExpressionType<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
@@ -222,6 +233,7 @@ namespace Byces.Calculator.Expressions
             return type;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T? FindGenericWithWhitespaceAtLoopSpan<T>(ReadOnlySpan<char> currentSpan, int whiteSpaceCountTotal) where T : ExpressionType<T>
         {
             Span<char> loopSpan = stackalloc char[currentSpan.Length - whiteSpaceCountTotal];
@@ -233,22 +245,26 @@ namespace Byces.Calculator.Expressions
             return type;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddFunction(Content content, FunctionType functionType)
         {
             Function function = new Function(content.Values.Count, functionType, Priority);
             content.Functions.Add(function);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddNumber(Content content, bool givenValue)
         {
             content.Values.Add(givenValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddNumber(Content content, double givenValue)
         {
             content.Values.Add(IsNegative ? -givenValue : givenValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddOperation(Content content, OperationType operationType)
         {
             Operation operation = new Operation(operationType, Priority);

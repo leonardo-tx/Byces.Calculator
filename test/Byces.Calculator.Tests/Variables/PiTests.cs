@@ -9,17 +9,17 @@ namespace Byces.Calculator.Tests.Variables
         [TestMethod]
         public void PiTest1()
         {
-            Evaluator.Validate("π", Math.PI);
-            Evaluator.Validate("-π", -Math.PI);
-            Evaluator.Validate("2 * π", Math.PI * 2);
+            Evaluator.ValidateNumber("π", Math.PI);
+            Evaluator.ValidateNumber("-π", -Math.PI);
+            Evaluator.ValidateNumber("2 * π", Math.PI * 2);
         }
 
         [TestMethod]
         public void PiTest2()
         {
-            Evaluator.Validate("PI", Math.PI);
-            Evaluator.Validate("-PI", -Math.PI);
-            Evaluator.Validate("2 * PI", Math.PI * 2);
+            Evaluator.ValidateNumber("PI", Math.PI);
+            Evaluator.ValidateNumber("-PI", -Math.PI);
+            Evaluator.ValidateNumber("2 * PI", Math.PI * 2);
         }
     }
 }
