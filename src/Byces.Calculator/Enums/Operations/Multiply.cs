@@ -3,12 +3,12 @@ using System;
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class Multiply : OperationType
+    internal sealed class Multiply : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "MUL";
-        protected override char CharRepresentation => '*';
-        internal override OperationPriorityType Priority => OperationPriorityType.Second;
+        public override string StringRepresentation => "MUL";
+        public override char CharRepresentation => '*';
+        internal override OperatorPriority Priority => OperatorPriority.Second;
 
         internal override Value Operate(Value firstValue, Value secondValue) => firstValue.Number * secondValue.Number;
     }

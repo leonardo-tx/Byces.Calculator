@@ -37,8 +37,8 @@ namespace Byces.Calculator.Tests.Operations
         [TestMethod]
         public void RootExceptionsTest()
         {
-            Evaluator.ValidateException("2rt-64", ResultErrorType.Arithmetic);
-            Evaluator.ValidateException("-3rt64", ResultErrorType.Arithmetic);
+            Evaluator.ValidateException("2rt-64", ResultError.Arithmetic);
+            Evaluator.ValidateException("-3rt64", ResultError.Arithmetic);
         }
     }
 }

@@ -4,12 +4,12 @@ using System;
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class Root : OperationType
+    internal sealed class Root : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "RT";
-        protected override char CharRepresentation => '√';
-        internal override OperationPriorityType Priority => OperationPriorityType.First;
+        public override string StringRepresentation => "RT";
+        public override char CharRepresentation => '√';
+        internal override OperatorPriority Priority => OperatorPriority.First;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

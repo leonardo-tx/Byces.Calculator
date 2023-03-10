@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Min : FunctionType
+    internal sealed class Min : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "MIN";
+        public override string StringRepresentation => "MIN";
 
         public override Value Operate(Value value) => value.Number;
 

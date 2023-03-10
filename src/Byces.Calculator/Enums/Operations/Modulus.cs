@@ -3,12 +3,12 @@ using System;
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class Modulus : OperationType
+    internal sealed class Modulus : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "MOD";
-        protected override char CharRepresentation => '%';
-        internal override OperationPriorityType Priority => OperationPriorityType.Second;
+        public override string StringRepresentation => "MOD";
+        public override char CharRepresentation => '%';
+        internal override OperatorPriority Priority => OperatorPriority.Second;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

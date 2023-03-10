@@ -14,7 +14,7 @@
         }
 
         /// <summary>
-        /// Builds the <see cref="Calculator"/> with the given information.
+        /// Builds a new <see cref="Calculator"/> instance.
         /// </summary>
         /// <returns>The built calculator.</returns>
         public Calculator Build()

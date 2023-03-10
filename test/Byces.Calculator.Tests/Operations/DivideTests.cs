@@ -37,7 +37,7 @@ namespace Byces.Calculator.Tests.Operations
         [TestMethod]
         public void DivideExceptionsTest()
         {
-            Evaluator.ValidateException("10 / 0", ResultErrorType.Arithmetic);
+            Evaluator.ValidateException("10 / 0", ResultError.Arithmetic);
         }
     }
 }

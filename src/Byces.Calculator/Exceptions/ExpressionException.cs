@@ -11,7 +11,7 @@ namespace Byces.Calculator.Exceptions
         /// <summary>
         /// Gets the expression error type.
         /// </summary>
-        public abstract ResultErrorType ErrorType { get; }
+        public abstract ResultError ErrorType { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionException"/> class with a specified error message.

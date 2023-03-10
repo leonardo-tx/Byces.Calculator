@@ -1,9 +1,9 @@
 ﻿namespace Byces.Calculator.Enums.Variables
 {
-    internal sealed class False : VariableType
+    internal sealed class False : VariableRepresentation
     {
         public override ResultType ResultType => ResultType.Boolean;
-        protected override string StringRepresentation => "FALSE";
+        public override string StringRepresentation => "FALSE";
 
         internal override bool GetBoolean() => false;
     }

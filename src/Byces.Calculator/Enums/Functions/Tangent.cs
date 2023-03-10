@@ -4,10 +4,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Tangent : FunctionType
+    internal sealed class Tangent : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "TAN";
+        public override string StringRepresentation => "TAN";
 
         public override Value Operate(Value value)
         {

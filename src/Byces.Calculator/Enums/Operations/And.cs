@@ -2,11 +2,11 @@
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class And : OperationType
+    internal sealed class And : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Boolean;
-        protected override string StringRepresentation => "&&";
-        internal override OperationPriorityType Priority => OperationPriorityType.Sixth;
+        public override string StringRepresentation => "&&";
+        internal override OperatorPriority Priority => OperatorPriority.Sixth;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

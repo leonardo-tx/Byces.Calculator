@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Add : FunctionType
+    internal sealed class Add : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "ADD";
+        public override string StringRepresentation => "ADD";
 
         public override Value Operate(Value value) => value.Number;
 

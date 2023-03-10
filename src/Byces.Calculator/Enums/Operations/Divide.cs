@@ -3,12 +3,12 @@ using Byces.Calculator.Expressions;
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class Divide : OperationType
+    internal sealed class Divide : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "DIV";
-        protected override char CharRepresentation => '/';
-        internal override OperationPriorityType Priority => OperationPriorityType.Second;
+        public override string StringRepresentation => "DIV";
+        public override char CharRepresentation => '/';
+        internal override OperatorPriority Priority => OperatorPriority.Second;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

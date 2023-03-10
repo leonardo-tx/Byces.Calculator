@@ -14,7 +14,7 @@ namespace Byces.Calculator
             Result = result;
             IsValid = isValid;
             ErrorMessage = errorMessage;
-            ErrorType = ResultErrorType.None;
+            Error = ResultError.None;
         }
 
         internal MathResult(Exception exception, T result)
@@ -24,10 +24,10 @@ namespace Byces.Calculator
             ErrorMessage = exception.Message;
             if (exception is ExpressionException expressionException)
             {
-                ErrorType = expressionException.ErrorType;
+                Error = expressionException.ErrorType;
                 return;
             }
-            ErrorType = ResultErrorType.Internal;
+            Error = ResultError.Internal;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Byces.Calculator
         /// Gets the expression error type.
         /// </summary>
         /// <returns>The type of error.</returns>
-        public ResultErrorType ErrorType { get; }
+        public ResultError Error { get; }
 
         /// <summary>
         /// Gets the expression result.

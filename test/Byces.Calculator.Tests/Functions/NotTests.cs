@@ -16,7 +16,7 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void NotExceptionsTest()
         {
-            Evaluator.ValidateException("!2", ResultErrorType.InvalidArgument);
+            Evaluator.ValidateException("!2", ResultError.InvalidArgument);
         }
     }
 }

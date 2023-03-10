@@ -1,9 +1,9 @@
 ﻿namespace Byces.Calculator.Enums.Operations
 {
-    internal class SemiColon : OperationType
+    internal class SemiColon : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Undefined;
-        protected override char CharRepresentation => ';';
-        internal override OperationPriorityType Priority => OperationPriorityType.SemiColon;
+        public override char CharRepresentation => ';';
+        internal override OperatorPriority Priority => OperatorPriority.SemiColon;
     }
 }

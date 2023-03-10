@@ -3,11 +3,11 @@ using System;
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal sealed class GreaterEqual : OperationType
+    internal sealed class GreaterEqual : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Boolean;
-        protected override string StringRepresentation => ">=";
-        internal override OperationPriorityType Priority => OperationPriorityType.Fourth;
+        public override string StringRepresentation => ">=";
+        internal override OperatorPriority Priority => OperatorPriority.Fourth;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

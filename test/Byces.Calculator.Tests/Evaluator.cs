@@ -32,10 +32,10 @@ namespace Byces.Calculator.Tests
             Assert.AreEqual(expectedValue, result.Result);
         }
 
-        internal static void ValidateException(string expressionAsString, ResultErrorType expectedValue)
+        internal static void ValidateException(string expressionAsString, ResultError expectedValue)
         {
             var result = _calculator.GetDoubleResult(expressionAsString);
-            Assert.AreEqual(expectedValue, result.ErrorType);
+            Assert.AreEqual(expectedValue, result.Error);
         }
     }
 }

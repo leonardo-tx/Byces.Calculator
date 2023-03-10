@@ -1,13 +1,13 @@
 ﻿using Byces.Calculator.Expressions;
-using MathNet.Numerics;
+using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Radian : FunctionType
+    internal sealed class Radian : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "RAD";
+        public override string StringRepresentation => "RAD";
 
-        public override Value Operate(Value value) => value.Number * Constants.Pi2 / 360;
+        public override Value Operate(Value value) => value.Number * Math.PI / 180;
     }
 }

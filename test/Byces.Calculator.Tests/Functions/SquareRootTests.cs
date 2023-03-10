@@ -21,7 +21,7 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void SquareRootExceptionsTest()
         {
-            Evaluator.ValidateException("√-9", ResultErrorType.Arithmetic);
+            Evaluator.ValidateException("√-9", ResultError.Arithmetic);
         }
     }
 }

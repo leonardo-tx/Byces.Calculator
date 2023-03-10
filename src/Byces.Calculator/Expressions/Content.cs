@@ -47,9 +47,9 @@ namespace Byces.Calculator.Expressions
         private void CalculateInOrder(int priority)
         {
             CalculateFunctions(priority);
-            for (int i = (int)OperationPriorityType.First; i < (int)OperationPriorityType.SemiColon; i++)
+            for (int i = (int)OperatorPriority.First; i < (int)OperatorPriority.SemiColon; i++)
             {
-                CalculateOperations((OperationPriorityType)i, priority);
+                CalculateOperations((OperatorPriority)i, priority);
             }
             FindSemiColon(priority);
         }
@@ -74,14 +74,14 @@ namespace Byces.Calculator.Expressions
             }
         }
 
-        private void CalculateOperations(OperationPriorityType operationPriority, int priority)
+        private void CalculateOperations(OperatorPriority operationPriority, int priority)
         {
             for (int i = 0; i < Operations.Count; i++)
             {
                 Operation operation = Operations[i];
                 if (operation.Priority != priority) continue;
 
-                OperationType operationType = (OperationType)operation.Value;
+                OperatorRepresentation operationType = (OperatorRepresentation)operation.Value;
                 if (operationPriority != operationType.Priority) continue;
 
                 Values[i] = operationType.Operate(Values[i], Values[i + 1]);
@@ -99,8 +99,8 @@ namespace Byces.Calculator.Expressions
             for (int i = 0; i < Operations.Count; i++)
             {
                 Operation operation = Operations[i];
-                OperationPriorityType operationPriorityType = ((OperationType)operation.Value).Priority;
-                if (firstIndex.HasValue && (operation.Priority != priority || operationPriorityType != OperationPriorityType.SemiColon))
+                OperatorPriority operationPriorityType = ((OperatorRepresentation)operation.Value).Priority;
+                if (firstIndex.HasValue && (operation.Priority != priority || operationPriorityType != OperatorPriority.SemiColon))
                 {
                     lastIndex = i;
                     int count = (int)lastIndex - (int)firstIndex + 1;
@@ -108,7 +108,7 @@ namespace Byces.Calculator.Expressions
 
                     lastIndex = null; firstIndex = null; i -= count; continue;
                 }
-                if (!firstIndex.HasValue && operation.Priority == priority && operationPriorityType == OperationPriorityType.SemiColon) { firstIndex = i; continue; }
+                if (!firstIndex.HasValue && operation.Priority == priority && operationPriorityType == OperatorPriority.SemiColon) { firstIndex = i; continue; }
             }
             if (!firstIndex.HasValue) return;
             CalculateMultipleArgsFunction((int)firstIndex!, lastIndex.HasValue ? (int)lastIndex - (int)firstIndex + 1 : Values.Count - (int)firstIndex);

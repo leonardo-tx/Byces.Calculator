@@ -3,7 +3,7 @@
     /// <summary>
     /// Specifies the error type of a <see cref="MathResult{T}"/> instance.
     /// </summary>
-    public enum ResultErrorType
+    public enum ResultError
     {
         /// <summary>
         /// Represents an expression with no errors.

@@ -2,10 +2,11 @@
 
 namespace Byces.Calculator.Enums.Variables
 {
-    internal sealed class Euler : VariableType
+    internal sealed class Euler : VariableRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "EULER";
+        public override string StringRepresentation => "EULER";
+        public override char CharRepresentation => 'E';
 
         internal override double GetNumber() => Math.E;
     }

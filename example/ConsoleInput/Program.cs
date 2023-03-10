@@ -1,7 +1,5 @@
 ﻿using Byces.Calculator;
 using Byces.Calculator.Interfaces;
-using System.Diagnostics;
-using System.Text;
 
 namespace ConsoleInput;
 
@@ -20,7 +18,7 @@ public class Program
 
             if (!result.IsValid)
             {
-                Console.WriteLine($"\n{result.ErrorMessage} ({result.ErrorType})\n");
+                Console.WriteLine($"\n{result.ErrorMessage} ({result.Error})\n");
                 continue;
             }
             Console.WriteLine($"\nResult: {result.Result}\n");

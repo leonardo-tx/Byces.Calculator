@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Cosine : FunctionType
+    internal sealed class Cosine : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "COS";
+        public override string StringRepresentation => "COS";
 
         public override Value Operate(Value value)
         {

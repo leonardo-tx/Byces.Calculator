@@ -18,8 +18,8 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void TangentExceptionsTest()
         {
-            Evaluator.ValidateException("tan(rad 90)", ResultErrorType.Arithmetic);
-            Evaluator.ValidateException("tan(rad 270)", ResultErrorType.Arithmetic);
+            Evaluator.ValidateException("tan(rad 90)", ResultError.Arithmetic);
+            Evaluator.ValidateException("tan(rad 270)", ResultError.Arithmetic);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Byces.Calculator.Enums
 {
-    internal enum OperationPriorityType
+    internal enum OperatorPriority
     {
         First,
         Second,

@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Max : FunctionType
+    internal sealed class Max : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "MAX";
+        public override string StringRepresentation => "MAX";
 
         public override Value Operate(Value value) => value.Number;
 

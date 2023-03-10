@@ -4,11 +4,11 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class SquareRoot : FunctionType
+    internal sealed class SquareRoot : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "SQRT";
-        protected override char CharRepresentation => '√';
+        public override string StringRepresentation => "SQRT";
+        public override char CharRepresentation => '√';
 
         public override Value Operate(Value value)
         {

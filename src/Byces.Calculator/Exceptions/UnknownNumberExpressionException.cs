@@ -15,6 +15,6 @@ namespace Byces.Calculator.Exceptions
         /// <summary>
         /// Gets the expression error type.
         /// </summary>
-        public override ResultErrorType ErrorType => ResultErrorType.UnknownNumber;
+        public override ResultError ErrorType => ResultError.UnknownNumber;
     }
 }

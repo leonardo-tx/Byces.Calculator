@@ -21,7 +21,7 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void AddExceptionsTest()
         {
-            Evaluator.ValidateException("add(2 == 2)", Enums.ResultErrorType.InvalidArgument);
+            Evaluator.ValidateException("add(2 == 2)", Enums.ResultError.InvalidArgument);
         }
     }
 }

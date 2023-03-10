@@ -2,10 +2,10 @@
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Not : FunctionType
+    internal sealed class Not : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Boolean;
-        protected override char CharRepresentation => '!';
+        public override char CharRepresentation => '!';
 
         public override Value Operate(Value value) => !value.Boolean;
     }

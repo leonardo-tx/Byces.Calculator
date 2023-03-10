@@ -4,10 +4,10 @@ using MathNet.Numerics;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Factorial : FunctionType
+    internal sealed class Factorial : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "FACT";
+        public override string StringRepresentation => "FACT";
 
         public override Value Operate(Value value)
         {

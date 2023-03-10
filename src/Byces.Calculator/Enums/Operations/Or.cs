@@ -2,11 +2,11 @@
 
 namespace Byces.Calculator.Enums.Operations
 {
-    internal class Or : OperationType
+    internal class Or : OperatorRepresentation
     {
         public override ResultType ResultType => ResultType.Boolean;
-        protected override string StringRepresentation => "||";
-        internal override OperationPriorityType Priority => OperationPriorityType.Seventh;
+        public override string StringRepresentation => "||";
+        internal override OperatorPriority Priority => OperatorPriority.Seventh;
 
         internal override Value Operate(Value firstValue, Value secondValue)
         {

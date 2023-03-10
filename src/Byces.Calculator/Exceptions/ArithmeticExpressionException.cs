@@ -20,6 +20,6 @@ namespace Byces.Calculator.Exceptions
         /// <summary>
         /// Gets the expression error type.
         /// </summary>
-        public override ResultErrorType ErrorType => ResultErrorType.Arithmetic;
+        public override ResultError ErrorType => ResultError.Arithmetic;
     }
 }

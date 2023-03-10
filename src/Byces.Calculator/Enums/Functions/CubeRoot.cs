@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class CubeRoot : FunctionType
+    internal sealed class CubeRoot : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "CBRT";
+        public override string StringRepresentation => "CBRT";
 
         public override Value Operate(Value value) => Math.Cbrt(value.Number);
     }

@@ -3,10 +3,10 @@ using System;
 
 namespace Byces.Calculator.Enums.Functions
 {
-    internal sealed class Sine : FunctionType
+    internal sealed class Sine : FunctionRepresentation
     {
         public override ResultType ResultType => ResultType.Number;
-        protected override string StringRepresentation => "SIN";
+        public override string StringRepresentation => "SIN";
 
         public override Value Operate(Value value)
         {
