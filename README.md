@@ -72,9 +72,9 @@ string expressionExample4 = "fact(2 + 3) * fact3";
 
 ### Special
 
-| Operator  | Description                                                                                      | Examples    |
-|-----------|--------------------------------------------------------------------------------------------------|-------------|
-| Semicolon | Does not return any specific value, it can only be used in functions to pass multiple parameters | `fun(x; y)` |
+| Operator  | Description                                                                             | Examples    |
+|-----------|-----------------------------------------------------------------------------------------|-------------|
+| Semicolon | Does not return any value, it can only be used in functions to pass multiple parameters | `fun(x; y)` |
 
 ## Available functions
 
