@@ -123,7 +123,7 @@ namespace Byces.Calculator.Expressions
                 parseResult = double.TryParse(span, out result);
             }
             if (!parseResult) throw new UnknownNumberExpressionException();
-            
+
             AddNumber(content, result);
             return true;
         }
@@ -134,16 +134,7 @@ namespace Byces.Calculator.Expressions
             int value = FindGenericValue<VariableRepresentation>(expressionSpan, out bool isType);
             if (!isType || value == -1) return false;
 
-            var variable = VariableRepresentation.GetItem(value);
-            switch (variable.ResultType)
-            {
-                case ResultType.Number:
-                    AddNumber(content, variable.GetNumber());
-                    break;
-                case ResultType.Boolean:
-                    AddNumber(content, variable.GetBoolean());
-                    break;
-            }
+            AddNumber(content, VariableRepresentation.GetItem(value));
             return true;
         }
 
@@ -281,9 +272,15 @@ namespace Byces.Calculator.Expressions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddNumber(Content content, bool givenValue)
+        private void AddNumber(Content content, VariableRepresentation representation)
         {
-            content.Values.Add(givenValue);
+            var value = representation.GetValue();
+            if (IsNegative && value.ResultType == ResultType.Number)
+            {
+                content.Values.Add(-value.number);
+                return;
+            }
+            content.Values.Add(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

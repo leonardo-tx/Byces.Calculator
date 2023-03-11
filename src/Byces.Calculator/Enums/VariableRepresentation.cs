@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Byces.Calculator.Expressions;
 
 namespace Byces.Calculator.Enums
 {
@@ -6,9 +6,7 @@ namespace Byces.Calculator.Enums
     {
         protected VariableRepresentation() : base(ExpressionConflict.Variable | ExpressionConflict.Function) { }
 
-        internal virtual double GetNumber() => throw new NotSupportedException();
-
-        internal virtual bool GetBoolean() => throw new NotSupportedException();
+        internal abstract Value GetValue();
 
         internal override ExpressionConflict RepresentationConflict => ExpressionConflict.Variable;
     }

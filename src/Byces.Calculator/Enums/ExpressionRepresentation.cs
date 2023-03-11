@@ -134,8 +134,6 @@ namespace Byces.Calculator.Enums
 
         internal static int MaxStringSize { get; private set; }
 
-        public abstract ResultType ResultType { get; }
-
 #if NETCOREAPP3_0_OR_GREATER
         internal static bool TryParse(ReadOnlySpan<char> span, out T type)
         {

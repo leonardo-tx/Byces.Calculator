@@ -41,9 +41,12 @@ string expressionExample3 = "1E+3";
 
 // This is an expression with two operators and two functions
 string expressionExample4 = "fact(2 + 3) * fact3";
+
+// You can also use implicit multiplication
+string expressionExample5 = "2(5)";
 ```
 
-## Available operations
+## Available operators
 
 ### Arithmetic
 
@@ -64,7 +67,7 @@ string expressionExample4 = "fact(2 + 3) * fact3";
 | And           | Returns true if both values are true, otherwise false                   | `x && y`   |
 | Or            | Returns true if any of the values are true                              | `x \|\| y` |
 | Equal         | Returns true if the two values have the same value                      | `x == y`   |
-| Not Equal     | Returns true if the two values are differen                             | `x != y`   |
+| Not Equal     | Returns true if the two values are different                            | `x != y`   |
 | Greater       | Returns true if the first number is greater than the second             | `x > y`    |
 | Greater Equal | Returns true if the first number is greater than or equal to the second | `x >= y`   |
 | Less          | Returns true if the first number is less than the second                | `x < y`    |
