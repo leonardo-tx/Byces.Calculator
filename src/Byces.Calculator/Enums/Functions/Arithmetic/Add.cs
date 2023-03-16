@@ -7,8 +7,6 @@ namespace Byces.Calculator.Enums.Functions.Arithmetic
     {
         public override string StringRepresentation => "ADD";
 
-        public override Value Operate(Value value) => value.Number;
-
         public override Value Operate(ReadOnlySpan<Value> values)
         {
             double result = 0;

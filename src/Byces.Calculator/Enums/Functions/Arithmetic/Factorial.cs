@@ -1,21 +1,24 @@
 ﻿using Byces.Calculator.Exceptions;
 using Byces.Calculator.Expressions;
 using MathNet.Numerics;
+using System;
 
 namespace Byces.Calculator.Enums.Functions.Arithmetic
 {
     internal sealed class Factorial : FunctionRepresentation
     {
         public override string StringRepresentation => "FACT";
+        public override int ParametersMax => 1;
 
-        public override Value Operate(Value value)
+        public override Value Operate(ReadOnlySpan<Value> values)
         {
-            if (value.Number < 0) throw new ArithmeticExpressionException("Attempted to factorial a negative number.");
+            double number = values[0].Number;
+            if (number < 0) throw new ArithmeticExpressionException("Attempted to factorial a negative number.");
 
-            double difference = value.Number - (long)value.Number;
-            if (difference == 0) return SpecialFunctions.Factorial((int)value.Number);
+            double difference = number - (long)number;
+            if (difference == 0) return SpecialFunctions.Factorial((int)number);
 
-            return SpecialFunctions.Gamma(value.Number + 1);
+            return SpecialFunctions.Gamma(number + 1);
         }
     }
 }

@@ -7,13 +7,13 @@ namespace Byces.Calculator.Enums.Operators.Arithmetic
     {
         public override string StringRepresentation => "DIV";
         public override char CharRepresentation => '/';
-        internal override OperatorPriority Priority => OperatorPriority.Second;
+        internal override OperatorPriority Priority => OperatorPriority.Multiplicative;
 
-        internal override Value Operate(Value firstValue, Value secondValue)
+        internal override Value Operate(Value left, Value right)
         {
-            if (secondValue.Number == 0) throw new ArithmeticExpressionException("Attempted to divide by zero.");
+            if (right.Number == 0) throw new ArithmeticExpressionException("Attempted to divide by zero.");
 
-            return firstValue.Number / secondValue.Number;
+            return left.Number / right.Number;
         }
     }
 }

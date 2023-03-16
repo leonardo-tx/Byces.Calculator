@@ -8,6 +8,6 @@ namespace Byces.Calculator.Enums.Variables.Number
         public override string StringRepresentation => "PI";
         public override char CharRepresentation => 'π';
 
-        internal override Value GetValue() => Math.PI;
+        public override Value GetValue() => Math.PI;
     }
 }

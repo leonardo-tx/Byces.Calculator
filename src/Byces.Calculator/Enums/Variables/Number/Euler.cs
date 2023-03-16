@@ -8,6 +8,6 @@ namespace Byces.Calculator.Enums.Variables.Number
         public override string StringRepresentation => "EULER";
         public override char CharRepresentation => 'E';
 
-        internal override Value GetValue() => Math.E;
+        public override Value GetValue() => Math.E;
     }
 }

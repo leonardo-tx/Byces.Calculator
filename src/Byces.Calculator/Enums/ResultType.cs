@@ -2,7 +2,6 @@
 {
     internal enum ResultType
     {
-        Undefined,
         Number,
         Boolean
     }

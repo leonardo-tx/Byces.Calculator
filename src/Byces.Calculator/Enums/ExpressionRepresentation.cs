@@ -25,7 +25,7 @@ namespace Byces.Calculator.Enums
             }
         }
 
-        protected ExpressionRepresentation(ExpressionConflict conflicts) : base(_items.Length)
+        protected ExpressionRepresentation(ExpressionConflict conflicts, ExpressionConflict representationConflict) : base(_items.Length)
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
             bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
@@ -81,7 +81,7 @@ namespace Byces.Calculator.Enums
                             diff = spanRepresentation.Length - l; break;
                         }
                         Array.Resize(ref itemsField[j].representableConflicts, itemsField[j].representableConflicts.Length + 1);
-                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, RepresentationConflict, RepresentableType.String);
+                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.String);
                     }
                     if (!charIsDefault && !itemSpanRepresentation.IsEmpty && char.ToUpper(itemSpanRepresentation[0]) == char.ToUpper(CharRepresentation))
                     {
@@ -93,7 +93,7 @@ namespace Byces.Calculator.Enums
                     {
                         int diff = spanRepresentation.Length - 1;
                         Array.Resize(ref itemsField[j].representableConflicts, itemsField[j].representableConflicts.Length + 1);
-                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, RepresentationConflict, RepresentableType.Char);
+                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
                     }
                 }
             }
@@ -101,9 +101,9 @@ namespace Byces.Calculator.Enums
             {
                 int diff = spanRepresentation.Length - 1;
                 Array.Resize(ref representableConflicts, representableConflicts.Length + 1);
-                representableConflicts[^1] = new Conflict(Value, diff, RepresentationConflict, RepresentableType.Char);
+                representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
             }
-            if (spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
+            if (!stringIsDefault && spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
             Array.Resize(ref _items, _items.Length + 1);
             _items[^1] = (T)this;
 #if NETCOREAPP3_0_OR_GREATER
@@ -129,8 +129,6 @@ namespace Byces.Calculator.Enums
         private static readonly Dictionary<int, T> _stringToType = new Dictionary<int, T>();
 #endif
         private static readonly Dictionary<char, T> _charToType = new Dictionary<char, T>();
-
-        internal abstract ExpressionConflict RepresentationConflict { get; }
 
         internal static int MaxStringSize { get; private set; }
 

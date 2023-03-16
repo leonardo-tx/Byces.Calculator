@@ -1,6 +1,7 @@
 ﻿using Byces.Calculator.Expressions;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Extensions
@@ -54,16 +55,6 @@ namespace Byces.Calculator.Extensions
                 if (source[i].Priority > max) max = source[i].Priority;
             }
 #endif
-            return max;
-        }
-
-        internal static int MaxPriority(this Span<Operation> source)
-        {
-            int max = -1;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (source[i].Priority > max) max = source[i].Priority;
-            }
             return max;
         }
 

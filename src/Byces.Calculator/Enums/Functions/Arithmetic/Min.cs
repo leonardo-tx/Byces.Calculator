@@ -7,8 +7,6 @@ namespace Byces.Calculator.Enums.Functions.Arithmetic
     {
         public override string StringRepresentation => "MIN";
 
-        public override Value Operate(Value value) => value.Number;
-
         public override Value Operate(ReadOnlySpan<Value> values)
         {
             double min = values[0].Number;

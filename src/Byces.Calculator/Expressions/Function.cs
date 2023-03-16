@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator.Enums;
+using Byces.Calculator.Exceptions;
 using System;
 
 namespace Byces.Calculator.Expressions
@@ -18,8 +19,22 @@ namespace Byces.Calculator.Expressions
 
         internal int Priority { get; }
 
-        internal Value Operate(Value value) => ((FunctionRepresentation)Value).Operate(value);
+        internal Value Operate(Value value)
+        {
+            var functionRepresentation = (FunctionRepresentation)Value;
+            if (functionRepresentation.ParametersMin > 1) throw new InvalidArgumentExpressionException();
 
-        internal Value Operate(ReadOnlySpan<Value> values) => ((FunctionRepresentation)Value).Operate(values);
+            ReadOnlySpan<Value> temp = stackalloc Value[] { value };
+            return functionRepresentation.Operate(temp);
+        }
+
+        internal Value Operate(ReadOnlySpan<Value> values)
+        {
+            var functionRepresentation = (FunctionRepresentation)Value;
+            if (functionRepresentation.ParametersMin > values.Length) throw new InvalidArgumentExpressionException();
+            if (functionRepresentation.ParametersMax > -1 && functionRepresentation.ParametersMax < values.Length) throw new InvalidArgumentExpressionException();
+            
+            return functionRepresentation.Operate(values);
+        }
     }
 }

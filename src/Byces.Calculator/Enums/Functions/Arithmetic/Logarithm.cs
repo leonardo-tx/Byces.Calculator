@@ -7,23 +7,32 @@ namespace Byces.Calculator.Enums.Functions.Arithmetic
     internal sealed class Logarithm : FunctionRepresentation
     {
         public override string StringRepresentation => "LOG";
-
-        public override Value Operate(Value value)
-        {
-            if (value.Number <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {value.Number}");
-            return Math.Log10(value.Number);
-        }
+        public override int ParametersMax => 2;
 
         public override Value Operate(ReadOnlySpan<Value> values)
         {
-            if (values.Length > 2) throw new InvalidArgumentExpressionException();
-            double firstNumber = values[0].Number;
-            double secondNumber = values[1].Number;
+            if (values.Length == 1)
+            {
+                return Log10(values[0].Number);
+            }
+            else
+            {
+                return LogCustom(values[0].Number, values[1].Number);
+            }
+        }
 
-            if (secondNumber <= 1) throw new ArithmeticExpressionException($"Attempted to base {secondNumber} on a logarithm");
-            if (firstNumber <= 0) throw new ArithmeticExpressionException($"Attempted to log (base {secondNumber}) of {firstNumber}");
+        private static double Log10(double value)
+        {
+            if (value <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {value}");
+            return Math.Log10(value);
+        }
 
-            return Math.Log(firstNumber, secondNumber);
+        private static double LogCustom(double left, double right)
+        {
+            if (right <= 1) throw new ArithmeticExpressionException($"Attempted to base {right} on a logarithm");
+            if (left <= 0) throw new ArithmeticExpressionException($"Attempted to log (base {right}) of {left}");
+
+            return Math.Log(left, right);
         }
     }
 }

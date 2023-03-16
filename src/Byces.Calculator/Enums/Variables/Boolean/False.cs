@@ -6,6 +6,6 @@ namespace Byces.Calculator.Enums.Variables.Boolean
     {
         public override string StringRepresentation => "FALSE";
 
-        internal override Value GetValue() => false;
+        public override Value GetValue() => false;
     }
 }

@@ -2,13 +2,15 @@
 {
     internal enum OperatorPriority
     {
-        First,
-        Second,
-        Third,
-        Fourth,
-        Fifth,
-        Sixth,
-        Seventh,
+        Potentiality,
+        Multiplicative,
+        Additive,
+        Relational,
+        Equality,
+        AndBitwise,
+        OrBitwise,
+        AndConditional,
+        OrConditional,
         SemiColon,
     }
 }

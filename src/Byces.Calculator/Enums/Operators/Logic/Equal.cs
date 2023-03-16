@@ -6,17 +6,17 @@ namespace Byces.Calculator.Enums.Operators.Logic
     internal sealed class Equal : OperatorRepresentation
     {
         public override string StringRepresentation => "==";
-        internal override OperatorPriority Priority => OperatorPriority.Fifth;
+        internal override OperatorPriority Priority => OperatorPriority.Equality;
 
-        internal override Value Operate(Value firstValue, Value secondValue)
+        internal override Value Operate(Value left, Value right)
         {
-            if (firstValue.ResultType != secondValue.ResultType) return false;
+            if (left.ResultType != right.ResultType) return false;
 
-            return firstValue.ResultType switch
+            return left.ResultType switch
             {
-                ResultType.Boolean => firstValue.Boolean == secondValue.Boolean,
-                ResultType.Number => firstValue.Number == secondValue.Number,
-                _ => throw new NotSupportedException(),
+                ResultType.Boolean => left.Boolean == right.Boolean,
+                ResultType.Number => left.Number == right.Number,
+                _ => throw new NotImplementedException()
             };
         }
     }

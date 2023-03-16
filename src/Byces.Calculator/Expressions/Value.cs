@@ -7,21 +7,23 @@ namespace Byces.Calculator.Expressions
     {
         internal Value(double number, bool boolean, ResultType resultType)
         {
-            this.number = number;
-            this.boolean = boolean;
+            _number = number;
+            _boolean = boolean;
             ResultType = resultType;
         }
 
-        internal readonly double number;
+        private readonly double _number;
 
-        internal readonly bool boolean;
+        private readonly bool _boolean;
+
+        internal ResultType ResultType { get; }
 
         internal double Number 
         {
             get
             {
                 if (ResultType != ResultType.Number) throw new InvalidArgumentExpressionException();
-                return number;
+                return _number;
             }
         }
 
@@ -30,11 +32,9 @@ namespace Byces.Calculator.Expressions
             get
             {
                 if (ResultType != ResultType.Boolean) throw new InvalidArgumentExpressionException();
-                return boolean;
+                return _boolean;
             }
         }
-
-        internal ResultType ResultType { get; }
 
         public static implicit operator Value(double number) => new Value(number, false, ResultType.Number);
 

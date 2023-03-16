@@ -6,26 +6,26 @@ namespace Byces.Calculator.Enums.Operators.Arithmetic
     {
         public override string StringRepresentation => "MOD";
         public override char CharRepresentation => '%';
-        internal override OperatorPriority Priority => OperatorPriority.Second;
+        internal override OperatorPriority Priority => OperatorPriority.Multiplicative;
 
-        internal override Value Operate(Value firstValue, Value secondValue)
+        internal override Value Operate(Value left, Value right)
         {
-            if (secondValue.Number == 0) return firstValue.Number;
-            if (firstValue.Number < 0 && secondValue.Number > 0)
+            if (right.Number == 0) return left.Number;
+            if (left.Number < 0 && right.Number > 0)
             {
-                double result = secondValue.Number - firstValue.Number * -1 % secondValue.Number;
-                if (result == secondValue.Number) return 0;
+                double result = right.Number - left.Number * -1 % right.Number;
+                if (result == right.Number) return 0;
 
                 return result;
             }
-            if (firstValue.Number > 0 && secondValue.Number < 0)
+            if (left.Number > 0 && right.Number < 0)
             {
-                double result = secondValue.Number - firstValue.Number % secondValue.Number * -1;
-                if (result == secondValue.Number) return 0;
+                double result = right.Number - left.Number % right.Number * -1;
+                if (result == right.Number) return 0;
 
                 return result;
             }
-            return firstValue.Number % secondValue.Number;
+            return left.Number % right.Number;
         }
     }
 }

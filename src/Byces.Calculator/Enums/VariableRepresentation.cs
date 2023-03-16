@@ -4,10 +4,8 @@ namespace Byces.Calculator.Enums
 {
     internal abstract class VariableRepresentation : ExpressionRepresentation<VariableRepresentation>
     {
-        protected VariableRepresentation() : base(ExpressionConflict.Variable | ExpressionConflict.Function) { }
+        protected VariableRepresentation() : base(ExpressionConflict.Variable | ExpressionConflict.Function, ExpressionConflict.Variable) { }
 
-        internal abstract Value GetValue();
-
-        internal override ExpressionConflict RepresentationConflict => ExpressionConflict.Variable;
+        public abstract Value GetValue();
     }
 }

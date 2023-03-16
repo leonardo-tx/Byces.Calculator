@@ -6,8 +6,8 @@ namespace Byces.Calculator.Enums.Operators.Arithmetic
     {
         public override string StringRepresentation => "ADD";
         public override char CharRepresentation => '+';
-        internal override OperatorPriority Priority => OperatorPriority.Third;
+        internal override OperatorPriority Priority => OperatorPriority.Additive;
 
-        internal override Value Operate(Value firstValue, Value secondValue) => firstValue.Number + secondValue.Number;
+        internal override Value Operate(Value left, Value right) => left.Number + right.Number;
     }
 }

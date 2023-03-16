@@ -6,8 +6,8 @@ namespace Byces.Calculator.Enums.Operators.Arithmetic
     {
         public override string StringRepresentation => "MUL";
         public override char CharRepresentation => '*';
-        internal override OperatorPriority Priority => OperatorPriority.Second;
+        internal override OperatorPriority Priority => OperatorPriority.Multiplicative;
 
-        internal override Value Operate(Value firstValue, Value secondValue) => firstValue.Number * secondValue.Number;
+        internal override Value Operate(Value left, Value right) => left.Number * right.Number;
     }
 }

@@ -3,6 +3,7 @@ using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Expressions
@@ -44,10 +45,11 @@ namespace Byces.Calculator.Expressions
             CalculateFunctions(0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CalculateInOrder(int priority)
         {
             CalculateFunctions(priority);
-            for (int i = (int)OperatorPriority.First; i < (int)OperatorPriority.SemiColon; i++)
+            for (int i = (int)OperatorPriority.Potentiality; i < (int)OperatorPriority.SemiColon; i++)
             {
                 CalculateOperations((OperatorPriority)i, priority);
             }
@@ -74,6 +76,7 @@ namespace Byces.Calculator.Expressions
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CalculateOperations(OperatorPriority operationPriority, int priority)
         {
             for (int i = 0; i < Operations.Count; i++)
@@ -81,10 +84,10 @@ namespace Byces.Calculator.Expressions
                 Operation operation = Operations[i];
                 if (operation.Priority != priority) continue;
 
-                OperatorRepresentation operationType = (OperatorRepresentation)operation.Value;
-                if (operationPriority != operationType.Priority) continue;
+                OperatorRepresentation operationRepresentation = (OperatorRepresentation)operation.Value;
+                if (operationPriority != operationRepresentation.Priority) continue;
 
-                Values[i] = operationType.Operate(Values[i], Values[i + 1]);
+                Values[i] = operationRepresentation.Operate(Values[i], Values[i + 1]);
                 Operations.RemoveAt(i);
                 Values.RemoveAt(i + 1);
 
@@ -93,6 +96,7 @@ namespace Byces.Calculator.Expressions
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FindSemiColon(int priority)
         {
             int? firstIndex = null, lastIndex = null;
@@ -136,7 +140,7 @@ namespace Byces.Calculator.Expressions
         }
 
 #if NET5_0_OR_GREATER
-        internal int FindFunctionIndex(int numberIndex)
+        private int FindFunctionIndex(int numberIndex)
         {
             ReadOnlySpan<Function> span = CollectionsMarshal.AsSpan(Functions);
             for (int i = span.Length - 1; i >= 0; i--)
@@ -158,7 +162,7 @@ namespace Byces.Calculator.Expressions
             }
         }
 #else
-        internal int FindFunctionIndex(int numberIndex)
+        private int FindFunctionIndex(int numberIndex)
         {
             for (int i = Functions.Count - 1; i >= 0; i--)
             {

@@ -28,7 +28,7 @@ namespace Byces.Calculator.Expressions
                 if (FindParentheses(content, expressionSpan[LastIndex])) continue;
                 if (!AfterNumber)
                 {
-                    if (FindNumber(content, expressionSpan) || FindSpecialNumber(content, expressionSpan))
+                    if (FindNumber(content, expressionSpan) || FindVariable(content, expressionSpan))
                     {
                         AfterNumber = true; FirstIndex = LastIndex;
                         continue;
@@ -129,9 +129,9 @@ namespace Byces.Calculator.Expressions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool FindSpecialNumber(Content content, ReadOnlySpan<char> expressionSpan)
+        private bool FindVariable(Content content, ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<VariableRepresentation>(expressionSpan, out bool isType);
+            int value = FindGenericValue<VariableRepresentation>(expressionSpan, ExpressionConflict.Variable, out bool isType);
             if (!isType || value == -1) return false;
 
             AddNumber(content, VariableRepresentation.GetItem(value));
@@ -141,7 +141,7 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindFunction(Content content, ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<FunctionRepresentation>(expressionSpan, out bool isType);
+            int value = FindGenericValue<FunctionRepresentation>(expressionSpan, ExpressionConflict.Function, out bool isType);
             if (!isType)
             {
                 if (value == -1) return false;
@@ -155,7 +155,7 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindOperator(Content content, ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<OperatorRepresentation>(expressionSpan, out _);
+            int value = FindGenericValue<OperatorRepresentation>(expressionSpan, ExpressionConflict.Operator, out _);
             if (value == -1) return false;
 
             AddOperator(content, OperatorRepresentation.GetItem(value));
@@ -163,7 +163,7 @@ namespace Byces.Calculator.Expressions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindGenericValue<T>(ReadOnlySpan<char> expressionSpan, out bool isOriginalType) where T : ExpressionRepresentation<T>
+        private int FindGenericValue<T>(ReadOnlySpan<char> expressionSpan, ExpressionConflict resultConflict, out bool isOriginalType) where T : ExpressionRepresentation<T>
         {
             if (LastIndex == expressionSpan.Length) { isOriginalType = false; return -1; }
 
@@ -173,22 +173,22 @@ namespace Byces.Calculator.Expressions
             if (currentSpan.Length - whiteSpaceCount > ExpressionRepresentation<T>.MaxStringSize) { isOriginalType = false; return -1; }
             if (whiteSpaceCount == 0)
             {
-                return FindGenericValueNoWhiteSpace<T>(expressionSpan, out isOriginalType);
+                return FindGenericValueNoWhiteSpace<T>(expressionSpan, resultConflict, out isOriginalType);
             }
-            return FindGenericValueWithWhiteSpace<T>(expressionSpan, whiteSpaceCount, out isOriginalType);
+            return FindGenericValueWithWhiteSpace<T>(expressionSpan, whiteSpaceCount, resultConflict, out isOriginalType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindGenericValueNoWhiteSpace<T>(ReadOnlySpan<char> expressionSpan, out bool isOriginalType) where T : ExpressionRepresentation<T>
+        private int FindGenericValueNoWhiteSpace<T>(ReadOnlySpan<char> expressionSpan, ExpressionConflict resultConflict, out bool isOriginalType) where T : ExpressionRepresentation<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
             if (!ExpressionRepresentation<T>.TryParse(currentSpan, out var representation)) { isOriginalType = false; return -1; }
 
-            return FindConflicts(expressionSpan, representation, currentSpan.Length, 0, out isOriginalType);
+            return FindConflicts(expressionSpan, representation, resultConflict, currentSpan.Length, 0, out isOriginalType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindGenericValueWithWhiteSpace<T>(ReadOnlySpan<char> expressionSpan, int whiteSpaceCount, out bool isOriginalType) where T : ExpressionRepresentation<T>
+        private int FindGenericValueWithWhiteSpace<T>(ReadOnlySpan<char> expressionSpan, int whiteSpaceCount, ExpressionConflict resultConflict, out bool isOriginalType) where T : ExpressionRepresentation<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[FirstIndex..(LastIndex + 1)];
             Span<char> span = stackalloc char[currentSpan.Length - whiteSpaceCount];
@@ -198,11 +198,11 @@ namespace Byces.Calculator.Expressions
             }
             if (!ExpressionRepresentation<T>.TryParse(span, out var representation)) { isOriginalType = false; return -1; }
 
-            return FindConflicts(expressionSpan, representation, span.Length, whiteSpaceCount, out isOriginalType);
+            return FindConflicts(expressionSpan, representation, resultConflict, span.Length, whiteSpaceCount, out isOriginalType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindConflicts<T>(ReadOnlySpan<char> expressionSpan, T firstResult, int foundLength, int additionalWhiteSpaceCount, out bool isOriginalType) where T : ExpressionRepresentation<T>
+        private int FindConflicts<T>(ReadOnlySpan<char> expressionSpan, T firstResult, ExpressionConflict resultConflict, int foundLength, int additionalWhiteSpaceCount, out bool isOriginalType) where T : ExpressionRepresentation<T>
         {
             int value = -1, increaseLastIndex = 0; isOriginalType = true;
             for (int i = 0; i < firstResult.representableConflicts.Length; i++)
@@ -221,7 +221,7 @@ namespace Byces.Calculator.Expressions
                 int value2 = GetGenericValue(currentSpan, additionalWhiteSpaceCount + whiteSpaceCount, representableConflict.ExpressionConflict);
                 if (value2 == -1 || increaseLastIndex > j + whiteSpaceCount) continue;
 
-                isOriginalType = representableConflict.ExpressionConflict == firstResult.RepresentationConflict;
+                isOriginalType = representableConflict.ExpressionConflict == resultConflict;
                 increaseLastIndex = j + whiteSpaceCount;
                 value = value2;
             }
@@ -277,7 +277,7 @@ namespace Byces.Calculator.Expressions
             var value = representation.GetValue();
             if (IsNegative && value.ResultType == ResultType.Number)
             {
-                content.Values.Add(-value.number);
+                content.Values.Add(-value.Number);
                 return;
             }
             content.Values.Add(value);

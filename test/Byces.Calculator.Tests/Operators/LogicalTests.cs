@@ -37,7 +37,7 @@ namespace Byces.Calculator.Tests.Operators
         {
             Evaluator.ValidateException("2 || true", ResultError.InvalidArgument);
             Evaluator.ValidateException("2 || 5", ResultError.InvalidArgument);
-            Evaluator.ValidateException("false || 88", ResultError.InvalidArgument);
+            Evaluator.ValidateException("true || 88", ResultError.InvalidArgument);
         }
     }
 }
