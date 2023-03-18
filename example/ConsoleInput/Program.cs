@@ -13,15 +13,17 @@ public class Program
         {
             Console.Write("Enter a math expression: ");
             string input = Console.ReadLine() ?? string.Empty;
-            
-            var result = _calculator.GetDoubleResult(input);
 
-            if (!result.IsValid)
+            var result1 = _calculator.GetDoubleResult(input);
+            var result2 = _calculator.GetBooleanResult(input);
+
+            if (!result1.IsValid)
             {
-                Console.WriteLine($"\n{result.ErrorMessage} ({result.Error})\n");
+                Console.WriteLine($"\n{result1.ErrorMessage} ({result1.Error})\n");
                 continue;
             }
-            Console.WriteLine($"\nResult: {result.Result}\n");
+            Console.WriteLine($"\nResult (double): {result1.Result}");
+            Console.WriteLine($"Result (bool): {result2.Result}\n");
         }
     }
 }

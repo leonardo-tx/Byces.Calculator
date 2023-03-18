@@ -73,8 +73,8 @@ namespace Byces.Calculator
                 content.Build(expressionSpan);
                 content.Process();
 
-                if (content.Values.Count > 1 || content.Values[0].ResultType != ResultType.Number) return new MathResult<double>(0, true);
-                return new MathResult<double>(content.Values[0].Number, true);
+                if (content.Variables.Count > 1 || content.Variables[0].Type != VariableType.Number) return new MathResult<double>(0, true);
+                return new MathResult<double>(content.Variables[0].Double, true);
             }
             catch (Exception ex)
             {

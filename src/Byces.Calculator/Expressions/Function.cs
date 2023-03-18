@@ -1,40 +1,40 @@
-﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Exceptions;
+﻿using Byces.Calculator.Exceptions;
+using Byces.Calculator.Representations;
 using System;
 
 namespace Byces.Calculator.Expressions
 {
     internal readonly struct Function
     {
-        internal Function(int numberIndex, int function, int priority)
+        internal Function(int variableIndex, int function, int priority)
         {
-            NumberIndex = numberIndex;
+            VariableIndex = variableIndex;
             Value = function;
             Priority = priority;
         }
 
-        internal int NumberIndex { get; }
+        internal int VariableIndex { get; }
 
         internal int Value { get; }
 
         internal int Priority { get; }
 
-        internal Value Operate(Value value)
+        internal Variable Operate(Variable variable)
         {
             var functionRepresentation = (FunctionRepresentation)Value;
             if (functionRepresentation.ParametersMin > 1) throw new InvalidArgumentExpressionException();
 
-            ReadOnlySpan<Value> temp = stackalloc Value[] { value };
+            ReadOnlySpan<Variable> temp = stackalloc Variable[] { variable };
             return functionRepresentation.Operate(temp);
         }
 
-        internal Value Operate(ReadOnlySpan<Value> values)
+        internal Variable Operate(ReadOnlySpan<Variable> variables)
         {
             var functionRepresentation = (FunctionRepresentation)Value;
-            if (functionRepresentation.ParametersMin > values.Length) throw new InvalidArgumentExpressionException();
-            if (functionRepresentation.ParametersMax > -1 && functionRepresentation.ParametersMax < values.Length) throw new InvalidArgumentExpressionException();
+            if (functionRepresentation.ParametersMin > variables.Length) throw new InvalidArgumentExpressionException();
+            if (functionRepresentation.ParametersMax > -1 && functionRepresentation.ParametersMax < variables.Length) throw new InvalidArgumentExpressionException();
             
-            return functionRepresentation.Operate(values);
+            return functionRepresentation.Operate(variables);
         }
     }
 }

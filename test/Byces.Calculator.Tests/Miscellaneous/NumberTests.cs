@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+using System.Globalization;
 using System.Threading;
 
 namespace Byces.Calculator.Tests.Miscellaneous
@@ -34,22 +34,17 @@ namespace Byces.Calculator.Tests.Miscellaneous
         [TestMethod]
         public void NumberDecimalSeparatorTest()
         {
-            switch (Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator[0])
+            CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);
+            for (int i = 0; i < cultures.Length; i++)
             {
-                case ',':
-                    Evaluator.ValidateNumber("4,5 + 5,5", 10);
-                    Evaluator.ValidateNumberApproximately("fact 2,6", 3.7170);
-                    Evaluator.ValidateNumber("5, + 3", 8);
-                    Evaluator.ValidateNumber(",9 + 10", 10.9);
-                    break;
-                case '.':
-                    Evaluator.ValidateNumber("4.5 + 5.5", 10);
-                    Evaluator.ValidateNumberApproximately("fact 2.6", 3.7170);
-                    Evaluator.ValidateNumber("5. + 3", 8);
-                    Evaluator.ValidateNumber(".9 + 10", 10.9);
-                    break;
-                default:
-                    throw new NotSupportedException();
+                string decimalSeparator = cultures[i].NumberFormat.NumberDecimalSeparator;
+
+                Thread.CurrentThread.CurrentCulture = cultures[i];
+
+                Evaluator.ValidateNumber($"4{decimalSeparator}5 + 5{decimalSeparator}5", 10);
+                Evaluator.ValidateNumberApproximately($"fact 2{decimalSeparator}6", 3.7170);
+                Evaluator.ValidateNumber($"5{decimalSeparator} + 3", 8);
+                Evaluator.ValidateNumber($"{decimalSeparator}9 + 10", 10.9);
             }
         }
     }

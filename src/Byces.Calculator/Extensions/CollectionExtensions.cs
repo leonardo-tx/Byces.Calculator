@@ -1,31 +1,17 @@
 ﻿using Byces.Calculator.Expressions;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Extensions
 {
     internal static class CollectionExtensions
     {
-        internal static bool ContainsAny(this ReadOnlySpan<char> source, ReadOnlySpan<char> chars)
-        {
-            for (int i = 0; i < chars.Length; i++)
-            {
-                char c = chars[i];
-                for (int j = 0; j < source.Length; j++)
-                {
-                    if (c == source[j]) return true;
-                }
-            }
-            return false;
-        }
-
-        internal static bool ContainsWhiteSpace(this ReadOnlySpan<char> source)
+        internal static bool Any(this ReadOnlySpan<char> source, Func<char, bool> predicate)
         {
             for (int i = 0; i < source.Length; i++)
             {
-                if (char.IsWhiteSpace(source[i])) return true;
+                if (predicate(source[i])) return true;
             }
             return false;
         }

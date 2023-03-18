@@ -1,8 +1,11 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
+using Byces.Calculator.Representations;
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Byces.Calculator.Expressions
 {
@@ -20,8 +23,15 @@ namespace Byces.Calculator.Expressions
 
         private bool IsNegative;
 
+        private char GroupSeparator;
+
+        private char DecimalSeparator;
+
         internal void Build(Content content, ReadOnlySpan<char> expressionSpan)
         {
+            GroupSeparator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator[0];
+            DecimalSeparator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+
             for (; LastIndex < expressionSpan.Length; LastIndex++, FirstIndex++)
             {
                 if (FindWhiteSpace(expressionSpan[LastIndex])) continue;
@@ -47,6 +57,7 @@ namespace Byces.Calculator.Expressions
             }
             if (Priority > 0) throw new MissingParenthesesExpressionException();
             if (!AfterNumber) throw new IncompleteExpressionException();
+            if (LastIndex != FirstIndex) throw new UnknownNumberExpressionException();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,9 +76,7 @@ namespace Byces.Calculator.Expressions
             {
                 if (AfterNumber)
                 {
-                    OperatorRepresentation.TryParse("*", out OperatorRepresentation operationType);
-                    AddOperator(content, operationType);
-                    
+                    AddOperator(content, OperatorRepresentation.Parse("*"));
                     AfterNumber = false;
                 }
                 Priority++;
@@ -90,28 +99,33 @@ namespace Byces.Calculator.Expressions
             bool hasSignal = IsNegative || expressionSpan[LastIndex] == '+';
 
             if (hasSignal) { LastIndex++; FirstIndex++; }
-            if (expressionSpan[LastIndex] == 'e' || expressionSpan[LastIndex] == 'E') return false;
-            int whiteSpaceCount = 0;
-            for (bool atScientificNotation = false, hasSignal2 = false; LastIndex < expressionSpan.Length; LastIndex++)
+            if (char.IsLetter(expressionSpan[LastIndex])) return false;
+            int whiteSpaceCount = 0; NumberStyles numberStyles = NumberStyles.None;
+            for (bool atScientificNotation = false, atDecimal = false, hasSignal2 = false; LastIndex < expressionSpan.Length; LastIndex++)
             {
                 char currentChar = expressionSpan[LastIndex];
-                if (char.IsDigit(currentChar) || currentChar == '.' || currentChar == ',') continue;
+                if (char.IsDigit(currentChar)) continue;
+                if (!atDecimal && currentChar == GroupSeparator) { numberStyles |= NumberStyles.AllowThousands; continue; }
+                if (!atDecimal && currentChar == DecimalSeparator) { atDecimal = true; numberStyles |= NumberStyles.AllowDecimalPoint; continue; }
                 if (char.IsWhiteSpace(currentChar)) { whiteSpaceCount++; continue; }
-                if (!atScientificNotation && (currentChar == 'E' || currentChar == 'e')) { atScientificNotation = true; continue; }
+                if (!atScientificNotation && (currentChar == 'E' || currentChar == 'e')) { atScientificNotation = true; numberStyles |= NumberStyles.AllowExponent; continue; }
                 if (atScientificNotation && !hasSignal2 && (currentChar == '+' || currentChar == '-')) { hasSignal2 = true; continue; }
                 break;
             }
-            return ParseNumber(content, expressionSpan[FirstIndex..LastIndex], whiteSpaceCount);
+            return ParseNumber(content, expressionSpan[FirstIndex..LastIndex], whiteSpaceCount, numberStyles);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ParseNumber(Content content, ReadOnlySpan<char> currentSpan, int whiteSpaceCount)
+        private bool ParseNumber(Content content, ReadOnlySpan<char> currentSpan, int whiteSpaceCount, NumberStyles numberStyles)
         {
             if (FirstIndex == LastIndex) return false;
             LastIndex--;
 
-            bool parseResult; double result;
-            if (whiteSpaceCount == 0) parseResult = double.TryParse(currentSpan, out result);
+            bool parseResult; double doubleResult = double.NaN; long longResult = 0;
+            if (whiteSpaceCount == 0)
+            {
+                parseResult = double.TryParse(currentSpan, numberStyles, null, out doubleResult);
+            }
             else
             {
                 int count = currentSpan.Length - whiteSpaceCount;
@@ -120,11 +134,15 @@ namespace Byces.Calculator.Expressions
                 {
                     if (!char.IsWhiteSpace(currentSpan[i])) span[j++] = currentSpan[i];
                 }
-                parseResult = double.TryParse(span, out result);
+                parseResult = double.TryParse(span, numberStyles, null, out doubleResult);
             }
             if (!parseResult) throw new UnknownNumberExpressionException();
-
-            AddNumber(content, result);
+            if (double.IsNaN(doubleResult))
+            {
+                AddNumber(content, longResult);
+                return true;
+            }
+            AddNumber(content, doubleResult);
             return true;
         }
 
@@ -147,7 +165,6 @@ namespace Byces.Calculator.Expressions
                 if (value == -1) return false;
                 else { LastIndex--; return false; }
             }
-
             AddFunction(content, FunctionRepresentation.GetItem(value));
             return true;
         }
@@ -267,7 +284,7 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddFunction(Content content, FunctionRepresentation representation)
         {
-            Function function = new Function(content.Values.Count, representation, Priority);
+            Function function = new Function(content.Variables.Count, representation, Priority);
             content.Functions.Add(function);
         }
 
@@ -275,18 +292,18 @@ namespace Byces.Calculator.Expressions
         private void AddNumber(Content content, VariableRepresentation representation)
         {
             var value = representation.GetValue();
-            if (IsNegative && value.ResultType == ResultType.Number)
+            if (IsNegative && value.Type == Enums.VariableType.Number)
             {
-                content.Values.Add(-value.Number);
+                content.Variables.Add(-value.Double);
                 return;
             }
-            content.Values.Add(value);
+            content.Variables.Add(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddNumber(Content content, double givenValue)
         {
-            content.Values.Add(IsNegative ? -givenValue : givenValue);
+            content.Variables.Add(IsNegative ? -givenValue : givenValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -294,6 +311,7 @@ namespace Byces.Calculator.Expressions
         {
             Operation operation = new Operation(representation, Priority);
             content.Operations.Add(operation);
+            content.UsedOperators |= representation.Priority;
         }
     }
 }

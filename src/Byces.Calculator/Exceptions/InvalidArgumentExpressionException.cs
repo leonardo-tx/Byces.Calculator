@@ -3,7 +3,7 @@
 namespace Byces.Calculator.Exceptions
 {
     /// <summary>
-    /// The exception that is thrown when is used an invalid argument parameter, in a function or operation.
+    /// The exception that is thrown when is used an invalid argument parameter, in a function or operator.
     /// </summary>
     public sealed class InvalidArgumentExpressionException : ExpressionException
     {
