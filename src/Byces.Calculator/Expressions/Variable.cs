@@ -6,16 +6,16 @@ namespace Byces.Calculator.Expressions
 {
     internal readonly struct Variable
     {
-        internal Variable(double number, bool boolean, VariableType type)
+        private Variable(double number, bool boolean, VariableType type)
         {
             _number = number;
             _boolean = boolean;
             Type = type;
         }
 
-        private readonly double _number;
+        internal readonly double _number;
 
-        private readonly bool _boolean;
+        internal readonly bool _boolean;
 
         public VariableType Type { get; }
 
