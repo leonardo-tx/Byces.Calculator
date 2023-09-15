@@ -32,6 +32,13 @@ namespace Byces.Calculator.Tests.Miscellaneous
         }
 
         [TestMethod]
+        public void InfinityTest()
+        {
+            Evaluator.ValidateNumber("∞", double.PositiveInfinity);
+            Evaluator.ValidateNumber("-∞", double.NegativeInfinity);
+        }
+
+        [TestMethod]
         public void NumberDecimalSeparatorTest()
         {
             CultureInfo[] cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures);

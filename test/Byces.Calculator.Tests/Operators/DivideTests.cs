@@ -33,11 +33,5 @@ namespace Byces.Calculator.Tests.Operators
             Evaluator.ValidateNumberApproximately("+10Div-3", -3.3333);
             Evaluator.ValidateNumber("-3 DiV 2", -1.5);
         }
-
-        [TestMethod]
-        public void DivideExceptionsTest()
-        {
-            Evaluator.ValidateException("10 / 0", ResultError.Arithmetic);
-        }
     }
 }
