@@ -93,12 +93,14 @@ string expressionExample5 = "2(5)";
 | Cube root           | Returns the cube root of x                          | `cbrt(x)`         | Min: 1 \| Max: 1         |
 | Logarithm (base y)  | Calculates the logarithm of x (base y)              | `log(x; y)`       | Min: 2 \| Max: 2         |
 | Logarithm (base 10) | Calculates the logarithm of x (base 10)             | `log(x)`          | Min: 1 \| Max: 1         |
+| Ceiling             | Returns the ceiling of a number                     | `ceil(x)`         | Min: 1 \| Max: 1         |
+| Floor               | Returns the floor of a number                       | `floor(x)`        | Min: 1 \| Max: 1         |
 
 ### Logic and Comparison
 
-| Function | Description               | Examples | Parameter limit  |
-|----------|---------------------------|----------|------------------|
-| Not      | Inverts the boolean value | `!x`     | Min: 1 \| Max: 1 |
+| Function | Description                                                | Examples       | Parameter limit  |
+|----------|------------------------------------------------------------|----------------|------------------|
+| Not      | Inverts the boolean value                                  | `!x`           | Min: 1 \| Max: 1 |
 
 ### Trigonometry
 
