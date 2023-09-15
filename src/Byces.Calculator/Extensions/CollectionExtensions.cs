@@ -16,49 +16,27 @@ namespace Byces.Calculator.Extensions
             return false;
         }
 
-        internal static int CountWhiteSpaces(this ReadOnlySpan<char> source)
-        {
-            int count = 0;
-            for (int i = 0; i < source.Length; i++)
-            {
-                if (char.IsWhiteSpace(source[i])) count++;
-            }
-            return count;
-        }
-
         internal static int MaxPriority(this List<Operation> source)
         {
             int max = -1;
-#if NET5_0_OR_GREATER
             ReadOnlySpan<Operation> span = CollectionsMarshal.AsSpan(source);
+            
             for (int i = 0; i < span.Length; i++)
             {
                 if (span[i].Priority > max) max = span[i].Priority;
             }
-#else
-            for (int i = 0; i < source.Count; i++)
-            {
-                if (source[i].Priority > max) max = source[i].Priority;
-            }
-#endif
             return max;
         }
 
         internal static int MaxPriority(this List<Function> source)
         {
             int max = -1;
-#if NET5_0_OR_GREATER
             ReadOnlySpan<Function> span = CollectionsMarshal.AsSpan(source);
+            
             for (int i = 0; i < span.Length; i++)
             {
                 if (span[i].Priority > max) max = span[i].Priority;
             }
-#else
-            for (int i = 0; i < source.Count; i++)
-            {
-                if (source[i].Priority > max) max = source[i].Priority;
-            }
-#endif
             return max;
         }
     }

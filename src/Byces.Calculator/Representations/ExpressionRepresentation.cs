@@ -6,7 +6,8 @@ using System.Reflection;
 
 namespace Byces.Calculator.Representations
 {
-    internal abstract class ExpressionRepresentation<T> : Representable where T : ExpressionRepresentation<T>
+    internal abstract class ExpressionRepresentation<T> : Representable 
+        where T : ExpressionRepresentation<T>
     {
         private const int StringSizeLimit = 128;
 
@@ -32,8 +33,10 @@ namespace Byces.Calculator.Representations
             bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
             bool charIsDefault = CharRepresentation == '\0';
 
-            if (!charIsDefault && char.IsWhiteSpace(CharRepresentation))
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a whitespace char representation.");
+            if (stringIsDefault && charIsDefault)
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has no representation");
+            if (!charIsDefault && (char.IsWhiteSpace(CharRepresentation) || char.IsDigit(CharRepresentation) || CharRepresentation == '(' || CharRepresentation == ')'))
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a char representation with an illegal character.");
             if (!stringIsDefault && spanRepresentation.Length == 1)
                 throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with length 1.");
             if (!stringIsDefault && spanRepresentation.Length > StringSizeLimit)
@@ -107,71 +110,40 @@ namespace Byces.Calculator.Representations
             if (!stringIsDefault && spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
             Array.Resize(ref _items, _items.Length + 1);
             _items[^1] = (T)this;
-#if NETCOREAPP3_0_OR_GREATER
-            if (!stringIsDefault) _stringToType.Add(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase), _items[^1]);
-#endif
+
+            if (!stringIsDefault) StringToType.Add(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase), _items[^1]);
             if (!charIsDefault)
             {
                 if (char.ToLower(CharRepresentation) != char.ToUpper(CharRepresentation))
                 {
-                    _charToType.Add(char.ToUpper(CharRepresentation), _items[^1]);
-                    _charToType.Add(char.ToLower(CharRepresentation), _items[^1]);
+                    CharToType.Add(char.ToUpper(CharRepresentation), _items[^1]);
+                    CharToType.Add(char.ToLower(CharRepresentation), _items[^1]);
                 }
                 else
                 {
-                    _charToType.Add(CharRepresentation, _items[^1]);
+                    CharToType.Add(CharRepresentation, _items[^1]);
                 }
             }
         }
 
         private static T[] _items = Array.Empty<T>();
-
-#if NETCOREAPP3_0_OR_GREATER
-        private static readonly Dictionary<int, T> _stringToType = new Dictionary<int, T>();
-#endif
-        private static readonly Dictionary<char, T> _charToType = new Dictionary<char, T>();
+        
+        private static readonly Dictionary<int, T> StringToType = new();
+        private static readonly Dictionary<char, T> CharToType = new();
 
         internal static int MaxStringSize { get; private set; }
-
-#if NETCOREAPP3_0_OR_GREATER
+        
         internal static T Parse(ReadOnlySpan<char> span)
         {
-            if (span.Length == 1) return _charToType[span[0]];
-            return _stringToType[string.GetHashCode(span, StringComparison.OrdinalIgnoreCase)];
+            if (span.Length == 1) return CharToType[span[0]];
+            return StringToType[string.GetHashCode(span, StringComparison.OrdinalIgnoreCase)];
         }
 
         internal static bool TryParse(ReadOnlySpan<char> span, out T type)
         {
-            if (span.Length == 1) return _charToType.TryGetValue(span[0], out type!);
-            return _stringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type!);
+            if (span.Length == 1) return CharToType.TryGetValue(span[0], out type!);
+            return StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type!);
         }
-#else
-        internal static T Parse(ReadOnlySpan<char> span)
-        {
-            if (span.Length == 1) return _charToType[span[0]];
-
-            ReadOnlySpan<T> reference = _items;
-            for (int i = 0; i < reference.Length; i++)
-            {
-                if (!span.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
-                return reference[i];
-            }
-            throw new ArgumentException();
-        }
-
-        internal static bool TryParse(ReadOnlySpan<char> span, out T type)
-        {
-            if (span.Length == 1) return _charToType.TryGetValue(span[0], out type!);
-
-            ReadOnlySpan<T> reference = _items;
-            for (int i = 0; i < reference.Length; i++)
-            {
-                if (!span.Equals(reference[i].StringRepresentation, StringComparison.OrdinalIgnoreCase)) continue;
-                type = reference[i]; return true;
-            }
-            type = default!; return false;
-        }
-#endif
 
         internal static T GetItem(int value) => _items[value];
     }
