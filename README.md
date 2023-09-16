@@ -156,6 +156,50 @@ string expressionExample5 = "2(5)";
 | GetDoubleResult(string expression)  | MathResult<double> | Gets a `MathResult<double>` calculating the given mathematical expression |
 | GetBooleanResult(string expression) | MathResult<bool>   | Gets a `MathResult<bool>` calculating the given mathematical expression   |
 
+## Benchmark
+
+In the Benchmark below, one million iterations were made for each method
+
+``` ini
+
+BenchmarkDotNet=v0.13.5, OS=Windows 11 (10.0.22621.2134/22H2/2022Update/SunValley2)
+AMD Ryzen 5 3500X, 1 CPU, 6 logical and 6 physical cores
+.NET SDK=7.0.400
+  [Host]     : .NET 7.0.10 (7.0.1023.36312), X64 RyuJIT AVX2 [AttachedDebugger]
+  DefaultJob : .NET 7.0.10 (7.0.1023.36312), X64 RyuJIT AVX2
+
+
+```
+|                       Method |       Mean |    Error |   StdDev | Allocated |
+|----------------------------- |-----------:|---------:|---------:|----------:|
+|            SimpleCalculation |   299.9 ms |  2.00 ms |  1.67 ms |     252 B |
+|      EulerPlusEulerPlusEuler |   392.2 ms |  2.41 ms |  2.25 ms |     504 B |
+|           ComplexCalculation |   762.7 ms |  2.46 ms |  2.30 ms |     504 B |
+|             HeavyCalculation | 8,625.8 ms | 44.98 ms | 39.87 ms |     504 B |
+| HeavyCalculationNoWhiteSpace | 8,489.1 ms | 23.98 ms | 21.25 ms |     504 B |
+|   ManyParenthesesCalculation | 1,160.5 ms |  6.10 ms |  5.71 ms |     504 B |
+|         FactorialCalculation | 1,165.7 ms |  6.35 ms |  5.94 ms |     504 B |
+|  SquareRootStringCalculation |   282.7 ms |  2.65 ms |  2.48 ms |     252 B |
+|    SquareRootCharCalculation |   192.0 ms |  1.19 ms |  1.00 ms |     168 B |
+|       AddFunctionCalculation |   440.8 ms |  3.29 ms |  2.75 ms |     504 B |
+|      AddOperationCalculation |   319.2 ms |  2.37 ms |  2.22 ms |     252 B |
+
+### Expressions
+
+| Name                         | Expression                                                                                                                                                                                                                                                                  |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SimpleCalculation            | 2 + 5 * 6                                                                                                                                                                                                                                                                   |
+| EulerPlusEulerPlusEuler      | EULER + EULER + EULER                                                                                                                                                                                                                                                       |
+| ComplexCalculation           | 2 ^ 2 + (4 + 5 * (2 √ 9))                                                                                                                                                                                                                                                   |
+| HeavyCalculation             | (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) |
+| HeavyCalculationNoWhiteSpace | (2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))                                                                                                           |
+| ManyParenthesesCalculation   | ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))                                                               |
+| FactorialCalculation         | fact2 + (fact2 + fact(fact2 + 2))                                                                                                                                                                                                                                           |
+| SquareRootStringCalculation  | SQRT9                                                                                                                                                                                                                                                                       |
+| SquareRootCharCalculation    | √9                                                                                                                                                                                                                                                                          |
+| AddFunctionCalculation       | ADD(1;2;3)                                                                                                                                                                                                                                                                  |
+| AddOperationCalculation      | 1+2+3                                                                                                                                                                                                                                                                       |
+
 ## Future goals
 
 - Be able to create your own functions and variables in a simple way
@@ -165,4 +209,4 @@ string expressionExample5 = "2(5)";
 
 ## Feedback and Bugs
 
-If you find any bugs or have any suggestions, feel free to send them :D !
+If you find any bugs or have any suggestions, feel free to send them!
