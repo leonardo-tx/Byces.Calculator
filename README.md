@@ -101,6 +101,7 @@ string expressionExample5 = "2(5)";
 | Function | Description                                                | Examples       | Parameter limit  |
 |----------|------------------------------------------------------------|----------------|------------------|
 | Not      | Inverts the boolean value                                  | `!x`           | Min: 1 \| Max: 1 |
+| If       | Check the x condition. True returns the y, otherwise the z | `if(x; y; z;)` | Min: 3 \| Max: 3 |
 
 ### Trigonometry
 

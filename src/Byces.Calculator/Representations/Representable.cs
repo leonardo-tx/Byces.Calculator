@@ -9,12 +9,12 @@ namespace Byces.Calculator.Representations
             Value = value;
         }
 
-        internal Conflict[] representableConflicts = Array.Empty<Conflict>();
+        internal Conflict[] RepresentableConflicts = Array.Empty<Conflict>();
 
         internal int Value { get; }
 
-        public virtual string StringRepresentation { get; } = string.Empty;
+        public virtual string StringRepresentation => string.Empty;
 
-        public virtual char CharRepresentation { get; } = '\0';
+        public virtual char CharRepresentation => '\0';
     }
 }

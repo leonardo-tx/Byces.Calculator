@@ -8,14 +8,14 @@ namespace Byces.Calculator.Expressions
     {
         private Variable(double number, bool boolean, VariableType type)
         {
-            _number = number;
-            _boolean = boolean;
+            Number = number;
+            Boolean = boolean;
             Type = type;
         }
 
-        internal readonly double _number;
+        internal readonly double Number;
 
-        internal readonly bool _boolean;
+        internal readonly bool Boolean;
 
         public VariableType Type { get; }
 
@@ -29,7 +29,7 @@ namespace Byces.Calculator.Expressions
             {
                 return Type switch
                 {
-                    VariableType.Number => _number,
+                    VariableType.Number => Number,
                     _ => throw new InvalidArgumentExpressionException(),
                 };
             }
@@ -46,10 +46,11 @@ namespace Byces.Calculator.Expressions
                 switch (Type)
                 {
                     case VariableType.Number:
-                        if (_number > float.MaxValue || _number < float.MinValue) throw new InvalidArgumentExpressionException();
-                        return (float)_number;
+                        if (Number > float.MaxValue || Number < float.MinValue) throw new InvalidArgumentExpressionException();
+                        return (float)Number;
+                    default:
+                        throw new InvalidArgumentExpressionException();
                 }
-                throw new InvalidArgumentExpressionException();
             }
         }
 
@@ -62,12 +63,12 @@ namespace Byces.Calculator.Expressions
             get
             {
                 if (Type != VariableType.Number) throw new InvalidArgumentExpressionException();
-                double diff = _number - Math.Floor(_number);
+                double diff = Number - Math.Floor(Number);
                 
-                if (diff != 0 || _number > long.MaxValue || _number < long.MinValue) throw new InvalidArgumentExpressionException();
-                long result = (long)_number;
+                if (diff != 0 || Number > long.MaxValue || Number < long.MinValue) throw new InvalidArgumentExpressionException();
+                long result = (long)Number;
 
-                if (result < 0 != _number < 0) return result;
+                if (result < 0 != Number < 0) return result;
                 return result;
             }
         }
@@ -81,10 +82,10 @@ namespace Byces.Calculator.Expressions
             get
             {
                 if (Type != VariableType.Number) throw new InvalidArgumentExpressionException();
-                double diff = _number - Math.Floor(_number);
+                double diff = Number - Math.Floor(Number);
 
-                if (diff != 0 || _number > int.MaxValue || _number < int.MinValue) throw new InvalidArgumentExpressionException();
-                return (int)_number;
+                if (diff != 0 || Number > int.MaxValue || Number < int.MinValue) throw new InvalidArgumentExpressionException();
+                return (int)Number;
             }
         }
 
@@ -92,12 +93,12 @@ namespace Byces.Calculator.Expressions
         /// Gets the value stored in this instance as a <see langword="bool"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
-        public bool Boolean
+        public bool Bool
         {
             get
             {
                 if (Type != VariableType.Boolean) throw new InvalidArgumentExpressionException();
-                return _boolean;
+                return Boolean;
             }
         }
 

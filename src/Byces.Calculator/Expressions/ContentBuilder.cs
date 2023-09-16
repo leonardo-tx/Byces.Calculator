@@ -1,16 +1,19 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
-using Byces.Calculator.Interfaces;
 using Byces.Calculator.Representations;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Byces.Calculator.Expressions
 {
     internal sealed class ContentBuilder
     {
+        public ContentBuilder(Content content)
+        {
+            _content = content;
+        }
+        
         private int _firstIndex;
 
         private int _lastIndex;
@@ -25,7 +28,9 @@ namespace Byces.Calculator.Expressions
 
         private char _decimalSeparator;
 
-        private Content _content = null!;
+        private NumberFormatInfo _numberFormatInfo = null!;
+
+        private readonly Content _content;
 
         public void Clear()
         {
@@ -36,12 +41,17 @@ namespace Byces.Calculator.Expressions
             _isNegative = false;
         }
 
-        public void Build(Content content, ReadOnlySpan<char> expressionSpan)
+        public void Build(ReadOnlySpan<char> expressionSpan, CultureInfo cultureInfo)
         {
-            _content = content;
-            _groupSeparator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberGroupSeparator[0];
-            _decimalSeparator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+            _numberFormatInfo = cultureInfo.NumberFormat;
+            _groupSeparator = cultureInfo.NumberFormat.NumberGroupSeparator[0];
+            _decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
+            ScanExpression(expressionSpan);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ScanExpression(ReadOnlySpan<char> expressionSpan)
+        {
             for (; _lastIndex < expressionSpan.Length; _lastIndex++, _firstIndex++)
             {
                 if (FindParentheses(expressionSpan[_lastIndex])) continue;
@@ -127,7 +137,7 @@ namespace Byces.Calculator.Expressions
             if (_firstIndex == _lastIndex) return false;
             _lastIndex--;
             
-            if (!double.TryParse(currentSpan, numberStyles, null, out double result)) throw new UnknownNumberExpressionException();
+            if (!double.TryParse(currentSpan, numberStyles, _numberFormatInfo, out double result)) throw new UnknownNumberExpressionException();
 
             AddNumber(result);
             return true;
@@ -186,9 +196,9 @@ namespace Byces.Calculator.Expressions
             where T : ExpressionRepresentation<T>
         {
             int value = -1, increaseLastIndex = 0; isOriginalType = true;
-            for (int i = 0; i < firstResult.representableConflicts.Length; i++)
+            for (int i = 0; i < firstResult.RepresentableConflicts.Length; i++)
             {
-                Conflict representableConflict = firstResult.representableConflicts[i];
+                Conflict representableConflict = firstResult.RepresentableConflicts[i];
                 if (foundLength == 1 && representableConflict.Representable != RepresentableType.Char) continue;
                 if (foundLength > 1 && representableConflict.Representable != RepresentableType.String) continue;
 
@@ -233,7 +243,7 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddFunction(FunctionRepresentation representation)
         {
-            Function function = new Function(_content.Variables.Count, representation, _priority);
+            Function function = new(_content.Variables.Count, representation, _priority);
             _content.Functions.Add(function);
         }
 
@@ -243,7 +253,7 @@ namespace Byces.Calculator.Expressions
             Variable value = representation.GetValue();
             if (_isNegative && value.Type == VariableType.Number)
             {
-                _content.Variables.Add(-value._number);
+                _content.Variables.Add(-value.Number);
                 return;
             }
             _content.Variables.Add(value);
@@ -258,7 +268,7 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddOperator(OperatorRepresentation representation)
         {
-            Operation operation = new Operation(representation, _priority);
+            Operation operation = new(representation, _priority);
             _content.Operations.Add(operation);
             _content.UsedOperators |= representation.Priority;
         }

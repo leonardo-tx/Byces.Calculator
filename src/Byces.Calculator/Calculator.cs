@@ -3,9 +3,9 @@ using Byces.Calculator.Expressions;
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Byces.Calculator
 {
@@ -14,16 +14,15 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator()
+        internal Calculator(CultureInfo? cultureInfo)
         {
-            _contentPool = ObjectPool.Create<Content>();
-            _builderPool = ObjectPool.Create<ContentBuilder>();
-            _expressionPool = ObjectPool.Create<List<char>>();
+            _cultureInfo = cultureInfo;
+            _resultBuilderPool = ObjectPool.Create<ResultBuilder>();
         }
 
-        private readonly ObjectPool<Content> _contentPool;
-        private readonly ObjectPool<ContentBuilder> _builderPool;
-        private readonly ObjectPool<List<char>> _expressionPool;
+        private readonly CultureInfo? _cultureInfo;
+
+        private readonly ObjectPool<ResultBuilder> _resultBuilderPool;
 
         /// <summary>
         /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
@@ -35,7 +34,7 @@ namespace Byces.Calculator
             try
             {
                 Variable result = GetResult(expression, VariableType.Number);
-                return new MathResult<double>(result._number, true);
+                return new MathResult<double>(result.Number, true);
             }
             catch (Exception ex)
             {
@@ -53,7 +52,7 @@ namespace Byces.Calculator
             try
             {
                 Variable result = GetResult(expression, VariableType.Boolean);
-                return new MathResult<bool>(result._boolean, true);
+                return new MathResult<bool>(result.Boolean, true);
             }
             catch (Exception ex)
             {
@@ -65,32 +64,17 @@ namespace Byces.Calculator
         private Variable GetResult(ReadOnlySpan<char> rawExpressionSpan, VariableType expectedType)
         {
             if (rawExpressionSpan.IsEmpty || rawExpressionSpan.IsWhiteSpace()) return default;
-            
-            List<char> expression = _expressionPool.Get();
-            for (int i = 0; i < rawExpressionSpan.Length; i++)
-            {
-                if (char.IsWhiteSpace(rawExpressionSpan[i])) continue;
-                expression.Add(rawExpressionSpan[i]);
-            }
-            Content content = _contentPool.Get();
-            ContentBuilder builder = _builderPool.Get();
+
+            ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                builder.Build(content, CollectionsMarshal.AsSpan(expression));
-                content.Process();
-
-                if (content.Variables.Count != 1 || content.Variables[0].Type != expectedType) return default;
-                return content.Variables[0];
+                resultBuilder.Build(rawExpressionSpan, _cultureInfo ?? Thread.CurrentThread.CurrentCulture);
+                return resultBuilder.GetResult(expectedType);
             }
             finally
             {
-                content.Clear();
-                builder.Clear();
-                expression.Clear();
-                
-                _contentPool.Return(content);
-                _builderPool.Return(builder);
-                _expressionPool.Return(expression);
+                resultBuilder.Clear();
+                _resultBuilderPool.Return(resultBuilder);
             }
         }
     }

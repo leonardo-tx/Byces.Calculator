@@ -19,85 +19,75 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         [Benchmark]
         public void SimpleCalculation()
         {
-            _calculator.GetDoubleResult("2 + 5 * 6");
-        }
-
-        [Benchmark]
-        public void SimpleCalculationThousand()
-        {
-            for (int i = 0; i <= 1_000; i++)
-            {
-                _calculator.GetDoubleResult("2 + 5 * 6");
-            }
-        }
-
-        [Benchmark]
-        public void SimpleCalculationMillion()
-        {
-            for (int i = 0; i <= 1_000_000; i++)
-            {
-                _calculator.GetDoubleResult("2 + 5 * 6");
-            }
+            ExecuteDoubleCalculationMillionTimes("2 + 5 * 6");
         }
 
         [Benchmark]
         public void EulerPlusEulerPlusEuler()
         {
-            _calculator.GetDoubleResult("EULER + EULER + EULER");
+            ExecuteDoubleCalculationMillionTimes("EULER + EULER + EULER");
         }
 
         [Benchmark]
         public void ComplexCalculation()
         {
-            _calculator.GetDoubleResult("2 ^ 2 + (4 + 5 * (2 √ 9))");
+            ExecuteDoubleCalculationMillionTimes("2 ^ 2 + (4 + 5 * (2 √ 9))");
         }
 
         [Benchmark]
         public void HeavyCalculation()
         {
-            _calculator.GetDoubleResult("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))");
+            ExecuteDoubleCalculationMillionTimes("(2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9))) / (2 ^ 2 + (4 + 5 * (2 √ 9)))");
         }
 
         [Benchmark]
         public void HeavyCalculationNoWhiteSpace()
         {
-            _calculator.GetDoubleResult("(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))");
+            ExecuteDoubleCalculationMillionTimes("(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))/(2^2+(4+5*(2√9)))");
         }
 
         [Benchmark]
         public void ManyParenthesesCalculation()
         {
-            _calculator.GetDoubleResult("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
+            ExecuteDoubleCalculationMillionTimes("((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((2 + 2))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
         }
 
         [Benchmark]
         public void FactorialCalculation()
         {
-            _calculator.GetDoubleResult("fact2 + (fact2 + fact(fact2 + 2))");
+            ExecuteDoubleCalculationMillionTimes("fact2 + (fact2 + fact(fact2 + 2))");
         }
 
         [Benchmark]
         public void SquareRootStringCalculation()
         {
-            _calculator.GetDoubleResult("SQRT9");
+            ExecuteDoubleCalculationMillionTimes("SQRT9");
         }
 
         [Benchmark]
         public void SquareRootCharCalculation()
         {
-            _calculator.GetDoubleResult("√9");
+            ExecuteDoubleCalculationMillionTimes("√9");
         }
 
         [Benchmark]
         public void AddFunctionCalculation()
         {
-            _calculator.GetDoubleResult("ADD(1;2;3)");
+            ExecuteDoubleCalculationMillionTimes("ADD(1;2;3)");
         }
 
         [Benchmark]
         public void AddOperationCalculation()
         {
-            _calculator.GetDoubleResult("1+2+3");
+            ExecuteDoubleCalculationMillionTimes("1+2+3");
+        }
+
+        private void ExecuteDoubleCalculationMillionTimes(string expression)
+        {
+            for (int i = 0; i < 1_000_000; i++)
+            {
+                _calculator.GetDoubleResult(expression);
+            }
         }
     }
 }

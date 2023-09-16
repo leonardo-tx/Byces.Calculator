@@ -1,4 +1,7 @@
-﻿namespace Byces.Calculator
+﻿using System.Globalization;
+using Byces.Calculator.Enums;
+
+namespace Byces.Calculator
 {
     /// <summary>
     /// This class provides the direct building of a <see cref="Calculator"/> in a simplified way.
@@ -14,12 +17,29 @@
         }
 
         /// <summary>
+        /// Gets or sets the culture of a <see cref="Calculator" />.
+        /// </summary>
+        /// <returns>The default culture of a <see cref="Calculator" />, or <see langword="null" /> if none is set.</returns>
+        public CultureInfo? CultureInfo { get; set; } = null;
+
+        /// <summary>
+        /// Sets the culture of a <see cref="Calculator" />.
+        /// </summary>
+        /// <param name="cultureInfo">The culture to be set.</param>
+        /// <returns>The current builder.</returns>
+        public CalculatorBuilder WithCultureInfo(CultureInfo? cultureInfo)
+        {
+            CultureInfo = cultureInfo;
+            return this;
+        }
+
+        /// <summary>
         /// Builds a new <see cref="Calculator"/> instance.
         /// </summary>
         /// <returns>The built calculator.</returns>
         public Calculator Build()
         {
-            return new Calculator();
+            return new Calculator(CultureInfo);
         }
     }
 }

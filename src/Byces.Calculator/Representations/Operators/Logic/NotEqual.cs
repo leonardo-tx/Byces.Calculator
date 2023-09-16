@@ -15,7 +15,7 @@ namespace Byces.Calculator.Representations.Operators.Logic
 
             return left.Type switch
             {
-                VariableType.Boolean => left.Boolean != right.Boolean,
+                VariableType.Boolean => left.Bool != right.Bool,
                 VariableType.Number => left.Double != right.Double,
                 _ => throw new NotSupportedException(),
             };

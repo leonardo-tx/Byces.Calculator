@@ -54,7 +54,7 @@ namespace Byces.Calculator.Representations
                     ExpressionConflict.Operator => typeof(ExpressionRepresentation<OperatorRepresentation>),
                     _ => throw new NotImplementedException(),
                 };
-                var itemsFieldInfo = conflictType.GetField(nameof(_items), BindingFlags.NonPublic | BindingFlags.Static)!;
+                FieldInfo itemsFieldInfo = conflictType.GetField(nameof(_items), BindingFlags.NonPublic | BindingFlags.Static)!;
                 Representable[] itemsField = (Representable[])itemsFieldInfo.GetValue(null)!;
 
                 for (int j = 0; j < itemsField.Length; j++)
@@ -73,8 +73,8 @@ namespace Byces.Calculator.Representations
                             if (l < spanRepresentation.Length && itemSpanRepresentation[l] == spanRepresentation[l]) continue;
                             diff = itemSpanRepresentation.Length - l; break;
                         }
-                        Array.Resize(ref representableConflicts, representableConflicts.Length + 1);
-                        representableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.String);
+                        Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
+                        RepresentableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.String);
                     }
                     else if (!stringIsDefault && !itemSpanRepresentation.IsEmpty && spanRepresentation.StartsWith(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
                     {
@@ -84,45 +84,43 @@ namespace Byces.Calculator.Representations
                             if (l < itemSpanRepresentation.Length && itemSpanRepresentation[l] == spanRepresentation[l]) continue;
                             diff = spanRepresentation.Length - l; break;
                         }
-                        Array.Resize(ref itemsField[j].representableConflicts, itemsField[j].representableConflicts.Length + 1);
-                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.String);
+                        Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
+                        itemsField[j].RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.String);
                     }
                     if (!charIsDefault && !itemSpanRepresentation.IsEmpty && char.ToUpper(itemSpanRepresentation[0]) == char.ToUpper(CharRepresentation))
                     {
                         int diff = itemSpanRepresentation.Length - 1;
-                        Array.Resize(ref representableConflicts, representableConflicts.Length + 1);
-                        representableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.Char);
+                        Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
+                        RepresentableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.Char);
                     }
                     if (!spanRepresentation.IsEmpty && char.ToUpper(spanRepresentation[0]) == char.ToUpper(itemsField[j].CharRepresentation))
                     {
                         int diff = spanRepresentation.Length - 1;
-                        Array.Resize(ref itemsField[j].representableConflicts, itemsField[j].representableConflicts.Length + 1);
-                        itemsField[j].representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
+                        Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
+                        itemsField[j].RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
                     }
                 }
             }
             if (!charIsDefault && !stringIsDefault && char.ToUpper(spanRepresentation[0]) == char.ToUpper(CharRepresentation))
             {
                 int diff = spanRepresentation.Length - 1;
-                Array.Resize(ref representableConflicts, representableConflicts.Length + 1);
-                representableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
+                Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
+                RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
             }
             if (!stringIsDefault && spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
             Array.Resize(ref _items, _items.Length + 1);
             _items[^1] = (T)this;
 
             if (!stringIsDefault) StringToType.Add(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase), _items[^1]);
-            if (!charIsDefault)
+            if (charIsDefault) return;
+            if (char.ToLower(CharRepresentation) != char.ToUpper(CharRepresentation))
             {
-                if (char.ToLower(CharRepresentation) != char.ToUpper(CharRepresentation))
-                {
-                    CharToType.Add(char.ToUpper(CharRepresentation), _items[^1]);
-                    CharToType.Add(char.ToLower(CharRepresentation), _items[^1]);
-                }
-                else
-                {
-                    CharToType.Add(CharRepresentation, _items[^1]);
-                }
+                CharToType.Add(char.ToUpper(CharRepresentation), _items[^1]);
+                CharToType.Add(char.ToLower(CharRepresentation), _items[^1]);
+            }
+            else
+            {
+                CharToType.Add(CharRepresentation, _items[^1]);
             }
         }
 
@@ -135,14 +133,16 @@ namespace Byces.Calculator.Representations
         
         internal static T Parse(ReadOnlySpan<char> span)
         {
-            if (span.Length == 1) return CharToType[span[0]];
-            return StringToType[string.GetHashCode(span, StringComparison.OrdinalIgnoreCase)];
+            return span.Length == 1 
+                ? CharToType[span[0]] 
+                : StringToType[string.GetHashCode(span, StringComparison.OrdinalIgnoreCase)];
         }
 
         internal static bool TryParse(ReadOnlySpan<char> span, out T type)
         {
-            if (span.Length == 1) return CharToType.TryGetValue(span[0], out type!);
-            return StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type!);
+            return span.Length == 1 
+                ? CharToType.TryGetValue(span[0], out type!) 
+                : StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type!);
         }
 
         internal static T GetItem(int value) => _items[value];

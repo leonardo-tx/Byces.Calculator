@@ -10,8 +10,8 @@ namespace Byces.Calculator.Representations.Operators.Logic
 
         internal override Variable Operate(Variable left, Variable right)
         {
-            bool boolean1 = left.Boolean;
-            bool boolean2 = right.Boolean;
+            bool boolean1 = left.Bool;
+            bool boolean2 = right.Bool;
 
             return boolean1 && boolean2;
         }
