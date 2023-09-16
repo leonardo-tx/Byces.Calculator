@@ -156,9 +156,9 @@ string expressionExample5 = "2(5)";
 | GetDoubleResult(string expression)  | MathResult<double> | Gets a `MathResult<double>` calculating the given mathematical expression |
 | GetBooleanResult(string expression) | MathResult<bool>   | Gets a `MathResult<bool>` calculating the given mathematical expression   |
 
-## Benchmark
+## Benchmark (one million iterations)
 
-In the Benchmark below, one million iterations were made for each method
+In the Benchmark below, **one million iterations** were made for each method
 
 ``` ini
 
