@@ -66,10 +66,7 @@ namespace Byces.Calculator.Expressions
                 double diff = Number - Math.Floor(Number);
                 
                 if (diff != 0 || Number > long.MaxValue || Number < long.MinValue) throw new InvalidArgumentExpressionException();
-                long result = (long)Number;
-
-                if (result < 0 != Number < 0) return result;
-                return result;
+                return (long)Number;
             }
         }
 
@@ -102,8 +99,8 @@ namespace Byces.Calculator.Expressions
             }
         }
 
-        public static implicit operator Variable(double number) => new Variable(number, false, VariableType.Number);
+        public static implicit operator Variable(double number) => new(number, false, VariableType.Number);
 
-        public static implicit operator Variable(bool boolean) => new Variable(0, boolean, VariableType.Boolean);
+        public static implicit operator Variable(bool boolean) => new(0, boolean, VariableType.Boolean);
     }
 }

@@ -28,7 +28,10 @@ namespace Byces.Calculator.Expressions
                 if (char.IsWhiteSpace(rawExpressionSpan[i])) continue;
                 _expressionBuilder.Add(rawExpressionSpan[i]);
             }
-            _contentBuilder.Build(CollectionsMarshal.AsSpan(_expressionBuilder), cultureInfo);
+            ReadOnlySpan<char> formattedExpressionSpan = CollectionsMarshal.AsSpan(_expressionBuilder);
+            if (formattedExpressionSpan.IsEmpty) return;
+            
+            _contentBuilder.Build(formattedExpressionSpan, cultureInfo);
             _content.Process();
         }
 

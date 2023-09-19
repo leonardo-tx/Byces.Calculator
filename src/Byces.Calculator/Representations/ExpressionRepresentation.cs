@@ -74,7 +74,7 @@ namespace Byces.Calculator.Representations
                             diff = itemSpanRepresentation.Length - l; break;
                         }
                         Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                        RepresentableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.String);
+                        RepresentableConflicts[^1] = new Conflict(diff, conflictToCheckFlag, RepresentableType.String);
                     }
                     else if (!stringIsDefault && !itemSpanRepresentation.IsEmpty && spanRepresentation.StartsWith(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
                     {
@@ -85,19 +85,19 @@ namespace Byces.Calculator.Representations
                             diff = spanRepresentation.Length - l; break;
                         }
                         Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
-                        itemsField[j].RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.String);
+                        itemsField[j].RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.String);
                     }
                     if (!charIsDefault && !itemSpanRepresentation.IsEmpty && char.ToUpper(itemSpanRepresentation[0]) == char.ToUpper(CharRepresentation))
                     {
                         int diff = itemSpanRepresentation.Length - 1;
                         Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                        RepresentableConflicts[^1] = new Conflict(itemsField[j].Value, diff, conflictToCheckFlag, RepresentableType.Char);
+                        RepresentableConflicts[^1] = new Conflict(diff, conflictToCheckFlag, RepresentableType.Char);
                     }
                     if (!spanRepresentation.IsEmpty && char.ToUpper(spanRepresentation[0]) == char.ToUpper(itemsField[j].CharRepresentation))
                     {
                         int diff = spanRepresentation.Length - 1;
                         Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
-                        itemsField[j].RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
+                        itemsField[j].RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.Char);
                     }
                 }
             }
@@ -105,7 +105,7 @@ namespace Byces.Calculator.Representations
             {
                 int diff = spanRepresentation.Length - 1;
                 Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                RepresentableConflicts[^1] = new Conflict(Value, diff, representationConflict, RepresentableType.Char);
+                RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.Char);
             }
             if (!stringIsDefault && spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
             Array.Resize(ref _items, _items.Length + 1);

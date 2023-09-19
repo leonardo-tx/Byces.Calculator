@@ -15,9 +15,7 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
             if (number < 0) throw new ArithmeticExpressionException("Attempted to factorial a negative number.");
 
             double difference = number - Math.Floor(number);
-            if (difference == 0) return GetFactorial((int)number);
-
-            return GetGamma(number + 1);
+            return difference == 0 ? GetFactorial((int)number) : GetGamma(number + 1);
         }
 
         private static double GetFactorial(int number)
@@ -57,7 +55,7 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
             }
 
             double t = number + g + 0.5;
-            return Math.Sqrt(2 * Math.PI) * (Math.Pow(t, number + 0.5)) * Math.Exp(-t) * x;
+            return Math.Sqrt(2 * Math.PI) * Math.Pow(t, number + 0.5) * Math.Exp(-t) * x;
         }
     }
 }

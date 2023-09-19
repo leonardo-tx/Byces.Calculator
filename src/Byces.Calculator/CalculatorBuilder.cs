@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Byces.Calculator.Enums;
 
 namespace Byces.Calculator
 {
@@ -20,7 +19,7 @@ namespace Byces.Calculator
         /// Gets or sets the culture of a <see cref="Calculator" />.
         /// </summary>
         /// <returns>The default culture of a <see cref="Calculator" />, or <see langword="null" /> if none is set.</returns>
-        public CultureInfo? CultureInfo { get; set; } = null;
+        public CultureInfo? CultureInfo { get; set; }
 
         /// <summary>
         /// Sets the culture of a <see cref="Calculator" />.

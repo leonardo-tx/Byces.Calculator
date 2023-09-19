@@ -15,7 +15,7 @@ namespace Byces.Calculator.Representations.Operators.Logic
             {
                 VariableType.Boolean => left.Bool | right.Bool,
                 VariableType.Number => left.Long | right.Long,
-                _ => throw new InvalidArgumentExpressionException(),
+                _ => throw new InvalidArgumentExpressionException()
             };
         }
     }

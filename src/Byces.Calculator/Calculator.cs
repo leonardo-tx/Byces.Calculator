@@ -63,8 +63,6 @@ namespace Byces.Calculator
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Variable GetResult(ReadOnlySpan<char> rawExpressionSpan, VariableType expectedType)
         {
-            if (rawExpressionSpan.IsEmpty || rawExpressionSpan.IsWhiteSpace()) return default;
-
             ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {

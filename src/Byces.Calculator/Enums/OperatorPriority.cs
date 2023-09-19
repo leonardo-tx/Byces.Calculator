@@ -15,6 +15,6 @@ namespace Byces.Calculator.Enums
         OrBitwise = 64,
         AndConditional = 128,
         OrConditional = 256,
-        SemiColon = 512,
+        SemiColon = 512
     }
 }

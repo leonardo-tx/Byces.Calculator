@@ -11,11 +11,9 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {
-            if (variables.Length == 1)
-            {
-                return Log10(variables[0].Double);
-            }
-            return LogCustom(variables[0].Double, variables[1].Double);
+            return variables.Length == 1 
+                ? Log10(variables[0].Double) 
+                : LogCustom(variables[0].Double, variables[1].Double);
         }
 
         private static double Log10(double value)

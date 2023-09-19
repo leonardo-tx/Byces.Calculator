@@ -7,6 +7,6 @@ namespace Byces.Calculator.Enums
     {
         Variable = 1,
         Operator = 2,
-        Function = 4,
+        Function = 4
     }
 }

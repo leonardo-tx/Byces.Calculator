@@ -92,12 +92,10 @@ namespace Byces.Calculator.Expressions
                 _priority++;
                 return true;
             }
-            if (currentChar == ')')
-            {
-                if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
-                return true;
-            }
-            return false;
+            if (currentChar != ')') return false;
+            if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
+            
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -159,8 +157,8 @@ namespace Byces.Calculator.Expressions
             int value = FindGenericValue<FunctionRepresentation>(expressionSpan, ExpressionConflict.Function, out bool isType);
             if (!isType)
             {
-                if (value == -1) return false;
-                else { _lastIndex--; return false; }
+                if (value != -1) _lastIndex--;
+                return false;
             }
             AddFunction(FunctionRepresentation.GetItem(value));
             return true;
