@@ -1,6 +1,7 @@
 # Byces.Calculator
 [![NuGet version](https://img.shields.io/nuget/v/Byces.Calculator)](https://www.nuget.org/packages/Byces.Calculator)
 [![.NET](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml/badge.svg)](https://github.com/leonardo-tx/Byces.Calculator/actions/workflows/dotnet.yml)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/29682/badge.svg)](https://scan.coverity.com/projects/leonardo-tx-byces-calculator)
 
 A simple .NET calculator that solves string math expressions
 
