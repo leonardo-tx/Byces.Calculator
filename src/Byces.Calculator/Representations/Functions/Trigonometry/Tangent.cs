@@ -13,7 +13,7 @@ namespace Byces.Calculator.Representations.Functions.Trigonometry
         {
             double number = variables[0].Double;
             double degree = number * 180 / Math.PI;
-            if (degree == 90 || degree == 270) throw new ArithmeticExpressionException($"Attempted to calculate the tangent of {degree}° in radians.");
+            if (degree % 360.00 == 90.00) throw new ArithmeticExpressionException($"Attempted to calculate the tangent of {degree}° in radians.");
 
             double result = Math.Tan(number);
             return Math.Round(result, 15);

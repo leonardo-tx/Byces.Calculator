@@ -19,7 +19,7 @@ namespace Byces.Calculator.Tests.Functions
         public void TangentExceptionsTest()
         {
             Evaluator.ValidateException("tan(rad 90)", ResultError.Arithmetic);
-            Evaluator.ValidateException("tan(rad 270)", ResultError.Arithmetic);
+            Evaluator.ValidateException("tan(rad 450)", ResultError.Arithmetic);
         }
     }
 }
