@@ -163,27 +163,27 @@ In the Benchmark below, **one million iterations** were made for each method
 
 ``` ini
 
-BenchmarkDotNet=v0.13.5, OS=Windows 11 (10.0.22621.2134/22H2/2022Update/SunValley2)
+BenchmarkDotNet=v0.13.5, OS=arch 
 AMD Ryzen 5 3500X, 1 CPU, 6 logical and 6 physical cores
-.NET SDK=7.0.400
-  [Host]     : .NET 7.0.10 (7.0.1023.36312), X64 RyuJIT AVX2 [AttachedDebugger]
-  DefaultJob : .NET 7.0.10 (7.0.1023.36312), X64 RyuJIT AVX2
+.NET SDK=8.0.101
+  [Host]     : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
+  DefaultJob : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
 
 
 ```
 |                       Method |       Mean |    Error |   StdDev | Allocated |
 |----------------------------- |-----------:|---------:|---------:|----------:|
-|            SimpleCalculation |   299.9 ms |  2.00 ms |  1.67 ms |     252 B |
-|      EulerPlusEulerPlusEuler |   392.2 ms |  2.41 ms |  2.25 ms |     504 B |
-|           ComplexCalculation |   762.7 ms |  2.46 ms |  2.30 ms |     504 B |
-|             HeavyCalculation | 8,625.8 ms | 44.98 ms | 39.87 ms |     504 B |
-| HeavyCalculationNoWhiteSpace | 8,489.1 ms | 23.98 ms | 21.25 ms |     504 B |
-|   ManyParenthesesCalculation | 1,160.5 ms |  6.10 ms |  5.71 ms |     504 B |
-|         FactorialCalculation | 1,165.7 ms |  6.35 ms |  5.94 ms |     504 B |
-|  SquareRootStringCalculation |   282.7 ms |  2.65 ms |  2.48 ms |     252 B |
-|    SquareRootCharCalculation |   192.0 ms |  1.19 ms |  1.00 ms |     168 B |
-|       AddFunctionCalculation |   440.8 ms |  3.29 ms |  2.75 ms |     504 B |
-|      AddOperationCalculation |   319.2 ms |  2.37 ms |  2.22 ms |     252 B |
+|            SimpleCalculation |   251.7 ms |  1.09 ms |  0.85 ms |         - |
+|      EulerPlusEulerPlusEuler |   336.1 ms |  2.53 ms |  2.24 ms |         - |
+|           ComplexCalculation |   617.3 ms |  0.91 ms |  0.76 ms |         - |
+|             HeavyCalculation | 7,266.4 ms | 36.77 ms | 34.39 ms |         - |
+| HeavyCalculationNoWhiteSpace | 6,926.9 ms | 33.86 ms | 31.68 ms |         - |
+|   ManyParenthesesCalculation | 1,405.6 ms |  1.15 ms |  1.02 ms |         - |
+|         FactorialCalculation | 1,134.6 ms |  7.08 ms |  6.62 ms |         - |
+|  SquareRootStringCalculation |   264.2 ms |  0.50 ms |  0.47 ms |         - |
+|    SquareRootCharCalculation |   184.5 ms |  0.67 ms |  0.63 ms |         - |
+|       AddFunctionCalculation |   376.5 ms |  3.00 ms |  2.80 ms |         - |
+|      AddOperationCalculation |   267.1 ms |  1.22 ms |  1.09 ms |         - |
 
 ### Expressions
 
