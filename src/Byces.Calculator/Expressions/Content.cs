@@ -101,26 +101,25 @@ namespace Byces.Calculator.Expressions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FindSemiColon(int priority)
         {
-            int? firstIndex = null, lastIndex = null;
+            int firstIndex = -1;
             for (int i = 0; i < Operations.Count; i++)
             {
                 Operation operation = Operations[i];
                 OperatorPriority operationPriorityType = ((OperatorRepresentation)operation.Value).Priority;
-                if (firstIndex.HasValue && (operation.Priority != priority || operationPriorityType != OperatorPriority.SemiColon))
+                if (firstIndex != -1 && (operation.Priority != priority || operationPriorityType != OperatorPriority.SemiColon))
                 {
-                    lastIndex = i;
-                    int count = (int)lastIndex - (int)firstIndex + 1;
-                    CalculateMultipleArgsFunction((int)firstIndex, count);
+                    int count = i - firstIndex + 1;
+                    CalculateMultipleArgsFunction(firstIndex, count);
 
-                    lastIndex = null; firstIndex = null; i -= count; continue;
+                    firstIndex = -1; i -= count; continue;
                 }
-                if (!firstIndex.HasValue && operation.Priority == priority && operationPriorityType == OperatorPriority.SemiColon)
+                if (firstIndex == -1 && operation.Priority == priority && operationPriorityType == OperatorPriority.SemiColon)
                 {
                     firstIndex = i;
                 }
             }
-            if (!firstIndex.HasValue) return;
-            CalculateMultipleArgsFunction((int)firstIndex, lastIndex.HasValue ? (int)lastIndex - (int)firstIndex + 1 : Variables.Count - (int)firstIndex);
+            if (firstIndex == -1) return;
+            CalculateMultipleArgsFunction(firstIndex, Variables.Count - firstIndex);
         }
 
         private void CalculateMultipleArgsFunction(int firstIndex, int count)
