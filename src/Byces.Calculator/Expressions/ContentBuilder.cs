@@ -3,7 +3,6 @@ using Byces.Calculator.Exceptions;
 using Byces.Calculator.Representations;
 using System;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace Byces.Calculator.Expressions
 {
@@ -14,13 +13,11 @@ namespace Byces.Calculator.Expressions
             _content = content;
         }
         
-        private int _firstIndex;
+        internal int FirstIndex;
 
-        private int _lastIndex;
+        internal int LastIndex;
 
         private int _priority;
-
-        private bool _afterNumber;
 
         private bool _isNegative;
 
@@ -34,10 +31,9 @@ namespace Byces.Calculator.Expressions
 
         public void Clear()
         {
-            _firstIndex = 0;
-            _lastIndex = 0;
+            FirstIndex = 0;
+            LastIndex = 0;
             _priority = 0;
-            _afterNumber = false;
             _isNegative = false;
         }
 
@@ -48,69 +44,94 @@ namespace Byces.Calculator.Expressions
             _decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
             ScanExpression(expressionSpan);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void ScanExpression(ReadOnlySpan<char> expressionSpan)
         {
-            for (; _lastIndex < expressionSpan.Length; _lastIndex++, _firstIndex++)
+            bool reachedEnd = false;
+            do
             {
-                if (FindParentheses(expressionSpan[_lastIndex])) continue;
-                if (!_afterNumber)
+                while (!reachedEnd && !ScanExpressionBeforeNumber(expressionSpan))
                 {
-                    if (FindNumber(expressionSpan) || FindVariable(expressionSpan))
-                    {
-                        _afterNumber = true; _firstIndex = _lastIndex;
-                        continue;
-                    }
-                    if (FindFunction(expressionSpan)) { _firstIndex = _lastIndex; continue; }
+                    IncreaseCycle(expressionSpan, out reachedEnd);
                 }
-                else
+                IncreaseCycle(expressionSpan, out reachedEnd);
+                while (!reachedEnd && !ScanExpressionAfterNumber(expressionSpan))
                 {
-                    if (FindOperator(expressionSpan))
-                    {
-                        _firstIndex = _lastIndex; _afterNumber = false;
-                        continue;
-                    }
+                    IncreaseCycle(expressionSpan, out reachedEnd);
                 }
-                _firstIndex--;
-            }
+                IncreaseCycle(expressionSpan, out reachedEnd);
+            } while (!reachedEnd);
+            
             if (_priority > 0) throw new MissingParenthesesExpressionException();
-            if (!_afterNumber) throw new IncompleteExpressionException();
-            if (_lastIndex != _firstIndex) throw new UnknownNumberExpressionException();
+            if (_content.Variables.Count != _content.Operations.Count + 1) throw new IncompleteExpressionException();
+            if (LastIndex != FirstIndex) throw new UnknownNumberExpressionException();
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool FindParentheses(char currentChar)
+        
+        private void IncreaseCycle(ReadOnlySpan<char> expressionSpan, out bool reachedEnd)
         {
-            if (currentChar == '(')
+            ++LastIndex;
+            ++FirstIndex;
+            reachedEnd = LastIndex >= expressionSpan.Length;
+        }
+        
+        private bool ScanExpressionBeforeNumber(ReadOnlySpan<char> expressionSpan)
+        {
+            if (LastIndex == FirstIndex && expressionSpan[LastIndex] == '(')
             {
-                if (_afterNumber)
-                {
-                    AddOperator(OperatorRepresentation.Parse("*"));
-                    _afterNumber = false;
-                }
-                _priority++;
+                ++_priority;
+                return false;
+            }
+            if (FindNumber(expressionSpan) || FindVariable(expressionSpan))
+            {
+                FirstIndex = LastIndex;
                 return true;
             }
-            if (currentChar != ')') return false;
-            if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
-            
-            return true;
+            if (FindFunction(expressionSpan))
+            {
+                FirstIndex = LastIndex;
+                return false;
+            }
+            --FirstIndex;
+            return false;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
+        private bool ScanExpressionAfterNumber(ReadOnlySpan<char> expressionSpan)
+        {
+            if (LastIndex == FirstIndex)
+            {
+                if (expressionSpan[LastIndex] == '(')
+                {
+                    AddOperator(OperatorRepresentation.Parse("*"));
+                    ++_priority;
+                    return true;
+                }
+                if (expressionSpan[LastIndex] == ')')
+                {
+                    if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
+                    return false;
+                }
+            }
+            if (FindOperator(expressionSpan))
+            {
+                FirstIndex = LastIndex;
+                return true;
+            }
+            --FirstIndex;
+            return false;
+        }
+        
         private bool FindNumber(ReadOnlySpan<char> expressionSpan)
         {
-            if (_firstIndex != _lastIndex) return false;
+            if (FirstIndex != LastIndex) return false;
             
-            _isNegative = expressionSpan[_lastIndex] == '-';
-            if (_isNegative || expressionSpan[_lastIndex] == '+') { _lastIndex++; _firstIndex++; }
-            if (char.IsLetter(expressionSpan[_lastIndex])) return false;
+            _isNegative = expressionSpan[LastIndex] == '-';
+            if (_isNegative || expressionSpan[LastIndex] == '+') { LastIndex++; FirstIndex++; }
+            if (char.IsLetter(expressionSpan[LastIndex])) return false;
 
             var numberStyles = NumberStyles.None;
-            for (bool atScientificNotation = false, atDecimal = false, hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
+            for (bool atScientificNotation = false, atDecimal = false, hasSignal = false; LastIndex < expressionSpan.Length; LastIndex++)
             {
-                char currentChar = expressionSpan[_lastIndex];
+                char currentChar = expressionSpan[LastIndex];
                 if (char.IsDigit(currentChar)) continue;
                 if (!atDecimal)
                 {
@@ -126,127 +147,54 @@ namespace Byces.Calculator.Expressions
                 }
                 break;
             }
-            return ParseNumber(expressionSpan[_firstIndex.._lastIndex], numberStyles);
+            return ParseNumber(expressionSpan[FirstIndex..LastIndex], numberStyles);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private bool ParseNumber(ReadOnlySpan<char> currentSpan, NumberStyles numberStyles)
         {
-            if (_firstIndex == _lastIndex) return false;
-            _lastIndex--;
+            if (FirstIndex == LastIndex) return false;
+            LastIndex--;
             
             if (!double.TryParse(currentSpan, numberStyles, _numberFormatInfo, out double result)) throw new UnknownNumberExpressionException();
 
             AddNumber(result);
             return true;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private bool FindVariable(ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<VariableRepresentation>(expressionSpan, ExpressionConflict.Variable, out bool isType);
-            if (!isType || value == -1) return false;
+            VariableRepresentation? value = VariableRepresentation.FindVariable(this, expressionSpan);
+            if (value == null) return false;
 
-            AddNumber(VariableRepresentation.GetItem(value));
+            AddVariable(value);
             return true;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private bool FindFunction(ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<FunctionRepresentation>(expressionSpan, ExpressionConflict.Function, out bool isType);
-            if (!isType)
-            {
-                if (value != -1) _lastIndex--;
-                return false;
-            }
-            AddFunction(FunctionRepresentation.GetItem(value));
+            FunctionRepresentation? value = FunctionRepresentation.FindFunction(this, expressionSpan);
+            if (value == null) return false;
+            
+            AddFunction(value);
             return true;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private bool FindOperator(ReadOnlySpan<char> expressionSpan)
         {
-            int value = FindGenericValue<OperatorRepresentation>(expressionSpan, ExpressionConflict.Operator, out _);
-            if (value == -1) return false;
+            OperatorRepresentation? value = OperatorRepresentation.FindOperator(this, expressionSpan);
+            if (value == null) return false;
 
-            AddOperator(OperatorRepresentation.GetItem(value));
+            AddOperator(value);
             return true;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindGenericValue<T>(ReadOnlySpan<char> expressionSpan, ExpressionConflict resultConflict, out bool isOriginalType) 
-            where T : ExpressionRepresentation<T>
-        {
-            if (_lastIndex == expressionSpan.Length) { isOriginalType = false; return -1; }
-
-            ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
-            if (currentSpan.Length <= ExpressionRepresentation<T>.MaxStringSize &&
-                ExpressionRepresentation<T>.TryParse(currentSpan, out T representation))
-            {
-                return FindConflicts(expressionSpan, representation, resultConflict, currentSpan.Length, out isOriginalType);
-            }
-            isOriginalType = false; return -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindConflicts<T>(ReadOnlySpan<char> expressionSpan, T firstResult, ExpressionConflict resultConflict, int foundLength, out bool isOriginalType) 
-            where T : ExpressionRepresentation<T>
-        {
-            int value = -1, increaseLastIndex = 0; isOriginalType = true;
-            for (int i = 0; i < firstResult.RepresentableConflicts.Length; i++)
-            {
-                Conflict representableConflict = firstResult.RepresentableConflicts[i];
-                if (foundLength == 1 && representableConflict.Representable != RepresentableType.Char) continue;
-                if (foundLength > 1 && representableConflict.Representable != RepresentableType.String) continue;
-
-                int j = 1;
-                while (j <= representableConflict.Difference && _lastIndex + j < expressionSpan.Length) j++;
-                
-                ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + --j + 1)];
-                
-                int value2 = GetGenericValue(currentSpan, representableConflict.ExpressionConflict);
-                if (value2 == -1 || increaseLastIndex > j) continue;
-
-                isOriginalType = representableConflict.ExpressionConflict == resultConflict;
-                increaseLastIndex = j;
-                value = value2;
-            }
-            if (value == -1) return firstResult.Value;
-            
-            _lastIndex += increaseLastIndex;
-            return value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetGenericValue(ReadOnlySpan<char> currentSpan, ExpressionConflict conflict)
-        {
-            switch (conflict)
-            {
-                case ExpressionConflict.Operator:
-                    if (OperatorRepresentation.TryParse(currentSpan, out var operatorRepresentation)) return operatorRepresentation.Value;
-                    break;
-                case ExpressionConflict.Function:
-                    if (FunctionRepresentation.TryParse(currentSpan, out var functionRepresentation)) return functionRepresentation.Value;
-                    break;
-                case ExpressionConflict.Variable:
-                    if (VariableRepresentation.TryParse(currentSpan, out var variableRepresentation)) return variableRepresentation.Value;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            return -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void AddFunction(FunctionRepresentation representation)
         {
             Function function = new(_content.Variables.Count, representation, _priority);
             _content.Functions.Add(function);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddNumber(VariableRepresentation representation)
+        
+        private void AddVariable(VariableRepresentation representation)
         {
             Variable value = representation.GetValue();
             if (_isNegative && value.Type == VariableType.Number)
@@ -256,14 +204,12 @@ namespace Byces.Calculator.Expressions
             }
             _content.Variables.Add(value);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void AddNumber(double givenValue)
         {
             _content.Variables.Add(_isNegative ? -givenValue : givenValue);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void AddOperator(OperatorRepresentation representation)
         {
             Operation operation = new(representation, _priority);

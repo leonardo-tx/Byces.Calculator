@@ -6,9 +6,6 @@ namespace Byces.Calculator.Representations
 {
     internal abstract class FunctionRepresentation : ExpressionRepresentation<FunctionRepresentation>
     {
-        public static implicit operator int(FunctionRepresentation representation) => representation.Value;
-        public static explicit operator FunctionRepresentation(int value) => GetItem(value);
-
         protected FunctionRepresentation() : base(ExpressionConflict.Function | ExpressionConflict.Variable, ExpressionConflict.Function)
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
@@ -29,5 +26,49 @@ namespace Byces.Calculator.Representations
         public virtual int ParametersMax => -1;
 
         public abstract Variable Operate(ReadOnlySpan<Variable> variables);
+        
+        internal static FunctionRepresentation? FindFunction(ContentBuilder contentBuilder, ReadOnlySpan<char> expressionSpan)
+        {
+            if (contentBuilder.LastIndex == expressionSpan.Length) return null;
+
+            ReadOnlySpan<char> currentSpan = expressionSpan[contentBuilder.FirstIndex..(contentBuilder.LastIndex + 1)];
+            if (currentSpan.Length > MaxStringSize || !TryParse(currentSpan, out FunctionRepresentation? firstResult)) return null;
+            
+            int increaseLastIndex = 0, foundLength = currentSpan.Length;
+            FunctionRepresentation? value = null;
+            bool parseResult = false;
+            
+            for (int i = 0; i < firstResult.RepresentableConflicts.Length; i++)
+            {
+                Conflict representableConflict = firstResult.RepresentableConflicts[i];
+                if (foundLength == 1 && representableConflict.Representable != RepresentableType.Char) continue;
+                if (foundLength > 1 && representableConflict.Representable != RepresentableType.String) continue;
+
+                int j = 1;
+                while (j <= representableConflict.Difference && contentBuilder.LastIndex + j < expressionSpan.Length) j++;
+                
+                currentSpan = expressionSpan[contentBuilder.FirstIndex..(contentBuilder.LastIndex + --j + 1)];
+
+                FunctionRepresentation? value2 = null;
+                parseResult = representableConflict.ExpressionConflict == ExpressionConflict.Variable 
+                    ? VariableRepresentation.TryParse(currentSpan, out _) 
+                    : TryParse(currentSpan, out value2);
+                
+                if (!parseResult || increaseLastIndex > j) continue;
+                
+                increaseLastIndex = j;
+                value = value2;
+            }
+            if (value == null)
+            {
+                if (!parseResult) return firstResult;
+                
+                --contentBuilder.LastIndex;
+                return null;
+            }
+            
+            contentBuilder.LastIndex += increaseLastIndex;
+            return value;
+        }
     }
 }

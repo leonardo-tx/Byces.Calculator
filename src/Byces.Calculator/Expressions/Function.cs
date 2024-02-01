@@ -6,7 +6,7 @@ namespace Byces.Calculator.Expressions
 {
     internal readonly struct Function
     {
-        internal Function(int variableIndex, int function, int priority)
+        internal Function(int variableIndex, FunctionRepresentation function, int priority)
         {
             VariableIndex = variableIndex;
             Value = function;
@@ -15,26 +15,24 @@ namespace Byces.Calculator.Expressions
 
         internal int VariableIndex { get; }
 
-        internal int Value { get; }
+        internal FunctionRepresentation Value { get; }
 
         internal int Priority { get; }
 
         internal Variable Operate(Variable variable)
         {
-            var functionRepresentation = (FunctionRepresentation)Value;
-            if (functionRepresentation.ParametersMin > 1) throw new InvalidArgumentExpressionException();
+            if (Value.ParametersMin > 1) throw new InvalidArgumentExpressionException();
 
             ReadOnlySpan<Variable> temp = stackalloc Variable[] { variable };
-            return functionRepresentation.Operate(temp);
+            return Value.Operate(temp);
         }
 
         internal Variable Operate(ReadOnlySpan<Variable> variables)
         {
-            var functionRepresentation = (FunctionRepresentation)Value;
-            if (functionRepresentation.ParametersMin > variables.Length) throw new InvalidArgumentExpressionException();
-            if (functionRepresentation.ParametersMax > -1 && functionRepresentation.ParametersMax < variables.Length) throw new InvalidArgumentExpressionException();
+            if (Value.ParametersMin > variables.Length) throw new InvalidArgumentExpressionException();
+            if (Value.ParametersMax > -1 && Value.ParametersMax < variables.Length) throw new InvalidArgumentExpressionException();
             
-            return functionRepresentation.Operate(variables);
+            return Value.Operate(variables);
         }
     }
 }

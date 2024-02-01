@@ -1,11 +1,9 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
-using Byces.Calculator.Representations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Expressions
@@ -45,8 +43,7 @@ namespace Byces.Calculator.Expressions
             }
             CalculateFunctions(0);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void CalculateInOrder(int priority)
         {
             CalculateFunctions(priority);
@@ -77,19 +74,16 @@ namespace Byces.Calculator.Expressions
                 Functions.RemoveAt(i);
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void CalculateOperations(OperatorPriority operationPriority, int priority)
         {
             for (int i = 0; i < Operations.Count; i++)
             {
                 Operation operation = Operations[i];
                 if (operation.Priority != priority) continue;
+                if (operationPriority != operation.Value.Priority) continue;
 
-                var operationRepresentation = (OperatorRepresentation)operation.Value;
-                if (operationPriority != operationRepresentation.Priority) continue;
-
-                Variables[i] = operationRepresentation.Operate(Variables[i], Variables[i + 1]);
+                Variables[i] = operation.Value.Operate(Variables[i], Variables[i + 1]);
                 Operations.RemoveAt(i);
                 Variables.RemoveAt(i + 1);
 
@@ -97,23 +91,21 @@ namespace Byces.Calculator.Expressions
                 i--;
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private void FindSemiColon(int priority)
         {
             int firstIndex = -1;
             for (int i = 0; i < Operations.Count; i++)
             {
                 Operation operation = Operations[i];
-                OperatorPriority operationPriorityType = ((OperatorRepresentation)operation.Value).Priority;
-                if (firstIndex != -1 && (operation.Priority != priority || operationPriorityType != OperatorPriority.SemiColon))
+                if (firstIndex != -1 && (operation.Priority != priority || operation.Value.Priority != OperatorPriority.SemiColon))
                 {
                     int count = i - firstIndex + 1;
                     CalculateMultipleArgsFunction(firstIndex, count);
 
                     firstIndex = -1; i -= count; continue;
                 }
-                if (firstIndex == -1 && operation.Priority == priority && operationPriorityType == OperatorPriority.SemiColon)
+                if (firstIndex == -1 && operation.Priority == priority && operation.Value.Priority == OperatorPriority.SemiColon)
                 {
                     firstIndex = i;
                 }

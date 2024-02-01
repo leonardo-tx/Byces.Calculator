@@ -2,6 +2,7 @@
 using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Byces.Calculator.Representations
@@ -27,7 +28,7 @@ namespace Byces.Calculator.Representations
             }
         }
 
-        protected ExpressionRepresentation(ExpressionConflict conflicts, ExpressionConflict representationConflict) : base(_items.Length)
+        protected ExpressionRepresentation(ExpressionConflict conflicts, ExpressionConflict representationConflict)
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
             bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
@@ -138,13 +139,11 @@ namespace Byces.Calculator.Representations
                 : StringToType[string.GetHashCode(span, StringComparison.OrdinalIgnoreCase)];
         }
 
-        internal static bool TryParse(ReadOnlySpan<char> span, out T type)
+        internal static bool TryParse(ReadOnlySpan<char> span, [NotNullWhen(true)] out T? type)
         {
             return span.Length == 1 
-                ? CharToType.TryGetValue(span[0], out type!) 
-                : StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type!);
+                ? CharToType.TryGetValue(span[0], out type) 
+                : StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type);
         }
-
-        internal static T GetItem(int value) => _items[value];
     }
 }
