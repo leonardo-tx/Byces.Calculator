@@ -28,7 +28,7 @@ namespace Byces.Calculator.Representations
             }
         }
 
-        protected ExpressionRepresentation(ExpressionConflict conflicts, ExpressionConflict representationConflict)
+        protected ExpressionRepresentation()
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
             bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
@@ -44,71 +44,57 @@ namespace Byces.Calculator.Representations
                 throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation above the allowed limit of {StringSizeLimit}.");
             if (!stringIsDefault && spanRepresentation.Any(x => char.IsWhiteSpace(x) || char.IsDigit(x) || x == '(' || x == ')'))
                 throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with illegal characters.");
-            for (int i = 0; i < 3; i++)
+            if (!charIsDefault && CharToType.ContainsKey(CharRepresentation))
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a char representation identical to another type.");
+            if (!stringIsDefault && StringToType.ContainsKey(string.GetHashCode(spanRepresentation, StringComparison.OrdinalIgnoreCase)))
+                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation identical to another type.");
+                
+            for (int i = 0; i < _items.Length; i++)
             {
-                var conflictToCheckFlag = (ExpressionConflict)Math.Pow(2, i);
-                if ((conflicts & conflictToCheckFlag) != conflictToCheckFlag) continue;
-                Type conflictType = conflictToCheckFlag switch
+                ReadOnlySpan<char> itemSpanRepresentation = _items[i].StringRepresentation;
+                
+                if (!stringIsDefault && itemSpanRepresentation.StartsWith(spanRepresentation, StringComparison.OrdinalIgnoreCase))
                 {
-                    ExpressionConflict.Variable => typeof(ExpressionRepresentation<VariableRepresentation>),
-                    ExpressionConflict.Function => typeof(ExpressionRepresentation<FunctionRepresentation>),
-                    ExpressionConflict.Operator => typeof(ExpressionRepresentation<OperatorRepresentation>),
-                    _ => throw new NotImplementedException(),
-                };
-                FieldInfo itemsFieldInfo = conflictType.GetField(nameof(_items), BindingFlags.NonPublic | BindingFlags.Static)!;
-                Representable[] itemsField = (Representable[])itemsFieldInfo.GetValue(null)!;
-
-                for (int j = 0; j < itemsField.Length; j++)
+                    int diff = 0;
+                    for (int j = 0; j < itemSpanRepresentation.Length; j++)
+                    {
+                        if (j < spanRepresentation.Length && itemSpanRepresentation[j] == spanRepresentation[j]) continue;
+                        diff = itemSpanRepresentation.Length - j; break;
+                    }
+                    Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
+                    RepresentableConflicts[^1] = new Conflict(diff, RepresentableType.String);
+                }
+                else if (!stringIsDefault && !itemSpanRepresentation.IsEmpty && spanRepresentation.StartsWith(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
                 {
-                    ReadOnlySpan<char> itemSpanRepresentation = itemsField[j].StringRepresentation;
-
-                    if (!charIsDefault && char.ToUpper(itemsField[j].CharRepresentation) == char.ToUpper(CharRepresentation))
-                        throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a char representation identical to another type.");
-                    if (!stringIsDefault && spanRepresentation.Equals(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
-                        throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation identical to another type.");
-                    if (!stringIsDefault && itemSpanRepresentation.StartsWith(spanRepresentation, StringComparison.OrdinalIgnoreCase))
+                    int diff = 0;
+                    for (int j = 0; j < spanRepresentation.Length; j++)
                     {
-                        int diff = 0;
-                        for (int l = 0; l < itemSpanRepresentation.Length; l++)
-                        {
-                            if (l < spanRepresentation.Length && itemSpanRepresentation[l] == spanRepresentation[l]) continue;
-                            diff = itemSpanRepresentation.Length - l; break;
-                        }
-                        Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                        RepresentableConflicts[^1] = new Conflict(diff, conflictToCheckFlag, RepresentableType.String);
+                        if (j < itemSpanRepresentation.Length && itemSpanRepresentation[j] == spanRepresentation[j]) continue;
+                        diff = spanRepresentation.Length - j; break;
                     }
-                    else if (!stringIsDefault && !itemSpanRepresentation.IsEmpty && spanRepresentation.StartsWith(itemSpanRepresentation, StringComparison.OrdinalIgnoreCase))
-                    {
-                        int diff = 0;
-                        for (int l = 0; l < spanRepresentation.Length; l++)
-                        {
-                            if (l < itemSpanRepresentation.Length && itemSpanRepresentation[l] == spanRepresentation[l]) continue;
-                            diff = spanRepresentation.Length - l; break;
-                        }
-                        Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
-                        itemsField[j].RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.String);
-                    }
-                    if (!charIsDefault && !itemSpanRepresentation.IsEmpty && char.ToUpper(itemSpanRepresentation[0]) == char.ToUpper(CharRepresentation))
-                    {
-                        int diff = itemSpanRepresentation.Length - 1;
-                        Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                        RepresentableConflicts[^1] = new Conflict(diff, conflictToCheckFlag, RepresentableType.Char);
-                    }
-                    if (!spanRepresentation.IsEmpty && char.ToUpper(spanRepresentation[0]) == char.ToUpper(itemsField[j].CharRepresentation))
-                    {
-                        int diff = spanRepresentation.Length - 1;
-                        Array.Resize(ref itemsField[j].RepresentableConflicts, itemsField[j].RepresentableConflicts.Length + 1);
-                        itemsField[j].RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.Char);
-                    }
+                    Array.Resize(ref _items[i].RepresentableConflicts, _items[i].RepresentableConflicts.Length + 1);
+                    _items[i].RepresentableConflicts[^1] = new Conflict(diff, RepresentableType.String);
+                }
+                if (!charIsDefault && !itemSpanRepresentation.IsEmpty && char.ToUpper(itemSpanRepresentation[0]) == char.ToUpper(CharRepresentation))
+                {
+                    int diff = itemSpanRepresentation.Length - 1;
+                    Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
+                    RepresentableConflicts[^1] = new Conflict(diff, RepresentableType.Char);
+                }
+                if (!spanRepresentation.IsEmpty && char.ToUpper(spanRepresentation[0]) == char.ToUpper(_items[i].CharRepresentation))
+                {
+                    int diff = spanRepresentation.Length - 1;
+                    Array.Resize(ref _items[i].RepresentableConflicts, _items[i].RepresentableConflicts.Length + 1);
+                    _items[i].RepresentableConflicts[^1] = new Conflict(diff, RepresentableType.Char);
                 }
             }
             if (!charIsDefault && !stringIsDefault && char.ToUpper(spanRepresentation[0]) == char.ToUpper(CharRepresentation))
             {
                 int diff = spanRepresentation.Length - 1;
                 Array.Resize(ref RepresentableConflicts, RepresentableConflicts.Length + 1);
-                RepresentableConflicts[^1] = new Conflict(diff, representationConflict, RepresentableType.Char);
+                RepresentableConflicts[^1] = new Conflict(diff, RepresentableType.Char);
             }
-            if (!stringIsDefault && spanRepresentation.Length > MaxStringSize) MaxStringSize = spanRepresentation.Length;
+
             Array.Resize(ref _items, _items.Length + 1);
             _items[^1] = (T)this;
 
@@ -129,8 +115,6 @@ namespace Byces.Calculator.Representations
         
         private static readonly Dictionary<int, T> StringToType = new();
         private static readonly Dictionary<char, T> CharToType = new();
-
-        internal static int MaxStringSize { get; private set; }
         
         internal static T Parse(ReadOnlySpan<char> span)
         {
@@ -145,5 +129,7 @@ namespace Byces.Calculator.Representations
                 ? CharToType.TryGetValue(span[0], out type) 
                 : StringToType.TryGetValue(string.GetHashCode(span, StringComparison.OrdinalIgnoreCase), out type);
         }
+
+        internal static T GetItem(int index) => _items[index];
     }
 }

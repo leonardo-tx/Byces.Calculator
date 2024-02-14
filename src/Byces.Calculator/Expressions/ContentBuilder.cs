@@ -2,20 +2,23 @@
 using Byces.Calculator.Exceptions;
 using Byces.Calculator.Representations;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Byces.Calculator.Expressions
 {
     internal sealed class ContentBuilder
     {
+        private static readonly OperatorRepresentation Multiplication = OperatorRepresentation.Parse("*");
+        
         public ContentBuilder(Content content)
         {
             _content = content;
         }
-        
-        internal int FirstIndex;
 
-        internal int LastIndex;
+        private int _firstIndex;
+
+        private int _lastIndex;
 
         private int _priority;
 
@@ -31,8 +34,8 @@ namespace Byces.Calculator.Expressions
 
         public void Clear()
         {
-            FirstIndex = 0;
-            LastIndex = 0;
+            _firstIndex = 0;
+            _lastIndex = 0;
             _priority = 0;
             _isNegative = false;
         }
@@ -50,12 +53,12 @@ namespace Byces.Calculator.Expressions
             bool reachedEnd = false;
             do
             {
-                while (!reachedEnd && !ScanExpressionBeforeNumber(expressionSpan))
+                while (!reachedEnd && !ScanExpressionBeforeVariable(expressionSpan))
                 {
                     IncreaseCycle(expressionSpan, out reachedEnd);
                 }
                 IncreaseCycle(expressionSpan, out reachedEnd);
-                while (!reachedEnd && !ScanExpressionAfterNumber(expressionSpan))
+                while (!reachedEnd && !ScanExpressionAfterVariable(expressionSpan))
                 {
                     IncreaseCycle(expressionSpan, out reachedEnd);
                 }
@@ -64,74 +67,67 @@ namespace Byces.Calculator.Expressions
             
             if (_priority > 0) throw new MissingParenthesesExpressionException();
             if (_content.Variables.Count != _content.Operations.Count + 1) throw new IncompleteExpressionException();
-            if (LastIndex != FirstIndex) throw new UnknownNumberExpressionException();
+            if (_lastIndex != _firstIndex) throw new UnknownNumberExpressionException();
         }
         
         private void IncreaseCycle(ReadOnlySpan<char> expressionSpan, out bool reachedEnd)
         {
-            ++LastIndex;
-            ++FirstIndex;
-            reachedEnd = LastIndex >= expressionSpan.Length;
+            ++_lastIndex;
+            ++_firstIndex;
+            reachedEnd = _lastIndex >= expressionSpan.Length;
         }
         
-        private bool ScanExpressionBeforeNumber(ReadOnlySpan<char> expressionSpan)
+        private bool ScanExpressionBeforeVariable(ReadOnlySpan<char> expressionSpan)
         {
-            if (LastIndex == FirstIndex && expressionSpan[LastIndex] == '(')
+            if (expressionSpan[_lastIndex] == '(')
             {
                 ++_priority;
                 return false;
             }
-            if (FindNumber(expressionSpan) || FindVariable(expressionSpan))
+            if (FindNumber(expressionSpan))
             {
-                FirstIndex = LastIndex;
+                _firstIndex = _lastIndex;
                 return true;
             }
-            if (FindFunction(expressionSpan))
+            while (!FindVariableOrFunction(expressionSpan))
             {
-                FirstIndex = LastIndex;
-                return false;
+                ++_lastIndex;
             }
-            --FirstIndex;
-            return false;
+            _firstIndex = _lastIndex;
+            return _content.Variables.Count == _content.Operations.Count + 1;
         }
         
-        private bool ScanExpressionAfterNumber(ReadOnlySpan<char> expressionSpan)
+        private bool ScanExpressionAfterVariable(ReadOnlySpan<char> expressionSpan)
         {
-            if (LastIndex == FirstIndex)
+            if (expressionSpan[_lastIndex] == '(')
             {
-                if (expressionSpan[LastIndex] == '(')
-                {
-                    AddOperator(OperatorRepresentation.Parse("*"));
-                    ++_priority;
-                    return true;
-                }
-                if (expressionSpan[LastIndex] == ')')
-                {
-                    if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
-                    return false;
-                }
-            }
-            if (FindOperator(expressionSpan))
-            {
-                FirstIndex = LastIndex;
+                AddOperator(Multiplication);
+                ++_priority;
                 return true;
             }
-            --FirstIndex;
-            return false;
+            if (expressionSpan[_lastIndex] == ')')
+            {
+                if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
+                return false;
+            }
+            while (!FindOperator(expressionSpan))
+            {
+                ++_lastIndex;
+            }
+            _firstIndex = _lastIndex;
+            return true;
         }
         
         private bool FindNumber(ReadOnlySpan<char> expressionSpan)
         {
-            if (FirstIndex != LastIndex) return false;
-            
-            _isNegative = expressionSpan[LastIndex] == '-';
-            if (_isNegative || expressionSpan[LastIndex] == '+') { LastIndex++; FirstIndex++; }
-            if (char.IsLetter(expressionSpan[LastIndex])) return false;
+            _isNegative = expressionSpan[_lastIndex] == '-';
+            if (_isNegative || expressionSpan[_lastIndex] == '+') { _lastIndex++; _firstIndex++; }
+            if (char.IsLetter(expressionSpan[_lastIndex])) return false;
 
             var numberStyles = NumberStyles.None;
-            for (bool atScientificNotation = false, atDecimal = false, hasSignal = false; LastIndex < expressionSpan.Length; LastIndex++)
+            for (bool atScientificNotation = false, atDecimal = false, hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
             {
-                char currentChar = expressionSpan[LastIndex];
+                char currentChar = expressionSpan[_lastIndex];
                 if (char.IsDigit(currentChar)) continue;
                 if (!atDecimal)
                 {
@@ -147,13 +143,13 @@ namespace Byces.Calculator.Expressions
                 }
                 break;
             }
-            return ParseNumber(expressionSpan[FirstIndex..LastIndex], numberStyles);
+            return ParseNumber(expressionSpan[_firstIndex.._lastIndex], numberStyles);
         }
         
         private bool ParseNumber(ReadOnlySpan<char> currentSpan, NumberStyles numberStyles)
         {
-            if (FirstIndex == LastIndex) return false;
-            LastIndex--;
+            if (currentSpan.IsEmpty) return false;
+            _lastIndex--;
             
             if (!double.TryParse(currentSpan, numberStyles, _numberFormatInfo, out double result)) throw new UnknownNumberExpressionException();
 
@@ -161,30 +157,58 @@ namespace Byces.Calculator.Expressions
             return true;
         }
         
-        private bool FindVariable(ReadOnlySpan<char> expressionSpan)
-        {
-            VariableRepresentation? value = VariableRepresentation.FindVariable(this, expressionSpan);
-            if (value == null) return false;
-
-            AddVariable(value);
-            return true;
-        }
-        
-        private bool FindFunction(ReadOnlySpan<char> expressionSpan)
-        {
-            FunctionRepresentation? value = FunctionRepresentation.FindFunction(this, expressionSpan);
-            if (value == null) return false;
-            
-            AddFunction(value);
-            return true;
-        }
-        
         private bool FindOperator(ReadOnlySpan<char> expressionSpan)
         {
-            OperatorRepresentation? value = OperatorRepresentation.FindOperator(this, expressionSpan);
-            if (value == null) return false;
+            if (_lastIndex == expressionSpan.Length) return true;
+            if (!FindExpression(expressionSpan, out OperatorRepresentation? result)) return false;
+            
+            AddOperator(result);
+            return true;
+        }
 
-            AddOperator(value);
+        private bool FindVariableOrFunction(ReadOnlySpan<char> expressionSpan)
+        {
+            if (_lastIndex == expressionSpan.Length) return true;
+            if (!FindExpression(expressionSpan, out BeforeVariableRepresentation? result)) return false;
+            if (result is VariableRepresentation variableRepresentation2)
+            {
+                AddVariable(variableRepresentation2);
+                return true;
+            }
+            AddFunction((FunctionRepresentation)result);
+            return true;
+        }
+
+        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, [NotNullWhen(true)] out T? result) where T : ExpressionRepresentation<T>
+        {
+            ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
+            if (!ExpressionRepresentation<T>.TryParse(currentSpan, out result)) return false;
+            
+            int increaseLastIndex = 0, foundLength = currentSpan.Length;
+            T? value = null;
+            
+            for (int i = 0; i < result.RepresentableConflicts.Length; i++)
+            {
+                Conflict representableConflict = result.RepresentableConflicts[i];
+                if (foundLength == 1 && representableConflict.Representable != RepresentableType.Char) continue;
+                if (foundLength > 1 && representableConflict.Representable != RepresentableType.String) continue;
+
+                int j = 1;
+                while (j <= representableConflict.Difference && _lastIndex + j < expressionSpan.Length) j++;
+                
+                currentSpan = expressionSpan[_firstIndex..(_lastIndex + --j + 1)];
+                
+                bool parseResult = ExpressionRepresentation<T>.TryParse(currentSpan, out T? value2);
+                if (!parseResult || increaseLastIndex > j) continue;
+                
+                increaseLastIndex = j;
+                value = value2;
+            }
+            if (value != null)
+            {
+                result = value;
+                _lastIndex += increaseLastIndex;
+            }
             return true;
         }
         
