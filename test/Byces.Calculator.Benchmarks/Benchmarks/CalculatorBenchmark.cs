@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Interfaces;
 
 namespace Byces.Calculator.Benchmarks.Benchmarks
@@ -10,10 +11,25 @@ namespace Byces.Calculator.Benchmarks.Benchmarks
         private ICalculator _calculator;
 #pragma warning restore CS8618
 
+        [Params(CalculatorOptions.Default, CalculatorOptions.CacheExpressions)]
+        public CalculatorOptions Options;
+        
         [GlobalSetup]
         public void Setup()
         {
-            _calculator = new CalculatorBuilder().Build();
+            _calculator = new CalculatorBuilder().WithOptions(Options).Build();
+        }
+        
+        [Benchmark]
+        public void NumberOnly()
+        {
+            ExecuteDoubleCalculationMillionTimes("3");
+        }
+        
+        [Benchmark]
+        public void Random()
+        {
+            ExecuteDoubleCalculationMillionTimes("random(1; 10)");
         }
 
         [Benchmark]

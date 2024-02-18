@@ -8,6 +8,8 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
         public override string StringRepresentation => "FLOOR";
 
         public override int ParametersMax => 1;
+        
+        public override bool Pure => true;
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {

@@ -22,14 +22,14 @@ namespace Byces.Calculator.Tests.Functions
         }
 
         [TestMethod]
-        public void LogarithmExceptionsTest()
+        public void LogarithmNegativeTest()
         {
-            Evaluator.ValidateException("log(4;-2)", ResultError.Arithmetic);
-            Evaluator.ValidateException("log(4;0)", ResultError.Arithmetic);
-            Evaluator.ValidateException("log(4;1)", ResultError.Arithmetic);
-            Evaluator.ValidateException("log(-4;-2)", ResultError.Arithmetic);
-            Evaluator.ValidateException("log(-4;2)", ResultError.Arithmetic);
-            Evaluator.ValidateException("log(0;2)", ResultError.Arithmetic);
+            Evaluator.ValidateNumber("log(4;-2)", Math.Log(4, -2));;
+            Evaluator.ValidateNumber("log(4;0)", Math.Log(4, 0));
+            Evaluator.ValidateNumber("log(4;1)", Math.Log(4, 1));
+            Evaluator.ValidateNumber("log(-4;-2)", Math.Log(-4, -2));
+            Evaluator.ValidateNumber("log(-4;2)", Math.Log(-4, 2));
+            Evaluator.ValidateNumber("log(0;2)", Math.Log(0, 2));
         }
     }
 }

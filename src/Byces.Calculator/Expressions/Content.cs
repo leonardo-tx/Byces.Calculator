@@ -3,84 +3,110 @@ using Byces.Calculator.Exceptions;
 using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Byces.Calculator.Expressions
 {
     internal sealed class Content
     {
-        private static readonly OperatorPriority[] OperatorPriorities = Enum
-            .GetValues(typeof(OperatorPriority))
-            .Cast<OperatorPriority>().ToArray();
-
         internal List<Variable> Variables { get; } = new();
 
         internal List<Operation> Operations { get; } = new();
 
         internal List<Function> Functions { get; } = new();
 
-        internal OperatorPriority UsedOperators { get; set; } = OperatorPriority.None;
-
         internal void Clear()
         {
-            UsedOperators = OperatorPriority.None;
             Variables.Clear();
             Operations.Clear();
             Functions.Clear();
         }
 
-        internal void Process()
+        internal void CopyValues(Content content)
         {
-            int priority = Operations.MaxPriority();
-            while (priority >= 0)
-            {
-                CalculateInOrder(priority);
-                int newPriority = Operations.MaxPriority();
+            Functions.AddRange(content.Functions);
+            Operations.AddRange(content.Operations);
+            Variables.AddRange(content.Variables);
+        }
 
-                if (newPriority == priority) break;
-                priority = newPriority;
+        internal void Process(int priority = 0, int initialIndex = 0)
+        {
+            for (int i = initialIndex, lastPriority = priority; i < Operations.Count; i++)
+            {
+                Operation currentOperation = Operations[i];
+                if (lastPriority >= currentOperation.Priority)
+                {
+                    lastPriority = currentOperation.Priority;
+                    continue;
+                }
+                Process(currentOperation.Priority, i);
+                
+                i = initialIndex - 1;
+                lastPriority = priority;
             }
-            CalculateFunctions(0);
+            int lastIndex = Operations.Count - 1;
+            OperatorPriority usedOperators = OperatorPriority.None;
+            
+            for (int i = initialIndex; i < Operations.Count; i++)
+            {
+                if (Operations[i].Priority != priority)
+                {
+                    lastIndex = i - 1;
+                    break;
+                }
+                usedOperators |= Operations[i].Value.Priority;
+            }
+            CalculateInOrder(priority, initialIndex, lastIndex, usedOperators);
         }
         
-        private void CalculateInOrder(int priority)
+        private void CalculateInOrder(int priority, int initialIndex, int lastIndex, OperatorPriority usedOperators)
         {
-            CalculateFunctions(priority);
-            for (int i = 0; i < OperatorPriorities.Length - 1; i++)
-            {
-                if ((UsedOperators & OperatorPriorities[i]) == OperatorPriority.None) continue;
-                CalculateOperations(OperatorPriorities[i], priority);
-            }
-            if ((UsedOperators & OperatorPriority.SemiColon) == OperatorPriority.SemiColon) FindSemiColon(priority);
+            CalculateFunctions(priority, initialIndex, lastIndex);
+            
+            if ((usedOperators & OperatorPriority.Potentiality) != 0) 
+                CalculateOperations(OperatorPriority.Potentiality, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.Multiplicative) != 0) 
+                CalculateOperations(OperatorPriority.Multiplicative, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.Additive) != 0) 
+                CalculateOperations(OperatorPriority.Additive, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.Relational) != 0) 
+                CalculateOperations(OperatorPriority.Relational, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.Equality) != 0) 
+                CalculateOperations(OperatorPriority.Equality, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.AndBitwise) != 0) 
+                CalculateOperations(OperatorPriority.AndBitwise, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.OrBitwise) != 0) 
+                CalculateOperations(OperatorPriority.OrBitwise, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.AndConditional) != 0) 
+                CalculateOperations(OperatorPriority.AndConditional, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.OrConditional) != 0) 
+                CalculateOperations(OperatorPriority.OrConditional, initialIndex, ref lastIndex);
+            if ((usedOperators & OperatorPriority.SemiColon) != 0) 
+                CalculateMultipleArgsFunction(initialIndex, lastIndex - initialIndex + 1);
         }
 
-        private void CalculateFunctions(int minPriority)
+        private void CalculateFunctions(int priority, int initialIndex, int lastIndex)
         {
+            int maxPriority = Functions.MaxPriority();
+            if (maxPriority > priority) CalculateFunctions(maxPriority, initialIndex, lastIndex);
+            
             for (int i = Functions.Count - 1; i >= 0; i--)
             {
-                if (Functions[i].Priority < minPriority) continue;
+                Function function = Functions[i];
+                if (function.Priority != priority || function.VariableIndex < initialIndex || function.VariableIndex > lastIndex + 1) continue;
+                
+                int numberIndex = function.VariableIndex;
 
-                int maxPriority = Functions.MaxPriority();
-                while (maxPriority > minPriority)
-                {
-                    CalculateFunctions(maxPriority);
-                    maxPriority = Functions.MaxPriority();
-                }
-                while (i >= Functions.Count) i--;
-                int numberIndex = Functions[i].VariableIndex;
-
-                Variables[numberIndex] = Functions[i].Operate(Variables[numberIndex]);
+                Variables[numberIndex] = function.Operate(Variables[numberIndex]);
                 Functions.RemoveAt(i);
             }
         }
         
-        private void CalculateOperations(OperatorPriority operationPriority, int priority)
+        private void CalculateOperations(OperatorPriority operationPriority, int initialIndex, ref int lastIndex)
         {
-            for (int i = 0; i < Operations.Count; i++)
+            for (int i = initialIndex; i <= lastIndex; i++)
             {
                 Operation operation = Operations[i];
-                if (operation.Priority != priority) continue;
                 if (operationPriority != operation.Value.Priority) continue;
 
                 Variables[i] = operation.Value.Operate(Variables[i], Variables[i + 1]);
@@ -89,29 +115,8 @@ namespace Byces.Calculator.Expressions
 
                 ReduceNumberIndexToFunctions(i + 1, 1);
                 i--;
+                lastIndex--;
             }
-        }
-        
-        private void FindSemiColon(int priority)
-        {
-            int firstIndex = -1;
-            for (int i = 0; i < Operations.Count; i++)
-            {
-                Operation operation = Operations[i];
-                if (firstIndex != -1 && (operation.Priority != priority || operation.Value.Priority != OperatorPriority.SemiColon))
-                {
-                    int count = i - firstIndex + 1;
-                    CalculateMultipleArgsFunction(firstIndex, count);
-
-                    firstIndex = -1; i -= count; continue;
-                }
-                if (firstIndex == -1 && operation.Priority == priority && operation.Value.Priority == OperatorPriority.SemiColon)
-                {
-                    firstIndex = i;
-                }
-            }
-            if (firstIndex == -1) return;
-            CalculateMultipleArgsFunction(firstIndex, Variables.Count - firstIndex);
         }
 
         private void CalculateMultipleArgsFunction(int firstIndex, int count)
@@ -119,14 +124,14 @@ namespace Byces.Calculator.Expressions
             int functionIndex = FindFunctionIndex(firstIndex);
             if (functionIndex == -1) throw new MissingFunctionExpressionException();
             
-            ReadOnlySpan<Variable> values = CollectionsMarshal.AsSpan(Variables).Slice(firstIndex, count);
+            ReadOnlySpan<Variable> values = CollectionsMarshal.AsSpan(Variables).Slice(firstIndex, count + 1);
             
             Variables[firstIndex] = Functions[functionIndex].Operate(values);
-            Operations.RemoveRange(firstIndex, count - 1);
-            Variables.RemoveRange(firstIndex + 1, count - 1);
+            Operations.RemoveRange(firstIndex, count);
+            Variables.RemoveRange(firstIndex + 1, count);
             Functions.RemoveAt(functionIndex);
 
-            ReduceNumberIndexToFunctions(firstIndex + 1, count - 1);
+            ReduceNumberIndexToFunctions(firstIndex + 1, count);
         }
         
         private int FindFunctionIndex(int variableIndex)

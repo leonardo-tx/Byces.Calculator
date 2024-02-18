@@ -1,4 +1,5 @@
-﻿using Byces.Calculator.Enums;
+﻿using System;
+using Byces.Calculator.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Byces.Calculator.Tests.Functions
@@ -21,7 +22,7 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void SquareRootExceptionsTest()
         {
-            Evaluator.ValidateException("√-9", ResultError.Arithmetic);
+            Evaluator.ValidateNumber("√-9", Math.Sqrt(-9));
         }
     }
 }

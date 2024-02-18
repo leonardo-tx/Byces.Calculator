@@ -8,6 +8,8 @@ namespace Byces.Calculator.Representations.Functions.Logic
         public override string StringRepresentation => "IF";
         public override int ParametersMin => 3;
         public override int ParametersMax => 3;
+        
+        public override bool Pure => true;
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {

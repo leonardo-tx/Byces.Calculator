@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Byces.Calculator.Enums;
 
 namespace Byces.Calculator
 {
@@ -22,6 +23,12 @@ namespace Byces.Calculator
         public CultureInfo? CultureInfo { get; set; }
 
         /// <summary>
+        /// Gets or sets the options of a <see cref="Calculator" />.
+        /// </summary>
+        /// <returns>An enum value of the enabled options.</returns>
+        public CalculatorOptions Options { get; set; }
+
+        /// <summary>
         /// Sets the culture of a <see cref="Calculator" />.
         /// </summary>
         /// <param name="cultureInfo">The culture to be set.</param>
@@ -31,6 +38,17 @@ namespace Byces.Calculator
             CultureInfo = cultureInfo;
             return this;
         }
+        
+        /// <summary>
+        /// Sets the options of a <see cref="Calculator" />.
+        /// </summary>
+        /// <param name="options">The options to be set.</param>
+        /// <returns>The current builder.</returns>
+        public CalculatorBuilder WithOptions(CalculatorOptions options)
+        {
+            Options = options;
+            return this;
+        }
 
         /// <summary>
         /// Builds a new <see cref="Calculator"/> instance.
@@ -38,7 +56,7 @@ namespace Byces.Calculator
         /// <returns>The built calculator.</returns>
         public Calculator Build()
         {
-            return new Calculator(CultureInfo);
+            return new Calculator(CultureInfo, Options);
         }
     }
 }

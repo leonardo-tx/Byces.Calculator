@@ -6,6 +6,8 @@ namespace Byces.Calculator.Representations.Variables.Number
     {
         public override char CharRepresentation => '∞';
         public override string StringRepresentation => "INFINITY";
+        
+        public override bool Pure => true;
 
         public override Variable GetValue() => double.PositiveInfinity;
     }

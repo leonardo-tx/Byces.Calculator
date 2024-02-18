@@ -1,4 +1,5 @@
 ﻿using Byces.Calculator;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Interfaces;
 
 namespace ConsoleInput;

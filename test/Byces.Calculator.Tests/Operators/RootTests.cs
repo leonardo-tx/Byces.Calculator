@@ -1,4 +1,4 @@
-﻿using Byces.Calculator.Enums;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Byces.Calculator.Tests.Operators
@@ -35,10 +35,10 @@ namespace Byces.Calculator.Tests.Operators
         }
 
         [TestMethod]
-        public void RootExceptionsTest()
+        public void RootWithSignsTest3()
         {
-            Evaluator.ValidateException("2rt-64", ResultError.Arithmetic);
-            Evaluator.ValidateException("-3rt64", ResultError.Arithmetic);
+            Evaluator.ValidateNumber("2rt-64", Math.Sqrt(-64));
+            Evaluator.ValidateNumber("-3rt64", Math.Pow(64, 1d / -3d));
         }
     }
 }

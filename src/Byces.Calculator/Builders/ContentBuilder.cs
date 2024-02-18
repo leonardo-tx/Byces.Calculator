@@ -4,8 +4,9 @@ using Byces.Calculator.Representations;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Byces.Calculator.Expressions;
 
-namespace Byces.Calculator.Expressions
+namespace Byces.Calculator.Builders
 {
     internal sealed class ContentBuilder
     {
@@ -15,6 +16,8 @@ namespace Byces.Calculator.Expressions
         {
             _content = content;
         }
+
+        internal bool InconstantResult;
 
         private int _firstIndex;
 
@@ -38,6 +41,7 @@ namespace Byces.Calculator.Expressions
             _lastIndex = 0;
             _priority = 0;
             _isNegative = false;
+            InconstantResult = false;
         }
 
         public void Build(ReadOnlySpan<char> expressionSpan, CultureInfo cultureInfo)
@@ -125,19 +129,19 @@ namespace Byces.Calculator.Expressions
             if (char.IsLetter(expressionSpan[_lastIndex])) return false;
 
             var numberStyles = NumberStyles.None;
-            for (bool atScientificNotation = false, atDecimal = false, hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
+            for (bool hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
             {
                 char currentChar = expressionSpan[_lastIndex];
                 if (char.IsDigit(currentChar)) continue;
-                if (!atDecimal)
+                if ((numberStyles & NumberStyles.AllowDecimalPoint) == NumberStyles.None)
                 {
-                    if (currentChar == _decimalSeparator) { atDecimal = true; numberStyles |= NumberStyles.AllowDecimalPoint; continue; }
+                    if (currentChar == _decimalSeparator) { numberStyles |= NumberStyles.AllowDecimalPoint; continue; }
                     if (currentChar == _groupSeparator) { numberStyles |= NumberStyles.AllowThousands; continue; }
                 }
-                switch (atScientificNotation)
+                switch ((numberStyles & NumberStyles.AllowExponent) == NumberStyles.AllowExponent)
                 {
                     case false when currentChar is 'E' or 'e':
-                        atScientificNotation = true; numberStyles |= NumberStyles.AllowExponent; continue;
+                        numberStyles |= NumberStyles.AllowExponent; continue;
                     case true when !hasSignal && currentChar is '+' or '-':
                         hasSignal = true; continue;
                 }
@@ -170,6 +174,10 @@ namespace Byces.Calculator.Expressions
         {
             if (_lastIndex == expressionSpan.Length) return true;
             if (!FindExpression(expressionSpan, out BeforeVariableRepresentation? result)) return false;
+            if (!result.Pure)
+            {
+                InconstantResult = true;
+            }
             if (result is VariableRepresentation variableRepresentation2)
             {
                 AddVariable(variableRepresentation2);
@@ -238,7 +246,6 @@ namespace Byces.Calculator.Expressions
         {
             Operation operation = new(representation, _priority);
             _content.Operations.Add(operation);
-            _content.UsedOperators |= representation.Priority;
         }
     }
 }

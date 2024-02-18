@@ -16,10 +16,10 @@ namespace Byces.Calculator.Tests.Functions
         }
 
         [TestMethod]
-        public void TangentExceptionsTest()
+        public void TangentNanTest()
         {
-            Evaluator.ValidateException("tan(rad 90)", ResultError.Arithmetic);
-            Evaluator.ValidateException("tan(rad 450)", ResultError.Arithmetic);
+            Evaluator.ValidateNumber("tan(rad 90)", double.NaN);
+            Evaluator.ValidateNumber("tan(rad 450)", double.NaN);
         }
     }
 }

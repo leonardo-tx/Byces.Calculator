@@ -6,6 +6,8 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
     internal sealed class Max : FunctionRepresentation
     {
         public override string StringRepresentation => "MAX";
+        
+        public override bool Pure => true;
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {

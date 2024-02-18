@@ -16,18 +16,6 @@ namespace Byces.Calculator.Extensions
             return false;
         }
 
-        internal static int MaxPriority(this List<Operation> source)
-        {
-            int max = -1;
-            ReadOnlySpan<Operation> span = CollectionsMarshal.AsSpan(source);
-            
-            for (int i = 0; i < span.Length; i++)
-            {
-                if (span[i].Priority > max) max = span[i].Priority;
-            }
-            return max;
-        }
-
         internal static int MaxPriority(this List<Function> source)
         {
             int max = -1;

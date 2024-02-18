@@ -8,6 +8,8 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
     {
         public override string StringRepresentation => "LOG";
         public override int ParametersMax => 2;
+        
+        public override bool Pure => true;
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {
@@ -18,15 +20,11 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
 
         private static double Log10(double value)
         {
-            if (value <= 0) throw new ArithmeticExpressionException($"Attempted to log (base 10) of {value}");
             return Math.Log10(value);
         }
 
         private static double LogCustom(double left, double right)
         {
-            if (right <= 1) throw new ArithmeticExpressionException($"Attempted to base {right} on a logarithm");
-            if (left <= 0) throw new ArithmeticExpressionException($"Attempted to log (base {right}) of {left}");
-
             return Math.Log(left, right);
         }
     }

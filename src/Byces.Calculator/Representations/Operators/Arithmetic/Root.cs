@@ -1,5 +1,4 @@
 ﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Exceptions;
 using Byces.Calculator.Expressions;
 using System;
 
@@ -13,8 +12,7 @@ namespace Byces.Calculator.Representations.Operators.Arithmetic
 
         internal override Variable Operate(Variable left, Variable right)
         {
-            if (left.Double < 0) throw new ArithmeticExpressionException("Attempted to make a negative root.");
-            if (right.Double < 0 && left.Double % 2 == 0) throw new ArithmeticExpressionException("Attempted to use an even number to take the root of a negative number.");
+            if (right.Double < 0 && left.Double % 2 == 0) return double.NaN;
 
             double result;
             if (right.Double < 0)

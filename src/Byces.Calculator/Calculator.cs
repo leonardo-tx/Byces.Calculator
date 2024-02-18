@@ -1,11 +1,12 @@
-﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Expressions;
+﻿using Byces.Calculator.Expressions;
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Byces.Calculator.Builders;
+using Byces.Calculator.Enums;
 
 namespace Byces.Calculator
 {
@@ -14,13 +15,16 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator(CultureInfo? cultureInfo)
+        internal Calculator(CultureInfo? cultureInfo, CalculatorOptions options)
         {
             _cultureInfo = cultureInfo;
+            _options = options;
             _resultBuilderPool = ObjectPool.Create<ResultBuilder>();
         }
 
         private readonly CultureInfo? _cultureInfo;
+
+        private readonly CalculatorOptions _options;
 
         private readonly ObjectPool<ResultBuilder> _resultBuilderPool;
 
@@ -33,7 +37,7 @@ namespace Byces.Calculator
         {
             try
             {
-                Variable result = GetResult(expression, VariableType.Number);
+                Variable result = GetResult(expression);
                 return new MathResult<double>(result.Number, true);
             }
             catch (Exception ex)
@@ -51,7 +55,7 @@ namespace Byces.Calculator
         {
             try
             {
-                Variable result = GetResult(expression, VariableType.Boolean);
+                Variable result = GetResult(expression);
                 return new MathResult<bool>(result.Boolean, true);
             }
             catch (Exception ex)
@@ -61,13 +65,13 @@ namespace Byces.Calculator
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Variable GetResult(ReadOnlySpan<char> rawExpressionSpan, VariableType expectedType)
+        private Variable GetResult(ReadOnlySpan<char> rawExpressionSpan)
         {
             ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                resultBuilder.Build(rawExpressionSpan, _cultureInfo ?? Thread.CurrentThread.CurrentCulture);
-                return resultBuilder.GetResult(expectedType);
+                resultBuilder.Build(rawExpressionSpan, _cultureInfo ?? Thread.CurrentThread.CurrentCulture, _options);
+                return resultBuilder.GetResult();
             }
             finally
             {

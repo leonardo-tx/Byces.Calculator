@@ -7,6 +7,8 @@ namespace Byces.Calculator.Representations.Variables.Number
     {
         public override string StringRepresentation => "PI";
         public override char CharRepresentation => 'π';
+        
+        public override bool Pure => true;
 
         public override Variable GetValue() => Math.PI;
     }

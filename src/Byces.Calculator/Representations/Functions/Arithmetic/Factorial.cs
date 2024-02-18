@@ -1,5 +1,4 @@
-﻿using Byces.Calculator.Exceptions;
-using Byces.Calculator.Expressions;
+﻿using Byces.Calculator.Expressions;
 using System;
 
 namespace Byces.Calculator.Representations.Functions.Arithmetic
@@ -8,18 +7,22 @@ namespace Byces.Calculator.Representations.Functions.Arithmetic
     {
         public override string StringRepresentation => "FACT";
         public override int ParametersMax => 1;
+        
+        public override bool Pure => true;
 
         public override Variable Operate(ReadOnlySpan<Variable> variables)
         {
             double number = variables[0].Double;
-            if (number < 0) throw new ArithmeticExpressionException("Attempted to factorial a negative number.");
 
             double difference = number - Math.Floor(number);
-            return difference == 0 ? GetFactorial((int)number) : GetGamma(number + 1);
+            if (difference == 0) return GetFactorial((int)number);
+            
+            return number < 0 ? -GetGamma(-number + 1) : GetGamma(number + 1);
         }
 
         private static double GetFactorial(int number)
         {
+            if (number < 0) return -GetFactorial(-number);
             if (number > 170) return double.PositiveInfinity;
 
             double result = 1;

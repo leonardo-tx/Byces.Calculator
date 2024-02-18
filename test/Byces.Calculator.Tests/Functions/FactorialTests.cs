@@ -8,6 +8,7 @@ namespace Byces.Calculator.Tests.Functions
         [TestMethod]
         public void FactorialTest()
         {
+            Evaluator.ValidateNumber("(fact(3)) + 3", 9);
             Evaluator.ValidateNumber("fact 4", 24);
             Evaluator.ValidateNumber("FACT(4 + 5)", 362_880);
             Evaluator.ValidateNumber("factfact3", 720);
