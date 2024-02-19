@@ -1,29 +1,21 @@
 ﻿using Byces.Calculator.Extensions;
 using System;
-using System.Reflection;
 
 namespace Byces.Calculator.Expressions.Items
 {
-    internal abstract class ExpressionItem<T> where T : ExpressionItem<T>
+    /// <summary>
+    /// The class that represents a expression item on a <see cref="Calculator"/>.
+    /// </summary>
+    public abstract class ExpressionItem<T> where T : ExpressionItem<T>
     {
-        private const int StringSizeLimit = 128;
+        /// <summary>
+        /// The character limit that a <see cref="StringRepresentation"/> can have.
+        /// </summary>
+        public const int StringSizeLimit = 128;
 
-        static ExpressionItem()
-        {
-            Type mainType = typeof(ExpressionItem<T>);
-            Assembly libraryAssembly = mainType.Assembly;
-
-            ReadOnlySpan<Type> libraryTypes = libraryAssembly.GetTypes();
-            for (int i = 0; i < libraryTypes.Length; i++)
-            {
-                Type? baseType = libraryTypes[i].BaseType;
-                if (baseType == null) continue;
-
-                if (libraryTypes[i].IsAbstract || !baseType.IsSubclassOf(mainType)) continue;
-                Activator.CreateInstance(libraryTypes[i]);
-            }
-        }
-
+        /// <summary>
+        /// Initializes a new <see cref="ExpressionItem{T}" /> class.
+        /// </summary>
         protected ExpressionItem()
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
@@ -44,8 +36,15 @@ namespace Byces.Calculator.Expressions.Items
         
         internal Conflict[] RepresentableConflicts = Array.Empty<Conflict>();
 
+        /// <summary>
+        /// The string representation of the specific expression item. The value needs to be constant.
+        /// Default is <see cref="string.Empty" />
+        /// </summary>
         public virtual string StringRepresentation => string.Empty;
 
+        /// <summary>
+        /// The char representation of the specific expression item. The value needs to be constant.
+        /// </summary>
         public virtual char CharRepresentation => '\0';
     }
 }

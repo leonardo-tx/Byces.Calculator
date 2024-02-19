@@ -1,16 +1,15 @@
-﻿using System;
-
-namespace Byces.Calculator.Expressions.Items
+﻿namespace Byces.Calculator.Expressions.Items
 {
-    internal abstract class VariableItem : BeforeVariableItem
+    /// <summary>
+    /// The class that represents a variable on a <see cref="Calculator"/>.
+    /// </summary>
+    public abstract class VariableItem : BeforeVariableItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="VariableItem" /> class.
+        /// </summary>
         protected VariableItem()
         {
-            ReadOnlySpan<char> spanRepresentation = StringRepresentation;
-            bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
-
-            if (!stringIsDefault && (spanRepresentation.StartsWith("+") || spanRepresentation.StartsWith("-")))
-                throw new Exception($"Could not initialize the variable. The class {GetType().FullName} has a string representation with illegal characters.");
         }
 
         public abstract Variable GetValue();

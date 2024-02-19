@@ -7,27 +7,37 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class BuiltExpressions
     {
-        public BuiltExpressions(params Assembly[] assemblies)
+        private static readonly Type FunctionType = typeof(FunctionItem);
+        private static readonly Type OperatorType = typeof(OperatorItem);
+        private static readonly Type VariableType = typeof(VariableItem);
+        
+        public BuiltExpressions(CalculatorOptions options, Assembly[] assemblies)
         {
-            Type afterRepresentationType = typeof(ExpressionItem<OperatorItem>);
-            Type beforeRepresentationType = typeof(ExpressionItem<BeforeVariableItem>);
             _conflictsItems = new object[] { BeforeConflictItems, AfterConflictItems };
             
+            InstantiateExpressionItemsInAssembly(options, FunctionType.Assembly);
             foreach (Assembly assembly in assemblies)
             {
-                ReadOnlySpan<Type> libraryTypes = assembly.GetTypes();
-                for (int i = 0; i < libraryTypes.Length; i++)
-                {
-                    Type? baseType = libraryTypes[i].BaseType;
-                    if (baseType == null) continue;
+                InstantiateExpressionItemsInAssembly(CalculatorOptions.Default, assembly);
+            }
+        }
 
-                    if (libraryTypes[i].IsAbstract || (!baseType.IsSubclassOf(afterRepresentationType) && !baseType.IsSubclassOf(beforeRepresentationType))) continue;
-                    object instance = Activator.CreateInstance(libraryTypes[i])!;
-                    
-                    if (instance is BeforeVariableItem beforeVariable) 
-                        AddRepresentation(beforeVariable, 0);
-                    else if (instance is OperatorItem afterVariable)
-                        AddRepresentation(afterVariable, 1);
+        private void InstantiateExpressionItemsInAssembly(CalculatorOptions options, Assembly assembly)
+        {
+            ReadOnlySpan<Type> libraryTypes = assembly.GetTypes();
+            foreach (Type type in libraryTypes)
+            {
+                if (type.IsAbstract) continue;
+                if ((options & CalculatorOptions.RemoveDefaultFunctions) == 0 && type.IsSubclassOf(FunctionType) ||
+                    (options & CalculatorOptions.RemoveDefaultVariables) == 0 && type.IsSubclassOf(VariableType))
+                {
+                    BeforeVariableItem instance = (BeforeVariableItem)Activator.CreateInstance(type)!;
+                    AddRepresentation(instance, 0);
+                }
+                if (type.IsSubclassOf(OperatorType))
+                {
+                    OperatorItem instance = (OperatorItem)Activator.CreateInstance(type)!;
+                    AddRepresentation(instance, 1);
                 }
             }
         }

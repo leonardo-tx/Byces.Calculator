@@ -2,9 +2,9 @@
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
 
@@ -15,26 +15,29 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator(CultureInfo? cultureInfo, CalculatorOptions options)
+        internal Calculator(BuiltExpressions builtExpressions, CultureInfo? cultureInfo, CalculatorOptions options)
         {
-            _cultureInfo = cultureInfo;
-            _options = options;
+            CachedExpressions = new ConcurrentDictionary<int, Content>();
+            CultureInfo = cultureInfo;
+            Options = options;
+            BuiltExpressions = builtExpressions;
             _resultBuilderPool = ObjectPool.Create<ResultBuilder>();
-            _builtExpressions = new BuiltExpressions(typeof(Calculator).Assembly);
         }
+        
+        internal readonly ConcurrentDictionary<int, Content> CachedExpressions;
 
-        private readonly BuiltExpressions _builtExpressions;
+        internal readonly BuiltExpressions BuiltExpressions;
 
-        private readonly CultureInfo? _cultureInfo;
+        internal readonly CultureInfo? CultureInfo;
 
-        private readonly CalculatorOptions _options;
+        internal readonly CalculatorOptions Options;
 
         private readonly ObjectPool<ResultBuilder> _resultBuilderPool;
 
         /// <summary>
-        /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
+        /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given expression.
         /// </summary>
-        /// <param name="expression">The mathematical expression.</param>
+        /// <param name="expression">The expression.</param>
         /// <returns>The built result.</returns>
         public MathResult<double> GetDoubleResult(string expression)
         {
@@ -50,9 +53,9 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Gets a <see langword="bool"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
+        /// Gets a <see langword="bool"/> <see cref="MathResult{T}"/>, calculating the given expression.
         /// </summary>
-        /// <param name="expression">The mathematical expression.</param>
+        /// <param name="expression">The expression.</param>
         /// <returns>The built result.</returns>
         public MathResult<bool> GetBooleanResult(string expression)
         {
@@ -73,7 +76,7 @@ namespace Byces.Calculator
             ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                resultBuilder.Build(rawExpressionSpan, _builtExpressions, _cultureInfo ?? Thread.CurrentThread.CurrentCulture, _options);
+                resultBuilder.Build(rawExpressionSpan, this);
                 return resultBuilder.GetResult();
             }
             finally

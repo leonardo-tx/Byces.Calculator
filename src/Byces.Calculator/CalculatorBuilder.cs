@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.Reflection;
+using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
 
 namespace Byces.Calculator
@@ -29,6 +32,12 @@ namespace Byces.Calculator
         public CalculatorOptions Options { get; set; }
 
         /// <summary>
+        /// Gets or sets the assemblies that will be used to search for operators, functions and variables when building the <see cref="Calculator" />.
+        /// </summary>
+        /// <returns>An array of assembly.</returns>
+        public Assembly[] Assemblies { get; set; } = Array.Empty<Assembly>();
+
+        /// <summary>
         /// Sets the culture of a <see cref="Calculator" />.
         /// </summary>
         /// <param name="cultureInfo">The culture to be set.</param>
@@ -51,12 +60,24 @@ namespace Byces.Calculator
         }
 
         /// <summary>
+        /// Sets the assemblies that will be used to search for operators, functions and variables when building the <see cref="Calculator" />.
+        /// </summary>
+        /// <param name="assemblies">The assemblies to be set.</param>
+        /// <returns>The current builder.</returns>
+        public CalculatorBuilder WithAssemblies(params Assembly[] assemblies)
+        {
+            Assemblies = assemblies;
+            return this;
+        }
+
+        /// <summary>
         /// Builds a new <see cref="Calculator"/> instance.
         /// </summary>
         /// <returns>The built calculator.</returns>
         public Calculator Build()
         {
-            return new Calculator(CultureInfo, Options);
+            BuiltExpressions builtExpressions = new(Options, Assemblies);
+            return new Calculator(builtExpressions, CultureInfo, Options);
         }
     }
 }

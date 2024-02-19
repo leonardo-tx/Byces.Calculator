@@ -3,6 +3,7 @@ using Byces.Calculator.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Expressions.Items;
 
@@ -44,8 +45,10 @@ namespace Byces.Calculator.Builders
             InconstantResult = false;
         }
 
-        public void Build(ReadOnlySpan<char> expressionSpan, BuiltExpressions builtExpressions, CultureInfo cultureInfo)
+        public void Build(ReadOnlySpan<char> expressionSpan, BuiltExpressions builtExpressions, CultureInfo? cultureInfo)
         {
+            cultureInfo ??= Thread.CurrentThread.CurrentCulture;
+            
             _builtExpressions = builtExpressions;
             _numberFormatInfo = cultureInfo.NumberFormat;
             _groupSeparator = cultureInfo.NumberFormat.NumberGroupSeparator[0];

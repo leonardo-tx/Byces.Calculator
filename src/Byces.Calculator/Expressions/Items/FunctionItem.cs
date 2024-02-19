@@ -2,8 +2,14 @@
 
 namespace Byces.Calculator.Expressions.Items
 {
-    internal abstract class FunctionItem : BeforeVariableItem
+    /// <summary>
+    /// The class that represents a function on a <see cref="Calculator"/>.
+    /// </summary>
+    public abstract class FunctionItem : BeforeVariableItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="FunctionItem"/> class.
+        /// </summary>
         protected FunctionItem()
         {
             ReadOnlySpan<char> spanRepresentation = StringRepresentation;
@@ -19,10 +25,21 @@ namespace Byces.Calculator.Expressions.Items
                 throw new Exception($"Could not initialize the function. The class {GetType().FullName} has a maximum parameter limit '{ParametersMax}' less than the minimum '{ParametersMin}'");
         }
 
+        /// <summary>
+        /// Indicates the minimum number of parameters the function expects. Default is 1.
+        /// </summary>
         public virtual int ParametersMin => 1;
 
+        /// <summary>
+        /// Indicates the maximum number of parameters the function expects. Default is -1, which means it has no limits.
+        /// </summary>
         public virtual int ParametersMax => -1;
 
+        /// <summary>
+        /// The method that will be called when this function is present in the expression.
+        /// </summary>
+        /// <param name="variables">The function parameters.</param>
+        /// <returns>The result of the function.</returns>
         public abstract Variable Operate(ReadOnlySpan<Variable> variables);
     }
 }

@@ -20,6 +20,18 @@ namespace Byces.Calculator.Enums
         /// Will activate the cache of already solved expressions, making it not necessary to re-parse the string.
         /// Improves performance for repeated expressions, but increases memory consumption.
         /// </summary>
-        CacheExpressions = 2
+        CacheExpressions = 2,
+        /// <summary>
+        /// Removes all the default functions provided by default.
+        /// </summary>
+        RemoveDefaultFunctions = 4,
+        /// <summary>
+        /// Removes all the default variables provided by default.
+        /// </summary>
+        RemoveDefaultVariables = 8,
+        /// <summary>
+        /// Removes all the default functions and variables provided by default.
+        /// </summary>
+        RemoveAllDefaultFunctionsAndVariables = 12
     }
 }

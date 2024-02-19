@@ -4,7 +4,10 @@ using System;
 
 namespace Byces.Calculator.Expressions
 {
-    internal readonly struct Variable
+    /// <summary>
+    /// The class that represents a variable of an expression.
+    /// </summary>
+    public readonly struct Variable
     {
         private Variable(double number, bool boolean, VariableType type)
         {
@@ -17,10 +20,13 @@ namespace Byces.Calculator.Expressions
 
         internal readonly bool Boolean;
 
+        /// <summary>
+        /// The type of the current variable.
+        /// </summary>
         public VariableType Type { get; }
 
         /// <summary>
-        /// Gets the value stored in this instance as a <see langword="double"/>.
+        /// Gets the value stored in this instance as a <see cref="double"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
         public double Double 
@@ -36,7 +42,7 @@ namespace Byces.Calculator.Expressions
         }
 
         /// <summary>
-        /// Gets the value stored in this instance as a <see langword="float"/>.
+        /// Gets the value stored in this instance as a <see cref="float"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
         public float Float
@@ -55,7 +61,7 @@ namespace Byces.Calculator.Expressions
         }
 
         /// <summary>
-        /// Gets the value stored in this instance as a <see langword="long"/>.
+        /// Gets the value stored in this instance as a <see cref="long"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
         public long Long
@@ -71,7 +77,7 @@ namespace Byces.Calculator.Expressions
         }
 
         /// <summary>
-        /// Gets the value stored in this instance as an <see langword="int"/>.
+        /// Gets the value stored in this instance as an <see cref="int"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
         public int Int
@@ -87,7 +93,7 @@ namespace Byces.Calculator.Expressions
         }
 
         /// <summary>
-        /// Gets the value stored in this instance as a <see langword="bool"/>.
+        /// Gets the value stored in this instance as a <see cref="bool"/>.
         /// </summary>
         /// <exception cref="InvalidArgumentExpressionException"></exception>
         public bool Bool
@@ -99,8 +105,18 @@ namespace Byces.Calculator.Expressions
             }
         }
 
+        /// <summary>
+        /// Implicitly converts a <see cref="double" /> to a <see cref="Variable" />.
+        /// </summary>
+        /// <param name="number">The number to convert.</param>
+        /// <returns>The representation of <see cref="double" /> as a <see cref="Variable" />.</returns>
         public static implicit operator Variable(double number) => new(number, false, VariableType.Number);
 
+        /// <summary>
+        /// Implicitly converts a <see cref="bool" /> to a <see cref="Variable" />.
+        /// </summary>
+        /// <param name="boolean">The boolean to convert.</param>
+        /// <returns>The representation of <see cref="bool" /> as a <see cref="Variable" />.</returns>
         public static implicit operator Variable(bool boolean) => new(0, boolean, VariableType.Boolean);
     }
 }
