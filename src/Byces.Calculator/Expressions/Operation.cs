@@ -1,16 +1,16 @@
-﻿using Byces.Calculator.Representations;
+﻿using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Expressions
 {
     internal readonly struct Operation
     {
-        internal Operation(OperatorRepresentation operation, int priority)
+        internal Operation(OperatorItem operation, int priority)
         {
             Value = operation;
             Priority = priority;
         }
 
-        internal OperatorRepresentation Value { get; }
+        internal OperatorItem Value { get; }
 
         internal int Priority { get; }
     }

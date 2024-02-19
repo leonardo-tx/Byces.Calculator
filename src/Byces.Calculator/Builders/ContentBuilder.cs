@@ -1,10 +1,10 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
-using Byces.Calculator.Representations;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Byces.Calculator.Expressions;
+using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Builders
 {
@@ -15,7 +15,7 @@ namespace Byces.Calculator.Builders
             _content = content;
         }
         
-        private RepresentationsCollection _representationsCollection;
+        private BuiltExpressions _builtExpressions = null!;
 
         internal bool InconstantResult;
 
@@ -44,9 +44,9 @@ namespace Byces.Calculator.Builders
             InconstantResult = false;
         }
 
-        public void Build(ReadOnlySpan<char> expressionSpan, RepresentationsCollection representationsCollection, CultureInfo cultureInfo)
+        public void Build(ReadOnlySpan<char> expressionSpan, BuiltExpressions builtExpressions, CultureInfo cultureInfo)
         {
-            _representationsCollection = representationsCollection;
+            _builtExpressions = builtExpressions;
             _numberFormatInfo = cultureInfo.NumberFormat;
             _groupSeparator = cultureInfo.NumberFormat.NumberGroupSeparator[0];
             _decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
@@ -106,7 +106,7 @@ namespace Byces.Calculator.Builders
         {
             if (expressionSpan[_lastIndex] == '(')
             {
-                AddOperator(_representationsCollection.AfterConflictItems.Parse("*"));
+                AddOperator(_builtExpressions.AfterConflictItems.Parse("*"));
                 ++_priority;
                 return true;
             }
@@ -165,7 +165,7 @@ namespace Byces.Calculator.Builders
         private bool FindOperator(ReadOnlySpan<char> expressionSpan)
         {
             if (_lastIndex == expressionSpan.Length) return true;
-            if (!FindExpression(expressionSpan, _representationsCollection.AfterConflictItems, out OperatorRepresentation? result)) return false;
+            if (!FindExpression(expressionSpan, _builtExpressions.AfterConflictItems, out OperatorItem? result)) return false;
             
             AddOperator(result);
             return true;
@@ -174,21 +174,21 @@ namespace Byces.Calculator.Builders
         private bool FindVariableOrFunction(ReadOnlySpan<char> expressionSpan)
         {
             if (_lastIndex == expressionSpan.Length) return true;
-            if (!FindExpression(expressionSpan, _representationsCollection.BeforeConflictItems, out BeforeVariableRepresentation? result)) return false;
+            if (!FindExpression(expressionSpan, _builtExpressions.BeforeConflictItems, out BeforeVariableItem? result)) return false;
             if (!result.Pure)
             {
                 InconstantResult = true;
             }
-            if (result is VariableRepresentation variableRepresentation2)
+            if (result is VariableItem variableRepresentation2)
             {
                 AddVariable(variableRepresentation2);
                 return true;
             }
-            AddFunction((FunctionRepresentation)result);
+            AddFunction((FunctionItem)result);
             return true;
         }
 
-        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, ConflictItems<T> conflictItems, [NotNullWhen(true)] out T? result) where T : ExpressionRepresentation<T>
+        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, ConflictItems<T> conflictItems, [NotNullWhen(true)] out T? result) where T : ExpressionItem<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
             if (!conflictItems.TryParse(currentSpan, out result)) return false;
@@ -221,15 +221,15 @@ namespace Byces.Calculator.Builders
             return true;
         }
         
-        private void AddFunction(FunctionRepresentation representation)
+        private void AddFunction(FunctionItem item)
         {
-            Function function = new(_content.Variables.Count, representation, _priority);
+            Function function = new(_content.Variables.Count, item, _priority);
             _content.Functions.Add(function);
         }
         
-        private void AddVariable(VariableRepresentation representation)
+        private void AddVariable(VariableItem item)
         {
-            Variable value = representation.GetValue();
+            Variable value = item.GetValue();
             if (_isNegative && value.Type == VariableType.Number)
             {
                 _content.Variables.Add(-value.Number);
@@ -243,9 +243,9 @@ namespace Byces.Calculator.Builders
             _content.Variables.Add(_isNegative ? -givenValue : givenValue);
         }
         
-        private void AddOperator(OperatorRepresentation representation)
+        private void AddOperator(OperatorItem item)
         {
-            Operation operation = new(representation, _priority);
+            Operation operation = new(item, _priority);
             _content.Operations.Add(operation);
         }
     }

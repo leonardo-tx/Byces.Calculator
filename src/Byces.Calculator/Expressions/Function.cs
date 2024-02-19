@@ -1,12 +1,12 @@
 ﻿using Byces.Calculator.Exceptions;
-using Byces.Calculator.Representations;
 using System;
+using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Expressions
 {
     internal readonly struct Function
     {
-        internal Function(int variableIndex, FunctionRepresentation function, int priority)
+        internal Function(int variableIndex, FunctionItem function, int priority)
         {
             VariableIndex = variableIndex;
             Value = function;
@@ -15,7 +15,7 @@ namespace Byces.Calculator.Expressions
 
         internal int VariableIndex { get; }
 
-        internal FunctionRepresentation Value { get; }
+        internal FunctionItem Value { get; }
 
         internal int Priority { get; }
 
