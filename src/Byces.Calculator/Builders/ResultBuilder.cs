@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
+using Byces.Calculator.Representations;
 
 namespace Byces.Calculator.Builders
 {
@@ -25,12 +26,12 @@ namespace Byces.Calculator.Builders
 
         private readonly Dictionary<int, Content> _cachedExpressions;
 
-        public void Build(ReadOnlySpan<char> expressionSpan, CultureInfo cultureInfo, CalculatorOptions options)
+        public void Build(ReadOnlySpan<char> expressionSpan, RepresentationsCollection representationsCollection, CultureInfo cultureInfo, CalculatorOptions options)
         {
             ReadOnlySpan<char> formattedExpressionSpan = GetFormattedExpression(expressionSpan, options);
             if (formattedExpressionSpan.IsEmpty) return;
             
-            BuildContent(formattedExpressionSpan, cultureInfo, options);
+            BuildContent(formattedExpressionSpan, representationsCollection, cultureInfo, options);
         }
 
         private ReadOnlySpan<char> GetFormattedExpression(ReadOnlySpan<char> expressionSpan, CalculatorOptions options)
@@ -44,11 +45,11 @@ namespace Byces.Calculator.Builders
             return CollectionsMarshal.AsSpan(_expressionBuilder);
         }
 
-        private void BuildContent(ReadOnlySpan<char> expressionSpan, CultureInfo cultureInfo, CalculatorOptions options)
+        private void BuildContent(ReadOnlySpan<char> expressionSpan, RepresentationsCollection representationsCollection, CultureInfo cultureInfo, CalculatorOptions options)
         {
             if ((options & CalculatorOptions.CacheExpressions) == 0)
             {
-                _contentBuilder.Build(expressionSpan, cultureInfo);
+                _contentBuilder.Build(expressionSpan, representationsCollection, cultureInfo);
                 _content.Process();
                 return;
             }
@@ -59,7 +60,7 @@ namespace Byces.Calculator.Builders
                 _content.Process();
                 return;
             }
-            _contentBuilder.Build(expressionSpan, cultureInfo);
+            _contentBuilder.Build(expressionSpan, representationsCollection, cultureInfo);
             cachedContent = new Content();
             _cachedExpressions.Add(hashCode, cachedContent);
             

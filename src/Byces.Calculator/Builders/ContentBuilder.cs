@@ -10,12 +10,12 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class ContentBuilder
     {
-        private static readonly OperatorRepresentation Multiplication = OperatorRepresentation.Parse("*");
-        
         public ContentBuilder(Content content)
         {
             _content = content;
         }
+        
+        private RepresentationsCollection _representationsCollection;
 
         internal bool InconstantResult;
 
@@ -44,8 +44,9 @@ namespace Byces.Calculator.Builders
             InconstantResult = false;
         }
 
-        public void Build(ReadOnlySpan<char> expressionSpan, CultureInfo cultureInfo)
+        public void Build(ReadOnlySpan<char> expressionSpan, RepresentationsCollection representationsCollection, CultureInfo cultureInfo)
         {
+            _representationsCollection = representationsCollection;
             _numberFormatInfo = cultureInfo.NumberFormat;
             _groupSeparator = cultureInfo.NumberFormat.NumberGroupSeparator[0];
             _decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
@@ -105,7 +106,7 @@ namespace Byces.Calculator.Builders
         {
             if (expressionSpan[_lastIndex] == '(')
             {
-                AddOperator(Multiplication);
+                AddOperator(_representationsCollection.AfterConflictItems.Parse("*"));
                 ++_priority;
                 return true;
             }
@@ -164,7 +165,7 @@ namespace Byces.Calculator.Builders
         private bool FindOperator(ReadOnlySpan<char> expressionSpan)
         {
             if (_lastIndex == expressionSpan.Length) return true;
-            if (!FindExpression(expressionSpan, out OperatorRepresentation? result)) return false;
+            if (!FindExpression(expressionSpan, _representationsCollection.AfterConflictItems, out OperatorRepresentation? result)) return false;
             
             AddOperator(result);
             return true;
@@ -173,7 +174,7 @@ namespace Byces.Calculator.Builders
         private bool FindVariableOrFunction(ReadOnlySpan<char> expressionSpan)
         {
             if (_lastIndex == expressionSpan.Length) return true;
-            if (!FindExpression(expressionSpan, out BeforeVariableRepresentation? result)) return false;
+            if (!FindExpression(expressionSpan, _representationsCollection.BeforeConflictItems, out BeforeVariableRepresentation? result)) return false;
             if (!result.Pure)
             {
                 InconstantResult = true;
@@ -187,10 +188,10 @@ namespace Byces.Calculator.Builders
             return true;
         }
 
-        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, [NotNullWhen(true)] out T? result) where T : ExpressionRepresentation<T>
+        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, ConflictItems<T> conflictItems, [NotNullWhen(true)] out T? result) where T : ExpressionRepresentation<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
-            if (!ExpressionRepresentation<T>.TryParse(currentSpan, out result)) return false;
+            if (!conflictItems.TryParse(currentSpan, out result)) return false;
             
             int increaseLastIndex = 0, foundLength = currentSpan.Length;
             T? value = null;
@@ -206,7 +207,7 @@ namespace Byces.Calculator.Builders
                 
                 currentSpan = expressionSpan[_firstIndex..(_lastIndex + --j + 1)];
                 
-                bool parseResult = ExpressionRepresentation<T>.TryParse(currentSpan, out T? value2);
+                bool parseResult = conflictItems.TryParse(currentSpan, out T? value2);
                 if (!parseResult || increaseLastIndex > j) continue;
                 
                 increaseLastIndex = j;

@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
+using Byces.Calculator.Representations;
 
 namespace Byces.Calculator
 {
@@ -20,7 +21,10 @@ namespace Byces.Calculator
             _cultureInfo = cultureInfo;
             _options = options;
             _resultBuilderPool = ObjectPool.Create<ResultBuilder>();
+            _representationsCollection = new RepresentationsCollection(typeof(Calculator).Assembly);
         }
+
+        private readonly RepresentationsCollection _representationsCollection;
 
         private readonly CultureInfo? _cultureInfo;
 
@@ -70,7 +74,7 @@ namespace Byces.Calculator
             ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                resultBuilder.Build(rawExpressionSpan, _cultureInfo ?? Thread.CurrentThread.CurrentCulture, _options);
+                resultBuilder.Build(rawExpressionSpan, _representationsCollection, _cultureInfo ?? Thread.CurrentThread.CurrentCulture, _options);
                 return resultBuilder.GetResult();
             }
             finally

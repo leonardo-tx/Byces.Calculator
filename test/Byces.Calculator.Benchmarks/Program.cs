@@ -8,6 +8,7 @@ namespace Byces.Calculator.Benchmarks
         public static void Main()
         {
             BenchmarkRunner.Run<CalculatorBenchmark>();
+            BenchmarkRunner.Run<ExpressionBenchmark>();
         }
     }
 }
