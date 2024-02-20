@@ -11,12 +11,12 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class ContentBuilder
     {
-        public ContentBuilder(Content content)
+        public ContentBuilder(Content content, BuiltExpressions builtExpressions, CultureInfo? cultureInfo)
         {
             _content = content;
+            _builtExpressions = builtExpressions;
+            _cultureInfo = cultureInfo;
         }
-        
-        private BuiltExpressions _builtExpressions = null!;
 
         internal bool InconstantResult;
 
@@ -35,6 +35,10 @@ namespace Byces.Calculator.Builders
         private NumberFormatInfo _numberFormatInfo = null!;
 
         private readonly Content _content;
+        
+        private readonly BuiltExpressions _builtExpressions;
+
+        private readonly CultureInfo? _cultureInfo;
 
         public void Clear()
         {
@@ -45,14 +49,13 @@ namespace Byces.Calculator.Builders
             InconstantResult = false;
         }
 
-        public void Build(ReadOnlySpan<char> expressionSpan, BuiltExpressions builtExpressions, CultureInfo? cultureInfo)
+        public void Build(ReadOnlySpan<char> expressionSpan)
         {
-            cultureInfo ??= Thread.CurrentThread.CurrentCulture;
+            CultureInfo currentCultureInfo = _cultureInfo ?? Thread.CurrentThread.CurrentCulture;
             
-            _builtExpressions = builtExpressions;
-            _numberFormatInfo = cultureInfo.NumberFormat;
-            _groupSeparator = cultureInfo.NumberFormat.NumberGroupSeparator[0];
-            _decimalSeparator = cultureInfo.NumberFormat.NumberDecimalSeparator[0];
+            _numberFormatInfo = currentCultureInfo.NumberFormat;
+            _groupSeparator = currentCultureInfo.NumberFormat.NumberGroupSeparator[0];
+            _decimalSeparator = currentCultureInfo.NumberFormat.NumberDecimalSeparator[0];
             ScanExpression(expressionSpan);
         }
         
@@ -232,7 +235,7 @@ namespace Byces.Calculator.Builders
         
         private void AddVariable(VariableItem item)
         {
-            Variable value = item.GetValue();
+            Variable value = Variable.GetVariableFromVariableItem(item);
             if (_isNegative && value.Type == VariableType.Number)
             {
                 _content.Variables.Add(-value.Number);

@@ -19,14 +19,6 @@ namespace Byces.Calculator.Expressions
 
         internal int Priority { get; }
 
-        internal Variable Operate(Variable variable)
-        {
-            if (Value.ParametersMin > 1) throw new InvalidArgumentExpressionException();
-
-            ReadOnlySpan<Variable> temp = stackalloc Variable[] { variable };
-            return Value.Operate(temp);
-        }
-
         internal Variable Operate(ReadOnlySpan<Variable> variables)
         {
             if (Value.ParametersMin > variables.Length) throw new InvalidArgumentExpressionException();

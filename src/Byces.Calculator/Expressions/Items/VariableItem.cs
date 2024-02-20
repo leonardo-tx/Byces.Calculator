@@ -1,4 +1,6 @@
-﻿namespace Byces.Calculator.Expressions.Items
+﻿using Byces.Calculator.Enums;
+
+namespace Byces.Calculator.Expressions.Items
 {
     /// <summary>
     /// The class that represents a variable on a <see cref="Calculator"/>.
@@ -11,7 +13,13 @@
         protected VariableItem()
         {
         }
+        
+        internal abstract VariableType VariableType { get; }
 
-        public abstract Variable GetValue();
+        /// <summary>
+        /// The method that will be called when this variable is present in the expression.
+        /// </summary>
+        /// <returns>The variable.</returns>
+        internal abstract Variable GetVariable();
     }
 }

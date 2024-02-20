@@ -7,10 +7,10 @@ namespace Byces.Calculator.Tests
     internal static class Evaluator
     {
         private static readonly ICalculator DefaultCalculator = 
-            new CalculatorBuilder().Build();
+            new CalculatorBuilder().WithAssemblies(typeof(Evaluator).Assembly).Build();
 
         private static readonly ICalculator CacheCalculator =
-            new CalculatorBuilder().WithOptions(CalculatorOptions.CacheExpressions).Build();
+            new CalculatorBuilder().WithAssemblies(typeof(Evaluator).Assembly).WithOptions(CalculatorOptions.CacheExpressions).Build();
 
         internal static void ValidateNumber(string expressionAsString, double expectedValue)
         {
@@ -21,19 +21,20 @@ namespace Byces.Calculator.Tests
             Assert.AreEqual(CacheCalculator.GetDoubleResult(expressionAsString), CacheCalculator.GetDoubleResult(expressionAsString));
         }
 
-        internal static void ValidateNumberApproximately(string expressionAsString, double expectedValue, double delta = 1E-4)
+        internal static void ValidateNumberApproximately(string expressionAsString, double expectedValue, double delta = 1E-4, bool skipCacheEvaluation = false)
         {
             MathResult<double> result = DefaultCalculator.GetDoubleResult(expressionAsString);
             if (!result.IsValid) Assert.Fail(result.ErrorMessage);
 
             Assert.AreEqual(expectedValue, result.Result, delta);
 
+            if (skipCacheEvaluation) return;
             MathResult<double> firstResult = CacheCalculator.GetDoubleResult(expressionAsString);
             MathResult<double> cacheResult = CacheCalculator.GetDoubleResult(expressionAsString);
             
             if (!firstResult.IsValid) Assert.Fail(firstResult.ErrorMessage);
             if (!cacheResult.IsValid) Assert.Fail(cacheResult.ErrorMessage);
-
+            
             Assert.AreEqual(firstResult.Result, cacheResult.Result);
         }
 

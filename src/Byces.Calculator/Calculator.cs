@@ -2,11 +2,11 @@
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
+using Byces.Calculator.Factories;
 
 namespace Byces.Calculator
 {
@@ -17,20 +17,11 @@ namespace Byces.Calculator
     {
         internal Calculator(BuiltExpressions builtExpressions, CultureInfo? cultureInfo, CalculatorOptions options)
         {
-            CachedExpressions = new ConcurrentDictionary<int, Content>();
-            CultureInfo = cultureInfo;
-            Options = options;
-            BuiltExpressions = builtExpressions;
-            _resultBuilderPool = ObjectPool.Create<ResultBuilder>();
+            _resultBuilderPool = new DefaultObjectPool<ResultBuilder>
+            (
+                new ResultBuilderFactory(options, builtExpressions, cultureInfo)
+            );
         }
-        
-        internal readonly ConcurrentDictionary<int, Content> CachedExpressions;
-
-        internal readonly BuiltExpressions BuiltExpressions;
-
-        internal readonly CultureInfo? CultureInfo;
-
-        internal readonly CalculatorOptions Options;
 
         private readonly ObjectPool<ResultBuilder> _resultBuilderPool;
 
@@ -76,12 +67,11 @@ namespace Byces.Calculator
             ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                resultBuilder.Build(rawExpressionSpan, this);
+                resultBuilder.Build(rawExpressionSpan);
                 return resultBuilder.GetResult();
             }
             finally
             {
-                resultBuilder.Clear();
                 _resultBuilderPool.Return(resultBuilder);
             }
         }

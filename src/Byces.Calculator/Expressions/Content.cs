@@ -22,11 +22,27 @@ namespace Byces.Calculator.Expressions
             Functions.Clear();
         }
 
+        internal void CopyResult(Content content)
+        {
+            Variables.Add(content.Variables[0]);
+        }
+
         internal void CopyValues(Content content)
         {
             Functions.AddRange(content.Functions);
             Operations.AddRange(content.Operations);
-            Variables.AddRange(content.Variables);
+
+            ReadOnlySpan<Variable> variablesToCopy = CollectionsMarshal.AsSpan(content.Variables);
+            for (int i = 0; i < variablesToCopy.Length; i++)
+            {
+                Variable currentVariable = variablesToCopy[i];
+                if (currentVariable.VariableItem == null)
+                {
+                    Variables.Add(currentVariable);
+                    continue;
+                }
+                Variables.Add(Variable.GetVariableFromVariableItem(currentVariable.VariableItem));
+            }
         }
 
         internal void Process(int priority = 0, int initialIndex = 0)
@@ -97,7 +113,7 @@ namespace Byces.Calculator.Expressions
                 
                 int numberIndex = function.VariableIndex;
 
-                Variables[numberIndex] = function.Operate(Variables[numberIndex]);
+                Variables[numberIndex] = function.Operate(CollectionsMarshal.AsSpan(Variables).Slice(numberIndex, 1));
                 Functions.RemoveAt(i);
             }
         }

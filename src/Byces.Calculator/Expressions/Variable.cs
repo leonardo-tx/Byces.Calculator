@@ -1,6 +1,7 @@
 ﻿using Byces.Calculator.Enums;
 using Byces.Calculator.Exceptions;
 using System;
+using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Expressions
 {
@@ -9,16 +10,27 @@ namespace Byces.Calculator.Expressions
     /// </summary>
     public readonly struct Variable
     {
-        private Variable(double number, bool boolean, VariableType type)
+        private Variable(double number, bool boolean, VariableType type, VariableItem? variableItem)
         {
             Number = number;
             Boolean = boolean;
             Type = type;
+            VariableItem = variableItem;
+        }
+
+        internal static Variable GetVariableFromVariableItem(VariableItem variableItem)
+        {
+            if (variableItem.Pure) return variableItem.GetVariable();
+
+            Variable variableFromItem = variableItem.GetVariable();
+            return new Variable(variableFromItem.Number, variableFromItem.Boolean, variableItem.VariableType, variableItem);
         }
 
         internal readonly double Number;
 
         internal readonly bool Boolean;
+
+        internal readonly VariableItem? VariableItem;
 
         /// <summary>
         /// The type of the current variable.
@@ -110,13 +122,13 @@ namespace Byces.Calculator.Expressions
         /// </summary>
         /// <param name="number">The number to convert.</param>
         /// <returns>The representation of <see cref="double" /> as a <see cref="Variable" />.</returns>
-        public static implicit operator Variable(double number) => new(number, false, VariableType.Number);
+        public static implicit operator Variable(double number) => new(number, false, VariableType.Number, null);
 
         /// <summary>
         /// Implicitly converts a <see cref="bool" /> to a <see cref="Variable" />.
         /// </summary>
         /// <param name="boolean">The boolean to convert.</param>
         /// <returns>The representation of <see cref="bool" /> as a <see cref="Variable" />.</returns>
-        public static implicit operator Variable(bool boolean) => new(0, boolean, VariableType.Boolean);
+        public static implicit operator Variable(bool boolean) => new(0, boolean, VariableType.Boolean, null);
     }
 }

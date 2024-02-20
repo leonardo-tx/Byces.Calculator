@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
@@ -8,12 +10,20 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class ResultBuilder
     {
-        public ResultBuilder()
+        public ResultBuilder(CalculatorOptions options, 
+            BuiltExpressions builtExpressions, CultureInfo? cultureInfo, 
+            ConcurrentDictionary<int, Content> cachedExpressions)
         {
+            _cachedExpressions = cachedExpressions;
+            _options = options;
             _content = new Content();
-            _contentBuilder = new ContentBuilder(_content);
+            _contentBuilder = new ContentBuilder(_content, builtExpressions, cultureInfo);
             _expressionBuilder = new List<char>();
         }
+
+        private readonly ConcurrentDictionary<int, Content> _cachedExpressions;
+
+        private readonly CalculatorOptions _options;
 
         private readonly Content _content;
 
@@ -21,17 +31,17 @@ namespace Byces.Calculator.Builders
 
         private readonly List<char> _expressionBuilder;
 
-        public void Build(ReadOnlySpan<char> expressionSpan, Calculator calculator)
+        public void Build(ReadOnlySpan<char> expressionSpan)
         {
-            ReadOnlySpan<char> formattedExpressionSpan = GetFormattedExpression(expressionSpan, calculator.Options);
+            ReadOnlySpan<char> formattedExpressionSpan = GetFormattedExpression(expressionSpan);
             if (formattedExpressionSpan.IsEmpty) return;
             
-            BuildContent(formattedExpressionSpan, calculator);
+            BuildContent(formattedExpressionSpan);
         }
 
-        private ReadOnlySpan<char> GetFormattedExpression(ReadOnlySpan<char> expressionSpan, CalculatorOptions options)
+        private ReadOnlySpan<char> GetFormattedExpression(ReadOnlySpan<char> expressionSpan)
         {
-            if ((options & CalculatorOptions.RemoveWhitespaceChecker) != 0) return expressionSpan;
+            if ((_options & CalculatorOptions.RemoveWhitespaceChecker) != 0) return expressionSpan;
             for (int i = 0; i < expressionSpan.Length; i++)
             {
                 if (char.IsWhiteSpace(expressionSpan[i])) continue;
@@ -40,24 +50,24 @@ namespace Byces.Calculator.Builders
             return CollectionsMarshal.AsSpan(_expressionBuilder);
         }
 
-        private void BuildContent(ReadOnlySpan<char> expressionSpan, Calculator calculator)
+        private void BuildContent(ReadOnlySpan<char> expressionSpan)
         {
-            if ((calculator.Options & CalculatorOptions.CacheExpressions) == 0)
+            if ((_options & CalculatorOptions.CacheExpressions) == 0)
             {
-                _contentBuilder.Build(expressionSpan, calculator.BuiltExpressions, calculator.CultureInfo);
+                _contentBuilder.Build(expressionSpan);
                 _content.Process();
                 return;
             }
             int hashCode = string.GetHashCode(expressionSpan, StringComparison.OrdinalIgnoreCase);
-            if (calculator.CachedExpressions.TryGetValue(hashCode, out Content? cachedContent))
+            if (_cachedExpressions.TryGetValue(hashCode, out Content? cachedContent))
             {
                 _content.CopyValues(cachedContent);
                 _content.Process();
                 return;
             }
-            _contentBuilder.Build(expressionSpan, calculator.BuiltExpressions, calculator.CultureInfo);
+            _contentBuilder.Build(expressionSpan);
             cachedContent = new Content();
-            calculator.CachedExpressions.TryAdd(hashCode, cachedContent);
+            _cachedExpressions.TryAdd(hashCode, cachedContent);
             
             if (_contentBuilder.InconstantResult)
             {
@@ -67,7 +77,7 @@ namespace Byces.Calculator.Builders
                 return;
             }
             _content.Process();
-            cachedContent.CopyValues(_content);
+            cachedContent.CopyResult(_content);
         }
 
         public Variable GetResult()
