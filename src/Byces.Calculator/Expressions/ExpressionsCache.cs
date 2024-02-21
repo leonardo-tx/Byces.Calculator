@@ -24,7 +24,7 @@ namespace Byces.Calculator.Expressions
             int hashCode = string.GetHashCode(expression, StringComparison.OrdinalIgnoreCase);
             lock (_cachedExpressions)
             {
-                _cachedExpressions.Add(hashCode, content);
+                _cachedExpressions.TryAdd(hashCode, content);
             }
         }
 

@@ -3,9 +3,9 @@ using Byces.Calculator.Interfaces;
 
 namespace ConsoleInput;
 
-public class Program
+public sealed class Program
 {
-    private static readonly ICalculator _calculator = new CalculatorBuilder().Build();
+    private static readonly ICalculator Calculator = new CalculatorBuilder().Build();
 
     public static void Main()
     {
@@ -14,8 +14,8 @@ public class Program
             Console.Write("Enter a math expression: ");
             string input = Console.ReadLine() ?? string.Empty;
 
-            var result1 = _calculator.GetDoubleResult(input);
-            var result2 = _calculator.GetBooleanResult(input);
+            var result1 = Calculator.GetDoubleResult(input);
+            var result2 = Calculator.GetBooleanResult(input);
 
             if (!result1.IsValid)
             {
