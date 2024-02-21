@@ -61,7 +61,7 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Sets the assemblies that will be used to search for operators, functions and variables when building the <see cref="Calculator" />.
+        /// Sets the assemblies that will be used to search for functions and variables when building the <see cref="Calculator" />.
         /// </summary>
         /// <param name="assemblies">The assemblies to be set.</param>
         /// <returns>The current builder.</returns>

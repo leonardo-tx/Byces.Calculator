@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Byces.Calculator.Enums;
 
 namespace Byces.Calculator.Expressions.Items.Variables

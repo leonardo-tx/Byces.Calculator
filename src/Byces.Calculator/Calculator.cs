@@ -2,11 +2,8 @@
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Byces.Calculator.Builders;
-using Byces.Calculator.Enums;
 using Byces.Calculator.Factories;
 
 namespace Byces.Calculator
@@ -45,7 +42,26 @@ namespace Byces.Calculator
         /// </summary>
         /// <param name="expression">The expression.</param>
         /// <returns>The built result.</returns>
-        public MathResult<double> GetDoubleResult(string expression)
+        public MathResult<double> GetDoubleResult(string? expression)
+        {
+            if (expression == null) return new MathResult<double>(0, true);
+            try
+            {
+                Variable result = GetResult(expression);
+                return new MathResult<double>(result.Number, true);
+            }
+            catch (Exception ex)
+            {
+                return new MathResult<double>(ex, double.NaN);
+            }
+        }
+        
+        /// <summary>
+        /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given expression.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The built result.</returns>
+        public MathResult<double> GetDoubleResult(ReadOnlySpan<char> expression)
         {
             try
             {
@@ -63,7 +79,26 @@ namespace Byces.Calculator
         /// </summary>
         /// <param name="expression">The expression.</param>
         /// <returns>The built result.</returns>
-        public MathResult<bool> GetBooleanResult(string expression)
+        public MathResult<bool> GetBooleanResult(string? expression)
+        {
+            if (expression == null) return new MathResult<bool>(false, true);
+            try
+            {
+                Variable result = GetResult(expression);
+                return new MathResult<bool>(result.Boolean, true);
+            }
+            catch (Exception ex)
+            {
+                return new MathResult<bool>(ex, false);
+            }
+        }
+        
+        /// <summary>
+        /// Gets a <see langword="bool"/> <see cref="MathResult{T}"/>, calculating the given expression.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The built result.</returns>
+        public MathResult<bool> GetBooleanResult(ReadOnlySpan<char> expression)
         {
             try
             {
