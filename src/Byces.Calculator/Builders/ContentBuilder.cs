@@ -11,11 +11,11 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class ContentBuilder
     {
-        public ContentBuilder(Content content, BuiltExpressions builtExpressions, CultureInfo? cultureInfo)
+        public ContentBuilder(Content content, CalculatorDependencies dependencies)
         {
             _content = content;
-            _builtExpressions = builtExpressions;
-            _cultureInfo = cultureInfo;
+            _builtExpressions = dependencies.BuiltExpressions;
+            _cultureInfo = dependencies.CultureInfo;
         }
 
         internal bool InconstantResult;

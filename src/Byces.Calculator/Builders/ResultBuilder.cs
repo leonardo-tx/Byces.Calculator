@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
@@ -10,20 +8,15 @@ namespace Byces.Calculator.Builders
 {
     internal sealed class ResultBuilder
     {
-        public ResultBuilder(CalculatorOptions options, 
-            BuiltExpressions builtExpressions, CultureInfo? cultureInfo, 
-            ConcurrentDictionary<int, Content> cachedExpressions)
+        public ResultBuilder(CalculatorDependencies dependencies)
         {
-            _cachedExpressions = cachedExpressions;
-            _options = options;
+            _dependencies = dependencies;
             _content = new Content();
-            _contentBuilder = new ContentBuilder(_content, builtExpressions, cultureInfo);
+            _contentBuilder = new ContentBuilder(_content, dependencies);
             _expressionBuilder = new List<char>();
         }
 
-        private readonly ConcurrentDictionary<int, Content> _cachedExpressions;
-
-        private readonly CalculatorOptions _options;
+        private readonly CalculatorDependencies _dependencies;
 
         private readonly Content _content;
 
@@ -41,7 +34,7 @@ namespace Byces.Calculator.Builders
 
         private ReadOnlySpan<char> GetFormattedExpression(ReadOnlySpan<char> expressionSpan)
         {
-            if ((_options & CalculatorOptions.RemoveWhitespaceChecker) != 0) return expressionSpan;
+            if ((_dependencies.Options & CalculatorOptions.RemoveWhitespaceChecker) != 0) return expressionSpan;
             for (int i = 0; i < expressionSpan.Length; i++)
             {
                 if (char.IsWhiteSpace(expressionSpan[i])) continue;
@@ -52,14 +45,13 @@ namespace Byces.Calculator.Builders
 
         private void BuildContent(ReadOnlySpan<char> expressionSpan)
         {
-            if ((_options & CalculatorOptions.CacheExpressions) == 0)
+            if ((_dependencies.Options & CalculatorOptions.CacheExpressions) == 0)
             {
                 _contentBuilder.Build(expressionSpan);
                 _content.Process();
                 return;
             }
-            int hashCode = string.GetHashCode(expressionSpan, StringComparison.OrdinalIgnoreCase);
-            if (_cachedExpressions.TryGetValue(hashCode, out Content? cachedContent))
+            if (_dependencies.CachedExpressions!.TryGetContent(expressionSpan, out Content? cachedContent))
             {
                 _content.CopyValues(cachedContent);
                 _content.Process();
@@ -67,17 +59,18 @@ namespace Byces.Calculator.Builders
             }
             _contentBuilder.Build(expressionSpan);
             cachedContent = new Content();
-            _cachedExpressions.TryAdd(hashCode, cachedContent);
             
             if (_contentBuilder.InconstantResult)
             {
                 cachedContent.CopyValues(_content);
                 _content.Process();
-                
-                return;
             }
-            _content.Process();
-            cachedContent.CopyResult(_content);
+            else
+            {
+                _content.Process();
+                cachedContent.CopyResult(_content);
+            }
+            _dependencies.CachedExpressions.Add(expressionSpan, cachedContent);
         }
 
         public Variable GetResult()

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
+using Byces.Calculator.Expressions;
 
 namespace Byces.Calculator
 {
@@ -77,7 +78,9 @@ namespace Byces.Calculator
         public Calculator Build()
         {
             BuiltExpressions builtExpressions = new(Options, Assemblies);
-            return new Calculator(builtExpressions, CultureInfo, Options);
+            CalculatorDependencies dependencies = new(Options, builtExpressions, CultureInfo);
+            
+            return new Calculator(dependencies);
         }
     }
 }

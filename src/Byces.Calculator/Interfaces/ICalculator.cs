@@ -6,6 +6,16 @@
     public interface ICalculator
     {
         /// <summary>
+        /// Gets the number of expressions stored in the current calculator.
+        /// </summary>
+        public int CachedCount { get; }
+
+        /// <summary>
+        /// Releases all cache used to store expressions, if the option is enabled.
+        /// </summary>
+        public void FreeExpressionsCache();
+        
+        /// <summary>
         /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given mathematical expression.
         /// </summary>
         /// <param name="expression">The mathematical expression.</param>

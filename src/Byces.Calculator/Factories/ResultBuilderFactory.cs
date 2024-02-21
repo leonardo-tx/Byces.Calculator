@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Globalization;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
@@ -9,27 +8,16 @@ namespace Byces.Calculator.Factories
 {
     internal sealed class ResultBuilderFactory : IPooledObjectPolicy<ResultBuilder>
     {
-        public ResultBuilderFactory(CalculatorOptions options, BuiltExpressions builtExpressions, CultureInfo? cultureInfo)
+        public ResultBuilderFactory(CalculatorDependencies dependencies)
         {
-            _options = options;
-            _builtExpressions = builtExpressions;
-            _cultureInfo = cultureInfo;
-            _cachedExpressions = (options & CalculatorOptions.CacheExpressions) != 0 
-                ? new ConcurrentDictionary<int, Content>() 
-                : null!;
+            _dependencies = dependencies;
         }
 
-        private readonly CalculatorOptions _options;
-
-        private readonly BuiltExpressions _builtExpressions;
-        
-        private readonly ConcurrentDictionary<int, Content> _cachedExpressions;
-
-        private readonly CultureInfo? _cultureInfo;
+        private readonly CalculatorDependencies _dependencies;
         
         public ResultBuilder Create()
         {
-            return new ResultBuilder(_options, _builtExpressions, _cultureInfo, _cachedExpressions);
+            return new ResultBuilder(_dependencies);
         }
 
         public bool Return(ResultBuilder obj)

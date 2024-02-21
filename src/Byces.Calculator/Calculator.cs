@@ -2,6 +2,7 @@
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Byces.Calculator.Builders;
@@ -15,15 +16,29 @@ namespace Byces.Calculator
     /// </summary>
     public sealed class Calculator : ICalculator
     {
-        internal Calculator(BuiltExpressions builtExpressions, CultureInfo? cultureInfo, CalculatorOptions options)
+        internal Calculator(CalculatorDependencies dependencies)
         {
-            _resultBuilderPool = new DefaultObjectPool<ResultBuilder>
-            (
-                new ResultBuilderFactory(options, builtExpressions, cultureInfo)
-            );
+            _dependencies = dependencies;
+            _resultBuilderPool = new DefaultObjectPool<ResultBuilder>(new ResultBuilderFactory(dependencies));
         }
 
+        private readonly CalculatorDependencies _dependencies;
+
         private readonly ObjectPool<ResultBuilder> _resultBuilderPool;
+
+        /// <summary>
+        /// Gets the number of expressions stored in the current calculator.
+        /// </summary>
+        public int CachedCount => _dependencies.CachedExpressions?.Count ?? 0;
+
+        /// <summary>
+        /// Releases all cache used to store expressions, if the option is enabled.
+        /// </summary>
+        public void FreeExpressionsCache()
+        {
+            if ((_dependencies.Options & CalculatorOptions.CacheExpressions) == 0) return;
+            _dependencies.CachedExpressions!.Free();
+        }
 
         /// <summary>
         /// Gets a <see langword="double"/> <see cref="MathResult{T}"/>, calculating the given expression.
