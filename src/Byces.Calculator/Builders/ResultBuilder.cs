@@ -45,13 +45,13 @@ namespace Byces.Calculator.Builders
 
         private void BuildContent(ReadOnlySpan<char> expressionSpan)
         {
-            if ((_dependencies.Options & CalculatorOptions.CacheExpressions) == 0)
+            if (!_dependencies.HasCachedExpressions())
             {
                 _contentBuilder.Build(expressionSpan);
                 _content.Process();
                 return;
             }
-            if (_dependencies.CachedExpressions!.TryGetContent(expressionSpan, out Content? cachedContent))
+            if (_dependencies.CachedExpressions.TryGetContent(expressionSpan, out Content? cachedContent))
             {
                 _content.CopyValues(cachedContent);
                 _content.Process();

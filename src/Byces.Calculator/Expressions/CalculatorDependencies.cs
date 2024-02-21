@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Enums;
@@ -21,5 +22,11 @@ namespace Byces.Calculator.Expressions
         internal readonly BuiltExpressions BuiltExpressions;
 
         internal readonly CultureInfo? CultureInfo;
+
+        [MemberNotNullWhen(true, nameof(CachedExpressions))]
+        public bool HasCachedExpressions()
+        {
+            return (Options & CalculatorOptions.CacheExpressions) != 0;
+        }
     }
 }

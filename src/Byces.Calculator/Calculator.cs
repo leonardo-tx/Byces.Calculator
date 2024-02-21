@@ -36,8 +36,8 @@ namespace Byces.Calculator
         /// </summary>
         public void FreeExpressionsCache()
         {
-            if ((_dependencies.Options & CalculatorOptions.CacheExpressions) == 0) return;
-            _dependencies.CachedExpressions!.Free();
+            if (!_dependencies.HasCachedExpressions()) return;
+            _dependencies.CachedExpressions.Free();
         }
 
         /// <summary>
