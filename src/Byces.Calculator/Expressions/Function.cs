@@ -1,6 +1,7 @@
 ﻿using Byces.Calculator.Exceptions;
 using System;
 using Byces.Calculator.Expressions.Items;
+using Byces.Calculator.Interfaces;
 
 namespace Byces.Calculator.Expressions
 {

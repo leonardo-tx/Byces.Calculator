@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Trigonometry
 {
     internal sealed class RadianItem : FunctionItem
     {
-        public override string StringRepresentation => "RAD";
+        public RadianItem(): base("RAD")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

@@ -4,7 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class MaxItem : FunctionItem
     {
-        public override string StringRepresentation => "MAX";
+        public MaxItem(): base("MAX")
+        {
+        }
         
         public override bool Pure => true;
 

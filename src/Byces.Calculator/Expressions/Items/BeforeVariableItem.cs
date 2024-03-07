@@ -11,13 +11,15 @@ namespace Byces.Calculator.Expressions.Items
         /// <summary>
         /// Initializes a new <see cref="BeforeVariableItem" /> class.
         /// </summary>
-        protected BeforeVariableItem()
+        protected BeforeVariableItem(params string[] stringRepresentations): base(stringRepresentations)
         {
-            ReadOnlySpan<char> spanRepresentation = StringRepresentation;
-            bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
-
-            if (!stringIsDefault && (spanRepresentation.StartsWith("+") || spanRepresentation.StartsWith("-")))
-                throw new Exception($"Could not initialize the item. The class {GetType().FullName} has a string representation with illegal characters.");
+            foreach (string item in stringRepresentations)
+            {
+                ReadOnlySpan<char> s = item;
+                if (s.StartsWith("+") || s.StartsWith("-"))
+                    throw new Exception($"Could not initialize the item. The class {GetType().FullName} has a string representation with illegal characters.");
+            }
+            
         }
         
         /// <summary>

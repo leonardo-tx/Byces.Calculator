@@ -10,7 +10,7 @@ namespace Byces.Calculator.Expressions.Items
         /// <summary>
         /// Initializes a new <see cref="OperatorItem" /> class.
         /// </summary>
-        protected OperatorItem()
+        protected OperatorItem(params string[] stringRepresentations): base(stringRepresentations)
         {
         }
         

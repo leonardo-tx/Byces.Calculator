@@ -5,8 +5,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Arithmetic
 {
     internal sealed class PowerItem : OperatorItem
     {
-        public override string StringRepresentation => "POW";
-        public override char CharRepresentation => '^';
+        public PowerItem(): base("POW", "**", "^")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.Potentiality;
 
         internal override Variable Operate(Variable left, Variable right) => Math.Pow(left.Double, right.Double);

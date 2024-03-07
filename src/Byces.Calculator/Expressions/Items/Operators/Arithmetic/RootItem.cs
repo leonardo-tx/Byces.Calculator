@@ -5,8 +5,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Arithmetic
 {
     internal sealed class RootItem : OperatorItem
     {
-        public override string StringRepresentation => "RT";
-        public override char CharRepresentation => '√';
+        public RootItem(): base("RT", "√")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.Potentiality;
 
         internal override Variable Operate(Variable left, Variable right)

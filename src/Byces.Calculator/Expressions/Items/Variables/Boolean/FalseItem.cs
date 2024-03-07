@@ -2,7 +2,9 @@
 {
     internal sealed class FalseItem : BooleanItem
     {
-        public override string StringRepresentation => "FALSE";
+        public FalseItem(): base("FALSE")
+        {
+        }
         
         public override bool Pure => true;
 

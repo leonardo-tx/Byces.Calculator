@@ -4,8 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Arithmetic
 {
     internal sealed class ModulusItem : OperatorItem
     {
-        public override string StringRepresentation => "MOD";
-        public override char CharRepresentation => '%';
+        public ModulusItem(): base("MOD", "%")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.Multiplicative;
 
         internal override Variable Operate(Variable left, Variable right)

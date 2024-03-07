@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Trigonometry
 {
     internal sealed class CosineHyperbolicItem : FunctionItem
     {
-        public override string StringRepresentation => "COSH";
+        public CosineHyperbolicItem(): base("COSH")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

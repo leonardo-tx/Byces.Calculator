@@ -2,7 +2,6 @@
 using Byces.Calculator.Interfaces;
 using Microsoft.Extensions.ObjectPool;
 using System;
-using System.Runtime.CompilerServices;
 using Byces.Calculator.Builders;
 using Byces.Calculator.Factories;
 
@@ -45,15 +44,7 @@ namespace Byces.Calculator
         public MathResult<double> GetDoubleResult(string? expression)
         {
             if (expression == null) return new MathResult<double>(0, true);
-            try
-            {
-                Variable result = GetResult(expression);
-                return new MathResult<double>(result.Number, true);
-            }
-            catch (Exception ex)
-            {
-                return new MathResult<double>(ex, double.NaN);
-            }
+            return GetDoubleResult(expression.AsSpan());
         }
         
         /// <summary>
@@ -63,14 +54,19 @@ namespace Byces.Calculator
         /// <returns>The built result.</returns>
         public MathResult<double> GetDoubleResult(ReadOnlySpan<char> expression)
         {
+            ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                Variable result = GetResult(expression);
-                return new MathResult<double>(result.Number, true);
+                resultBuilder.Build(expression);
+                return new MathResult<double>(resultBuilder.GetResult().Number, true);
             }
             catch (Exception ex)
             {
                 return new MathResult<double>(ex, double.NaN);
+            }
+            finally
+            {
+                _resultBuilderPool.Return(resultBuilder);
             }
         }
 
@@ -82,15 +78,7 @@ namespace Byces.Calculator
         public MathResult<bool> GetBooleanResult(string? expression)
         {
             if (expression == null) return new MathResult<bool>(false, true);
-            try
-            {
-                Variable result = GetResult(expression);
-                return new MathResult<bool>(result.Boolean, true);
-            }
-            catch (Exception ex)
-            {
-                return new MathResult<bool>(ex, false);
-            }
+            return GetBooleanResult(expression.AsSpan());
         }
         
         /// <summary>
@@ -100,25 +88,15 @@ namespace Byces.Calculator
         /// <returns>The built result.</returns>
         public MathResult<bool> GetBooleanResult(ReadOnlySpan<char> expression)
         {
+            ResultBuilder resultBuilder = _resultBuilderPool.Get();
             try
             {
-                Variable result = GetResult(expression);
-                return new MathResult<bool>(result.Boolean, true);
+                resultBuilder.Build(expression);
+                return new MathResult<bool>(resultBuilder.GetResult().Boolean, true);
             }
             catch (Exception ex)
             {
                 return new MathResult<bool>(ex, false);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Variable GetResult(ReadOnlySpan<char> rawExpressionSpan)
-        {
-            ResultBuilder resultBuilder = _resultBuilderPool.Get();
-            try
-            {
-                resultBuilder.Build(rawExpressionSpan);
-                return resultBuilder.GetResult();
             }
             finally
             {

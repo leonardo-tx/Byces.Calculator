@@ -7,6 +7,10 @@ namespace Byces.Calculator.Expressions.Items.Variables
     /// </summary>
     public abstract class NumberItem : VariableItem
     {
+        protected NumberItem(params string[] stringRepresentations): base(stringRepresentations)
+        {
+        }
+        
         internal override VariableType VariableType => VariableType.Number;
 
         internal override Variable GetVariable() => GetValue();
@@ -16,5 +20,6 @@ namespace Byces.Calculator.Expressions.Items.Variables
         /// </summary>
         /// <returns>The number.</returns>
         public abstract double GetValue();
+        
     }
 }

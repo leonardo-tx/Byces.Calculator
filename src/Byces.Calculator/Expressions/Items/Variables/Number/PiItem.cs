@@ -4,8 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Variables.Number
 {
     internal sealed class PiItem : NumberItem
     {
-        public override string StringRepresentation => "PI";
-        public override char CharRepresentation => 'π';
+        public PiItem(): base("PI", "π")
+        {
+        }
         
         public override bool Pure => true;
 

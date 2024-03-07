@@ -5,7 +5,9 @@ namespace Byces.Calculator.Tests.Settings.Custom;
 
 public class QuestionMarkItem : BooleanItem
 {
-    public override char CharRepresentation => '?';
+    public QuestionMarkItem(): base("?")
+    {
+    }
 
     public override bool GetValue()
     {

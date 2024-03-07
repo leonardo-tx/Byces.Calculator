@@ -16,35 +16,24 @@ namespace Byces.Calculator.Expressions.Items
         /// <summary>
         /// Initializes a new <see cref="ExpressionItem{T}" /> class.
         /// </summary>
-        protected ExpressionItem()
+        protected ExpressionItem(params string[] stringRepresentations)
         {
-            ReadOnlySpan<char> spanRepresentation = StringRepresentation;
-            bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
-            bool charIsDefault = CharRepresentation == '\0';
+            foreach (string item in stringRepresentations)
+            {
+                ReadOnlySpan<char> s = item;
 
-            if (stringIsDefault && charIsDefault)
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has no representation");
-            if (!charIsDefault && (char.IsWhiteSpace(CharRepresentation) || char.IsDigit(CharRepresentation) || CharRepresentation == '(' || CharRepresentation == ')'))
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a char representation with an illegal character.");
-            if (!stringIsDefault && spanRepresentation.Length == 1)
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with length 1.");
-            if (!stringIsDefault && spanRepresentation.Length > StringSizeLimit)
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation above the allowed limit of {StringSizeLimit}.");
-            if (!stringIsDefault && spanRepresentation.Any(x => char.IsWhiteSpace(x) || char.IsDigit(x) || x == '(' || x == ')'))
-                throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with illegal characters.");
+                if (s.IsEmpty || s.IsWhiteSpace())
+                    throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has an empty representation.");
+                if (s.Length > StringSizeLimit)
+                    throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation above the allowed limit of {StringSizeLimit}.");
+                if (s.Any(x => char.IsWhiteSpace(x) || char.IsDigit(x) || x == '(' || x == ')'))
+                    throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has a string representation with illegal characters.");
+            }
+            StringRepresentations = stringRepresentations;
         }
         
         internal Conflict[] RepresentableConflicts = Array.Empty<Conflict>();
 
-        /// <summary>
-        /// The string representation of the specific expression item. The value needs to be constant.
-        /// Default is <see cref="string.Empty" />
-        /// </summary>
-        public virtual string StringRepresentation => string.Empty;
-
-        /// <summary>
-        /// The char representation of the specific expression item. The value needs to be constant.
-        /// </summary>
-        public virtual char CharRepresentation => '\0';
+        internal string[] StringRepresentations { get; private init; }
     }
 }

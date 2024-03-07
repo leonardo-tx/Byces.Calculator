@@ -5,7 +5,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Logic
 {
     internal sealed class AndBitwiseItem : OperatorItem
     {
-        public override char CharRepresentation => '&';
+        public AndBitwiseItem(): base("&")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.AndBitwise;
 
         internal override Variable Operate(Variable left, Variable right)

@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Logic
 {
     internal sealed class OrItem : OperatorItem
     {
-        public override string StringRepresentation => "||";
+        public OrItem(): base("||")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.OrConditional;
 
         internal override Variable Operate(Variable left, Variable right)

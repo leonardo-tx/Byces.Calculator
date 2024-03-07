@@ -1,11 +1,12 @@
-﻿using Byces.Calculator.Enums;
-using Byces.Calculator.Exceptions;
+﻿using Byces.Calculator.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Expressions.Items;
+using Byces.Calculator.Expressions.Items.Variables;
 
 namespace Byces.Calculator.Builders
 {
@@ -110,16 +111,16 @@ namespace Byces.Calculator.Builders
         
         private bool ScanExpressionAfterVariable(ReadOnlySpan<char> expressionSpan)
         {
+            if (expressionSpan[_lastIndex] == ')')
+            {
+                if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
+                return false;
+            }
             if (expressionSpan[_lastIndex] == '(')
             {
                 AddOperator(_builtExpressions.AfterConflictItems.Parse("*"));
                 ++_priority;
                 return true;
-            }
-            if (expressionSpan[_lastIndex] == ')')
-            {
-                if (--_priority < 0) throw new MisplacedParenthesesExpressionException();
-                return false;
             }
             while (!FindOperator(expressionSpan))
             {
@@ -134,7 +135,7 @@ namespace Byces.Calculator.Builders
             _isNegative = expressionSpan[_lastIndex] == '-';
             if (_isNegative || expressionSpan[_lastIndex] == '+') { _lastIndex++; _firstIndex++; }
             if (char.IsLetter(expressionSpan[_lastIndex])) return false;
-
+            
             var numberStyles = NumberStyles.None;
             for (bool hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
             {
@@ -145,12 +146,16 @@ namespace Byces.Calculator.Builders
                     if (currentChar == _decimalSeparator) { numberStyles |= NumberStyles.AllowDecimalPoint; continue; }
                     if (currentChar == _groupSeparator) { numberStyles |= NumberStyles.AllowThousands; continue; }
                 }
-                switch ((numberStyles & NumberStyles.AllowExponent) == NumberStyles.AllowExponent)
+                if ((numberStyles & NumberStyles.AllowExponent) == 0)
                 {
-                    case false when currentChar is 'E' or 'e':
+                    if (currentChar is 'E' or 'e')
+                    {
                         numberStyles |= NumberStyles.AllowExponent; continue;
-                    case true when !hasSignal && currentChar is '+' or '-':
-                        hasSignal = true; continue;
+                    }
+                }
+                else if (!hasSignal && currentChar is '+' or '-')
+                {
+                    hasSignal = true; continue;
                 }
                 break;
             }
@@ -161,7 +166,7 @@ namespace Byces.Calculator.Builders
         {
             if (currentSpan.IsEmpty) return false;
             _lastIndex--;
-            
+
             if (!double.TryParse(currentSpan, numberStyles, _numberFormatInfo, out double result)) throw new UnknownNumberExpressionException();
 
             AddNumber(result);
@@ -198,20 +203,18 @@ namespace Byces.Calculator.Builders
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
             if (!conflictItems.TryParse(currentSpan, out result)) return false;
-            
-            int increaseLastIndex = 0, foundLength = currentSpan.Length;
+
+            int increaseLastIndex = 0;
             T? value = null;
             
             for (int i = 0; i < result.RepresentableConflicts.Length; i++)
             {
                 Conflict representableConflict = result.RepresentableConflicts[i];
-                if (foundLength == 1 && representableConflict.Representable != RepresentableType.Char) continue;
-                if (foundLength > 1 && representableConflict.Representable != RepresentableType.String) continue;
 
-                int j = 1;
-                while (j <= representableConflict.Difference && _lastIndex + j < expressionSpan.Length) j++;
+                int j = representableConflict.Difference;
+                if (_lastIndex + j >= expressionSpan.Length) continue;
                 
-                currentSpan = expressionSpan[_firstIndex..(_lastIndex + --j + 1)];
+                currentSpan = expressionSpan[_firstIndex..(_lastIndex + j + 1)];
                 
                 bool parseResult = conflictItems.TryParse(currentSpan, out T? value2);
                 if (!parseResult || increaseLastIndex > j) continue;
@@ -235,12 +238,19 @@ namespace Byces.Calculator.Builders
         
         private void AddVariable(VariableItem item)
         {
-            Variable value = Variable.GetVariableFromVariableItem(item);
-            if (_isNegative && value.Type == VariableType.Number)
+            if (item.Pure)
             {
-                _content.Variables.Add(-value.Number);
+                if (item.VariableType == VariableType.Number)
+                {
+                    NumberItem numberItem = (NumberItem)item;
+                    AddNumber(numberItem.GetValue());
+                    
+                    return;
+                }
+                _content.Variables.Add(item.GetVariable());
                 return;
             }
+            Variable value = new(item, _isNegative);
             _content.Variables.Add(value);
         }
         

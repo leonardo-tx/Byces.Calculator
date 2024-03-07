@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Logic
 {
     internal sealed class AndItem : OperatorItem
     {
-        public override string StringRepresentation => "&&";
+        public AndItem(): base("&&")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.AndConditional;
 
         internal override Variable Operate(Variable left, Variable right)

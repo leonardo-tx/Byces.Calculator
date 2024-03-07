@@ -1,11 +1,12 @@
 ﻿using Byces.Calculator;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Interfaces;
 
 namespace ConsoleInput;
 
 public sealed class Program
 {
-    private static readonly ICalculator Calculator = new CalculatorBuilder().Build();
+    private static readonly ICalculator Calculator = new CalculatorBuilder().WithOptions(CalculatorOptions.CacheExpressions).Build();
 
     public static void Main()
     {

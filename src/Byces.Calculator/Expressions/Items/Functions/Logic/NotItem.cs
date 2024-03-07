@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Logic
 {
     internal sealed class NotItem : FunctionItem
     {
-        public override char CharRepresentation => '!';
+        public NotItem(): base("NOT", "!")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

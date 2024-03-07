@@ -2,7 +2,9 @@
 {
     internal class NotANumberItem : NumberItem
     {
-        public override string StringRepresentation => "NAN";
+        public NotANumberItem(): base("NAN")
+        {
+        }
         
         public override bool Pure => true;
 

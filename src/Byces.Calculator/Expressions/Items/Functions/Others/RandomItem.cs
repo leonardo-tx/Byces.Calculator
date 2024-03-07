@@ -5,10 +5,11 @@ namespace Byces.Calculator.Expressions.Items.Functions.Others
 {
     internal sealed class RandomItem : FunctionItem
     {
-        public override string StringRepresentation => "RANDOM";
+        public RandomItem(): base("RANDOM")
+        {
+        }
 
         public override int ParametersMin => 1;
-
         public override int ParametersMax => 2;
 
         private static readonly ObjectPool<Random> RandomPool = ObjectPool.Create<Random>();

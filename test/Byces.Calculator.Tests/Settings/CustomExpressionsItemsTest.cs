@@ -10,6 +10,8 @@ public class CustomExpressionsItemsTest
     {
         Evaluator.ValidateNumber("two + two", 4);
         Evaluator.ValidateNumberApproximately("RANDOMNumBEr", 4.5, 4.5, true);
+        Evaluator.ValidateCacheNumber("-RANDOMNumBEr", -4.5, 4.5);
+        Evaluator.ValidateCacheNumber("-RANDOMNumBEr", -4.5, 4.5);
         Evaluator.ValidateNumberApproximately("?", 1073741824, 1073741824, true);
     }
 }

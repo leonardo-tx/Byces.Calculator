@@ -2,6 +2,7 @@
 using Byces.Calculator.Exceptions;
 using System;
 using Byces.Calculator.Expressions.Items;
+using Byces.Calculator.Expressions.Items.Variables;
 
 namespace Byces.Calculator.Expressions
 {
@@ -10,20 +11,37 @@ namespace Byces.Calculator.Expressions
     /// </summary>
     public readonly struct Variable
     {
-        private Variable(double number, bool boolean, VariableType type, VariableItem? variableItem)
+        private Variable(double number)
         {
             Number = number;
-            Boolean = boolean;
-            Type = type;
-            VariableItem = variableItem;
+            Boolean = false;
+            VariableItem = null;
+            Type = VariableType.Number;
         }
 
-        internal static Variable GetVariableFromVariableItem(VariableItem variableItem)
+        private Variable(bool boolean)
         {
-            if (variableItem.Pure) return variableItem.GetVariable();
+            Number = 0;
+            Boolean = boolean;
+            VariableItem = null;
+            Type = VariableType.Boolean;
+        }
 
-            Variable variableFromItem = variableItem.GetVariable();
-            return new Variable(variableFromItem.Number, variableFromItem.Boolean, variableItem.VariableType, variableItem);
+        internal Variable(VariableItem variableItem, bool isNegative)
+        {
+            if (variableItem.VariableType == VariableType.Number)
+            {
+                double number = ((NumberItem)variableItem).GetValue();
+                Number = isNegative ? -number : number;
+                Boolean = isNegative;
+            }
+            else
+            {
+                Number = 0;
+                Boolean = ((BooleanItem)variableItem).GetValue();
+            }
+            VariableItem = variableItem;
+            Type = variableItem.VariableType;
         }
 
         internal readonly double Number;
@@ -122,13 +140,13 @@ namespace Byces.Calculator.Expressions
         /// </summary>
         /// <param name="number">The number to convert.</param>
         /// <returns>The representation of <see cref="double" /> as a <see cref="Variable" />.</returns>
-        public static implicit operator Variable(double number) => new(number, false, VariableType.Number, null);
+        public static implicit operator Variable(double number) => new(number);
 
         /// <summary>
         /// Implicitly converts a <see cref="bool" /> to a <see cref="Variable" />.
         /// </summary>
         /// <param name="boolean">The boolean to convert.</param>
         /// <returns>The representation of <see cref="bool" /> as a <see cref="Variable" />.</returns>
-        public static implicit operator Variable(bool boolean) => new(0, boolean, VariableType.Boolean, null);
+        public static implicit operator Variable(bool boolean) => new(boolean);
     }
 }

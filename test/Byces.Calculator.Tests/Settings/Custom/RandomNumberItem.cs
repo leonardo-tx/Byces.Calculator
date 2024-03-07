@@ -5,7 +5,9 @@ namespace Byces.Calculator.Tests.Settings.Custom;
 
 internal sealed class RandomNumberItem : NumberItem
 {
-    public override string StringRepresentation => "RANDOMNUMBER";
+    public RandomNumberItem(): base("RANDOMNUMBER")
+    {
+    }
 
     public override double GetValue()
     {

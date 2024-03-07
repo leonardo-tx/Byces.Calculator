@@ -5,7 +5,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Logic
 {
     internal sealed class EqualItem : OperatorItem
     {
-        public override string StringRepresentation => "==";
+        public EqualItem(): base("==")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.Equality;
 
         internal override Variable Operate(Variable left, Variable right)

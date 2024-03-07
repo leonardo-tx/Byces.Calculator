@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Logic
 {
     internal sealed class IfItem : FunctionItem
     {
-        public override string StringRepresentation => "IF";
+        public IfItem(): base("IF")
+        {
+        }
+
         public override int ParametersMin => 3;
         public override int ParametersMax => 3;
         

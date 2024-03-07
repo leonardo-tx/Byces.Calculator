@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class FactorialItem : FunctionItem
     {
-        public override string StringRepresentation => "FACT";
+        public FactorialItem(): base("FACT")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

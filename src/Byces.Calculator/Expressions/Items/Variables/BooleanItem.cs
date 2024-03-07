@@ -7,6 +7,10 @@ namespace Byces.Calculator.Expressions.Items.Variables
     /// </summary>
     public abstract class BooleanItem : VariableItem
     {
+        protected BooleanItem(params string[] stringRepresentations): base(stringRepresentations)
+        {
+        }
+        
         internal override VariableType VariableType => VariableType.Boolean;
 
         internal override Variable GetVariable() => GetValue();

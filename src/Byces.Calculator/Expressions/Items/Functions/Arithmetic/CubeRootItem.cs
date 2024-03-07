@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class CubeRootItem : FunctionItem
     {
-        public override string StringRepresentation => "CBRT";
+        public CubeRootItem(): base("CBRT")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

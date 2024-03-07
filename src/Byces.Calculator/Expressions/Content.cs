@@ -4,6 +4,8 @@ using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Byces.Calculator.Cache;
+using Byces.Calculator.Cache.Variables;
 
 namespace Byces.Calculator.Expressions
 {
@@ -22,26 +24,29 @@ namespace Byces.Calculator.Expressions
             Functions.Clear();
         }
 
-        internal void CopyResult(Content content)
+        internal void CopyTo(CachedContent cachedContent)
         {
-            Variables.Add(content.Variables[0]);
-        }
-
-        internal void CopyValues(Content content)
-        {
-            Functions.AddRange(content.Functions);
-            Operations.AddRange(content.Operations);
-
-            ReadOnlySpan<Variable> variablesToCopy = CollectionsMarshal.AsSpan(content.Variables);
-            for (int i = 0; i < variablesToCopy.Length; i++)
+            cachedContent.Functions.AddRange(Functions);
+            cachedContent.Operations.AddRange(Operations);
+            for (int i = 0; i < Variables.Count; i++)
             {
-                Variable currentVariable = variablesToCopy[i];
-                if (currentVariable.VariableItem == null)
+                Variable currentVariable = Variables[i];
+                if (currentVariable.VariableItem != null)
                 {
-                    Variables.Add(currentVariable);
+                    if (currentVariable.Type == VariableType.Number)
+                    {
+                        cachedContent.Variables.Add(new CachedNumberItem(currentVariable.VariableItem, currentVariable.Boolean));
+                        continue;
+                    }
+                    cachedContent.Variables.Add(new CachedItem(currentVariable.VariableItem));
                     continue;
                 }
-                Variables.Add(Variable.GetVariableFromVariableItem(currentVariable.VariableItem));
+                if (currentVariable.Type == VariableType.Number)
+                {
+                    cachedContent.Variables.Add(new CachedNumber(currentVariable.Number));
+                    continue;
+                }
+                cachedContent.Variables.Add(new CachedBoolean(currentVariable.Boolean));
             }
         }
 
@@ -97,7 +102,7 @@ namespace Byces.Calculator.Expressions
                 CalculateOperations(OperatorPriority.AndConditional, initialIndex, ref lastIndex);
             if ((usedOperators & OperatorPriority.OrConditional) != 0) 
                 CalculateOperations(OperatorPriority.OrConditional, initialIndex, ref lastIndex);
-            if ((usedOperators & OperatorPriority.SemiColon) != 0) 
+            if ((usedOperators & OperatorPriority.FunctionSeparator) != 0) 
                 CalculateMultipleArgsFunction(initialIndex, lastIndex - initialIndex + 1);
         }
 

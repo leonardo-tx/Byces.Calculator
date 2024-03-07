@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Byces.Calculator.Cache;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
 
@@ -51,24 +52,24 @@ namespace Byces.Calculator.Builders
                 _content.Process();
                 return;
             }
-            if (_dependencies.CachedExpressions.TryGetContent(expressionSpan, out Content? cachedContent))
+            if (_dependencies.CachedExpressions.TryGetContent(expressionSpan, out CachedContent? cachedContent))
             {
-                _content.CopyValues(cachedContent);
+                cachedContent.CopyTo(_content);
                 _content.Process();
                 return;
             }
             _contentBuilder.Build(expressionSpan);
-            cachedContent = new Content();
+            cachedContent = new CachedContent();
             
             if (_contentBuilder.InconstantResult)
             {
-                cachedContent.CopyValues(_content);
+                _content.CopyTo(cachedContent);
                 _content.Process();
             }
             else
             {
                 _content.Process();
-                cachedContent.CopyResult(_content);
+                _content.CopyTo(cachedContent);
             }
             _dependencies.CachedExpressions.Add(expressionSpan, cachedContent);
         }

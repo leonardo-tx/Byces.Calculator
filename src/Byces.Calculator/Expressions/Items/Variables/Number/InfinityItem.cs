@@ -2,8 +2,9 @@
 {
     internal sealed class InfinityItem : NumberItem
     {
-        public override char CharRepresentation => '∞';
-        public override string StringRepresentation => "INFINITY";
+        public InfinityItem(): base("INFINITY", "∞")
+        {
+        }
         
         public override bool Pure => true;
 

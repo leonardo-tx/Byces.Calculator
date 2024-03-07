@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Trigonometry
 {
     internal sealed class CosineItem : FunctionItem
     {
-        public override string StringRepresentation => "COS";
+        public CosineItem(): base("COS")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

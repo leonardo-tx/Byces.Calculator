@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Trigonometry
 {
     internal sealed class TangentItem : FunctionItem
     {
-        public override string StringRepresentation => "TAN";
+        public TangentItem(): base("TAN")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

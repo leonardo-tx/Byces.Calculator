@@ -4,8 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class SquareRootItem : FunctionItem
     {
-        public override string StringRepresentation => "SQRT";
-        public override char CharRepresentation => '√';
+        public SquareRootItem(): base("SQRT", "√")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

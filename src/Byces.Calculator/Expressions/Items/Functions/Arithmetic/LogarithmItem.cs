@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class LogarithmItem : FunctionItem
     {
-        public override string StringRepresentation => "LOG";
+        public LogarithmItem(): base("LOG")
+        {
+        }
+        
         public override int ParametersMax => 2;
         
         public override bool Pure => true;

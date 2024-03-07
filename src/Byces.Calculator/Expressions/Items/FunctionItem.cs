@@ -10,13 +10,8 @@ namespace Byces.Calculator.Expressions.Items
         /// <summary>
         /// Initializes a new <see cref="FunctionItem"/> class.
         /// </summary>
-        protected FunctionItem()
+        protected FunctionItem(params string[] stringRepresentations): base(stringRepresentations)
         {
-            ReadOnlySpan<char> spanRepresentation = StringRepresentation;
-            bool stringIsDefault = spanRepresentation.IsEmpty || spanRepresentation.IsWhiteSpace();
-
-            if (!stringIsDefault && (spanRepresentation.StartsWith("+") || spanRepresentation.StartsWith("-")))
-                throw new Exception($"Could not initialize the function. The class {GetType().FullName} has a string representation with illegal characters.");
             if (ParametersMax == 0)
                 throw new Exception($"Could not initialize the function. The class {GetType().FullName} cannot have a parameter limit of 0");
             if (ParametersMin < 1)

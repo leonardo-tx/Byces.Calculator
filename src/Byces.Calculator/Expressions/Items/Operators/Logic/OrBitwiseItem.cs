@@ -5,7 +5,10 @@ namespace Byces.Calculator.Expressions.Items.Operators.Logic
 {
     internal sealed class OrBitwiseItem : OperatorItem
     {
-        public override char CharRepresentation => '|';
+        public OrBitwiseItem(): base("|")
+        {
+        }
+        
         internal override OperatorPriority Priority => OperatorPriority.OrBitwise;
 
         internal override Variable Operate(Variable left, Variable right)

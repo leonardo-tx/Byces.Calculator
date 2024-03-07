@@ -20,6 +20,14 @@ namespace Byces.Calculator.Tests
             Assert.AreEqual(expectedValue, result.Result);
             Assert.AreEqual(CacheCalculator.GetDoubleResult(expressionAsString), CacheCalculator.GetDoubleResult(expressionAsString));
         }
+        
+        internal static void ValidateCacheNumber(string expressionAsString, double expectedValue, double delta)
+        {
+            MathResult<double> result = CacheCalculator.GetDoubleResult(expressionAsString);
+            if (!result.IsValid) Assert.Fail(result.ErrorMessage);
+
+            Assert.AreEqual(expectedValue, result.Result, delta);
+        }
 
         internal static void ValidateNumberApproximately(string expressionAsString, double expectedValue, double delta = 1E-4, bool skipCacheEvaluation = false)
         {

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Byces.Calculator.Builders;
+using Byces.Calculator.Cache;
 using Byces.Calculator.Enums;
 
 namespace Byces.Calculator.Expressions

@@ -4,7 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class AddItem : FunctionItem
     {
-        public override string StringRepresentation => "ADD";
+        public AddItem(): base("ADD")
+        {
+        }
         
         public override bool Pure => true;
 

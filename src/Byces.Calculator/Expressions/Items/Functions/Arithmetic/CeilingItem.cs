@@ -4,7 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class CeilingItem : FunctionItem
     {
-        public override string StringRepresentation => "CEIL";
+        public CeilingItem(): base("CEIL")
+        {
+        }
 
         public override int ParametersMax => 1;
         

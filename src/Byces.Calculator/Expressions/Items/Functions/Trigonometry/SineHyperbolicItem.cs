@@ -4,7 +4,10 @@ namespace Byces.Calculator.Expressions.Items.Functions.Trigonometry
 {
     internal sealed class SineHyperbolicItem : FunctionItem
     {
-        public override string StringRepresentation => "SINH";
+        public SineHyperbolicItem(): base("SINH")
+        {
+        }
+        
         public override int ParametersMax => 1;
         
         public override bool Pure => true;

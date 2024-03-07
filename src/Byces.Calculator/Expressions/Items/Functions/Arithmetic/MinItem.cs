@@ -4,7 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class MinItem : FunctionItem
     {
-        public override string StringRepresentation => "MIN";
+        public MinItem(): base("MIN")
+        {
+        }
         
         public override bool Pure => true;
 

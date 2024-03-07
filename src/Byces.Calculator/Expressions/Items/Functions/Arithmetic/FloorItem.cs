@@ -4,7 +4,9 @@ namespace Byces.Calculator.Expressions.Items.Functions.Arithmetic
 {
     internal sealed class FloorItem : FunctionItem
     {
-        public override string StringRepresentation => "FLOOR";
+        public FloorItem(): base("FLOOR")
+        {
+        }
 
         public override int ParametersMax => 1;
         

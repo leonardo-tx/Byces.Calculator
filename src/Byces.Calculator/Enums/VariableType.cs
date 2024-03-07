@@ -1,6 +1,4 @@
-﻿using Byces.Calculator.Expressions;
-
-namespace Byces.Calculator.Enums
+﻿namespace Byces.Calculator.Enums
 {
     /// <summary>
     /// Specifies the type of a <see cref="Variable" />.
