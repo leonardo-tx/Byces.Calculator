@@ -7,6 +7,10 @@ namespace Byces.Calculator.Expressions.Items.Variables
     /// </summary>
     public abstract class NumberItem : VariableItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="NumberItem" /> class.
+        /// </summary>
+        /// <param name="stringRepresentations">String representations for the item.</param>
         protected NumberItem(params string[] stringRepresentations): base(stringRepresentations)
         {
         }

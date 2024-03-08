@@ -199,7 +199,8 @@ namespace Byces.Calculator.Builders
             return true;
         }
 
-        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, ConflictItems<T> conflictItems, [NotNullWhen(true)] out T? result) where T : ExpressionItem<T>
+        private bool FindExpression<T>(ReadOnlySpan<char> expressionSpan, ConflictItems<T> conflictItems, [NotNullWhen(true)] out T? result) 
+            where T : ExpressionItem<T>
         {
             ReadOnlySpan<char> currentSpan = expressionSpan[_firstIndex..(_lastIndex + 1)];
             if (!conflictItems.TryParse(currentSpan, out result)) return false;
@@ -238,20 +239,21 @@ namespace Byces.Calculator.Builders
         
         private void AddVariable(VariableItem item)
         {
-            if (item.Pure)
+            if (!item.Pure)
             {
-                if (item.VariableType == VariableType.Number)
-                {
-                    NumberItem numberItem = (NumberItem)item;
-                    AddNumber(numberItem.GetValue());
-                    
-                    return;
-                }
-                _content.Variables.Add(item.GetVariable());
+                Variable value = new(item, _isNegative);
+                _content.Variables.Add(value);
+
                 return;
             }
-            Variable value = new(item, _isNegative);
-            _content.Variables.Add(value);
+            if (item.VariableType == VariableType.Number)
+            {
+                NumberItem numberItem = (NumberItem)item;
+                AddNumber(numberItem.GetValue());
+                    
+                return;
+            }
+            _content.Variables.Add(item.GetVariable());
         }
         
         private void AddNumber(double givenValue)

@@ -11,7 +11,7 @@ public class ExpressionBenchmark
     private ICalculator _calculator;
 #pragma warning restore CS8618
 
-    [Params(CalculatorOptions.Default, CalculatorOptions.CacheExpressions)]
+    [Params(CalculatorOptions.CacheExpressions)]
     public CalculatorOptions Options;
         
     [GlobalSetup]
@@ -100,7 +100,7 @@ public class ExpressionBenchmark
 
     private void ExecuteDoubleCalculationMillionTimes(string expression)
     {
-        for (int i = 0; i < 1_000_000; i++)
+        for (int i = 0; i < 100_000; i++)
         {
             _calculator.GetDoubleResult(expression);
         }

@@ -7,6 +7,10 @@ namespace Byces.Calculator.Expressions.Items.Variables
     /// </summary>
     public abstract class BooleanItem : VariableItem
     {
+        /// <summary>
+        /// Initializes a new <see cref="BooleanItem" /> class.
+        /// </summary>
+        /// <param name="stringRepresentations">String representations for the item.</param>
         protected BooleanItem(params string[] stringRepresentations): base(stringRepresentations)
         {
         }

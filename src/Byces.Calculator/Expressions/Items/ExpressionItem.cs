@@ -9,7 +9,7 @@ namespace Byces.Calculator.Expressions.Items
     public abstract class ExpressionItem<T> where T : ExpressionItem<T>
     {
         /// <summary>
-        /// The character limit that a <see cref="StringRepresentation"/> can have.
+        /// The character limit that a string representation can have.
         /// </summary>
         public const int StringSizeLimit = 128;
 
