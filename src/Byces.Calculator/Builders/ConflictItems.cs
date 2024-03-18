@@ -1,53 +1,50 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Byces.Calculator.Collections;
 using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Builders
 {
     internal sealed class ConflictItems<T> where T : ExpressionItem<T>
     {
-        private readonly HashSet<T> _uniqueItems = new();
-
-        private int _count;
-
-        private KeyValuePair<string, T>?[] _items = new KeyValuePair<string, T>?[1];
+        internal readonly HashSet<T> UniqueItems = new();
+        
+        private readonly CharSpanDictionary<T> _itemsSpan = new();
+        private readonly Dictionary<char, T> _itemsChar = new();
 
         internal void AddItem(T item)
         {
-            if (!_uniqueItems.Add(item)) return;
-
-            int requiredLength = _count + item.StringRepresentations.Length;
-            IncreaseInternalArraySize(requiredLength);
-            AddCollisions(item);
+            if (!UniqueItems.Add(item)) return;
             
+            AddCollisions(item);
             foreach (string representation in item.StringRepresentations)
             {
-                AddPair(representation, item);
-            }
-        }
-
-        private void AddPair(string representation, T item)
-        {
-            int index = GetIndex(representation);
-            while (_items[index] != null)
-            {
-                if (representation.Equals(_items[index]!.Value.Key, StringComparison.OrdinalIgnoreCase))
+                if (representation.Length > 1)
+                {
+                    if (_itemsSpan.Add(representation, item)) continue;
                     throw new ArgumentException($"Unable to initialize the type. The {item.GetType().FullName} class has a string representation that collides with another.");
+                }
+                char lowerVariant = char.ToLower(representation[0]);
+                char upperVariant = char.ToUpper(representation[0]);
 
-                index = (index + 1) % _items.Length;
+                if (lowerVariant != upperVariant)
+                {
+                    if (!_itemsChar.TryAdd(lowerVariant, item)) 
+                        throw new ArgumentException($"Unable to initialize the type. The {item.GetType().FullName} class has a string representation that collides with another.");
+                }
+                if (!_itemsChar.TryAdd(upperVariant, item))
+                    throw new ArgumentException($"Unable to initialize the type. The {item.GetType().FullName} class has a string representation that collides with another.");
             }
-            _items[index] = new KeyValuePair<string, T>(representation, item);
-            _count += 1;
         }
-
+        
         private void AddCollisions(T item)
         {
             int indexForSameInstance = 1;
             foreach (string stringRepresentation in item.StringRepresentations)
             {
                 ReadOnlySpan<char> spanRepresentation = stringRepresentation;
-                foreach (T anotherItem in _uniqueItems)
+                foreach (T anotherItem in UniqueItems)
                 {
                     bool sameInstance = item == anotherItem;
                     for (int i = sameInstance ? indexForSameInstance : 0; i < anotherItem.StringRepresentations.Length; i++)
@@ -83,52 +80,12 @@ namespace Byces.Calculator.Builders
         
         internal T Parse(ReadOnlySpan<char> span)
         {
-            if (TryParse(span, out T? type)) return type;
-            throw new ArgumentException();
+            return span.Length == 1 ? _itemsChar[span[0]] : _itemsSpan[span];
         }
         
         internal bool TryParse(ReadOnlySpan<char> span, [NotNullWhen(true)] out T? type)
         {
-            int index = GetIndex(span);
-            while (_items[index] != null)
-            {
-                if (span.Equals(_items[index]!.Value.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    type = _items[index]!.Value.Value;
-                    return true;
-                }
-                index = (index + 1) % _items.Length;
-            }
-            type = null;
-            return false;
-        }
-
-        private void IncreaseInternalArraySize(int requiredLength)
-        {
-            int itemsLength = _items.Length;
-            while (requiredLength > itemsLength * 0.75) itemsLength *= 2;
-
-            if (itemsLength == _items.Length) return;
-            
-            KeyValuePair<string, T>?[] oldItems = _items;
-            _items = new KeyValuePair<string, T>?[itemsLength];
-
-            foreach (KeyValuePair<string, T>? oldItem in oldItems)
-            {
-                if (oldItem == null) continue;
-                
-                int index = GetIndex(oldItem.Value.Key);
-                while (_items[index] != null)
-                {
-                    index = (index + 1) % _items.Length;
-                }
-                _items[index] = oldItem;
-            }
-        }
-
-        private int GetIndex(ReadOnlySpan<char> s)
-        {
-            return Math.Abs(string.GetHashCode(s, StringComparison.OrdinalIgnoreCase) % _items.Length);
+            return span.Length == 1 ? _itemsChar.TryGetValue(span[0], out type) : _itemsSpan.TryGetValue(span, out type);
         }
     }
 }

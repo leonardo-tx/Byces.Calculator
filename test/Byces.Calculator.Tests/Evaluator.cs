@@ -50,6 +50,8 @@ namespace Byces.Calculator.Tests
         {
             MathResult<bool> result = DefaultCalculator.GetBooleanResult(expressionAsString);
             if (!result.IsValid) Assert.Fail(result.ErrorMessage);
+            
+            Assert.AreEqual(expectedValue, result.Result);
 
             MathResult<bool> firstResult = CacheCalculator.GetBooleanResult(expressionAsString);
             MathResult<bool> cacheResult = CacheCalculator.GetBooleanResult(expressionAsString);

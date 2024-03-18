@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Byces.Calculator.Cache;
-using Byces.Calculator.Enums;
+using Byces.Calculator.Collections;
 using Byces.Calculator.Expressions;
 
 namespace Byces.Calculator.Builders
@@ -14,7 +13,7 @@ namespace Byces.Calculator.Builders
             _dependencies = dependencies;
             _content = new Content();
             _contentBuilder = new ContentBuilder(_content, dependencies);
-            _expressionBuilder = new List<char>();
+            _expressionBuilder = dependencies.HasWhitespaceCheck() ? new List<char>() : null!;
         }
 
         private readonly CalculatorDependencies _dependencies;
@@ -35,7 +34,7 @@ namespace Byces.Calculator.Builders
 
         private ReadOnlySpan<char> GetFormattedExpression(ReadOnlySpan<char> expressionSpan)
         {
-            if ((_dependencies.Options & CalculatorOptions.RemoveWhitespaceChecker) != 0) return expressionSpan;
+            if (!_dependencies.HasWhitespaceCheck()) return expressionSpan;
             for (int i = 0; i < expressionSpan.Length; i++)
             {
                 if (char.IsWhiteSpace(expressionSpan[i])) continue;
@@ -52,7 +51,7 @@ namespace Byces.Calculator.Builders
                 _content.Process();
                 return;
             }
-            if (_dependencies.CachedExpressions.TryGetContent(expressionSpan, out CachedContent? cachedContent))
+            if (_dependencies.CachedExpressions.TryGetValue(expressionSpan, out CachedContent? cachedContent))
             {
                 cachedContent.CopyTo(_content);
                 _content.Process();

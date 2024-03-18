@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Byces.Calculator.Cache
+namespace Byces.Calculator.Collections
 {
     internal sealed class ExpressionsCache
     {
@@ -47,7 +47,7 @@ namespace Byces.Calculator.Cache
             
             while (left <= right)
             {
-                int index = left + (right - left) / 2;
+                int index = left + (right - left >> 1);
                 string key = span[index].Key;
 
                 int compareResult = expression.CompareTo(key, StringComparison.OrdinalIgnoreCase);
@@ -65,11 +65,11 @@ namespace Byces.Calculator.Cache
             return left;
         }
 
-        public bool TryGetContent(ReadOnlySpan<char> expression, [NotNullWhen(true)] out CachedContent? cachedContent)
+        public bool TryGetValue(ReadOnlySpan<char> expression, [NotNullWhen(true)] out CachedContent? cachedContent)
         {
             lock (_items)
             {
-                int index = GetIndexOfExpression(expression);
+                int index = GetIndexOf(expression);
                 if (index == -1)
                 {
                     cachedContent = null;
@@ -80,17 +80,17 @@ namespace Byces.Calculator.Cache
             }
         }
 
-        private int GetIndexOfExpression(ReadOnlySpan<char> expression)
+        private int GetIndexOf(ReadOnlySpan<char> s)
         {
             ReadOnlySpan<KeyValuePair<string, CachedContent>> span = CollectionsMarshal.AsSpan(_items);
             int left = 0, right = span.Length - 1;
             
             while (left <= right)
             {
-                int index = left + (right - left) / 2;
+                int index = left + (right - left >> 1);
                 string key = span[index].Key;
 
-                int compareResult = expression.CompareTo(key, StringComparison.OrdinalIgnoreCase);
+                int compareResult = s.CompareTo(key, StringComparison.OrdinalIgnoreCase);
                 if (compareResult == 0)
                 {
                     return index;

@@ -18,9 +18,9 @@ namespace Byces.Calculator.Expressions.Items
         /// </summary>
         protected ExpressionItem(params string[] stringRepresentations)
         {
-            foreach (string item in stringRepresentations)
+            for (int i = 0; i < stringRepresentations.Length; i++)
             {
-                ReadOnlySpan<char> s = item;
+                ReadOnlySpan<char> s = stringRepresentations[i];
 
                 if (s.IsEmpty || s.IsWhiteSpace())
                     throw new Exception($"Unable to initialize the type. The {GetType().FullName} class has an empty representation.");
@@ -34,6 +34,6 @@ namespace Byces.Calculator.Expressions.Items
         
         internal Conflict[] RepresentableConflicts = Array.Empty<Conflict>();
 
-        internal string[] StringRepresentations { get; private init; }
+        internal string[] StringRepresentations { get; set; }
     }
 }

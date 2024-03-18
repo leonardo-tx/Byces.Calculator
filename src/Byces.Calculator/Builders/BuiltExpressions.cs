@@ -13,12 +13,18 @@ namespace Byces.Calculator.Builders
         
         public BuiltExpressions(CalculatorOptions options, Assembly[] assemblies)
         {
-            _conflictsItems = new object[] { BeforeConflictItems, AfterConflictItems };
-            
             InstantiateExpressionItemsInAssembly(options, FunctionType.Assembly);
             foreach (Assembly assembly in assemblies)
             {
                 InstantiateExpressionItemsInAssembly(CalculatorOptions.Default, assembly);
+            }
+            foreach (BeforeVariableItem item in BeforeConflictItems.UniqueItems)
+            {
+                item.StringRepresentations = Array.Empty<string>();
+            }
+            foreach (OperatorItem item in AfterConflictItems.UniqueItems)
+            {
+                item.StringRepresentations = Array.Empty<string>();
             }
         }
 
@@ -32,27 +38,19 @@ namespace Byces.Calculator.Builders
                     (options & CalculatorOptions.RemoveDefaultVariables) == 0 && type.IsSubclassOf(VariableType))
                 {
                     BeforeVariableItem instance = (BeforeVariableItem)Activator.CreateInstance(type)!;
-                    AddRepresentation(instance, 0);
+                    BeforeConflictItems.AddItem(instance);
 
                     continue;
                 }
                 if (type.IsSubclassOf(OperatorType))
                 {
                     OperatorItem instance = (OperatorItem)Activator.CreateInstance(type)!;
-                    AddRepresentation(instance, 1);
+                    AfterConflictItems.AddItem(instance);
                 }
             }
         }
 
-        private void AddRepresentation<T>(T instance, int conflictIndex) where T : ExpressionItem<T>
-        {
-            ConflictItems<T> conflictItems = (ConflictItems<T>)_conflictsItems[conflictIndex];
-            conflictItems.AddItem(instance);
-        }
-
         internal readonly ConflictItems<BeforeVariableItem> BeforeConflictItems = new();
         internal readonly ConflictItems<OperatorItem> AfterConflictItems = new();
-
-        private readonly object[] _conflictsItems;
     }
 }

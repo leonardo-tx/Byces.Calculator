@@ -4,10 +4,10 @@ using Byces.Calculator.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Byces.Calculator.Cache;
 using Byces.Calculator.Cache.Variables;
+using Byces.Calculator.Expressions;
 
-namespace Byces.Calculator.Expressions
+namespace Byces.Calculator.Collections
 {
     internal sealed class Content
     {

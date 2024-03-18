@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Byces.Calculator.Builders;
-using Byces.Calculator.Cache;
+using Byces.Calculator.Collections;
 using Byces.Calculator.Enums;
 
 namespace Byces.Calculator.Expressions
@@ -28,6 +28,11 @@ namespace Byces.Calculator.Expressions
         public bool HasCachedExpressions()
         {
             return (Options & CalculatorOptions.CacheExpressions) != 0;
+        }
+        
+        public bool HasWhitespaceCheck()
+        {
+            return (Options & CalculatorOptions.RemoveWhitespaceChecker) == 0;
         }
     }
 }

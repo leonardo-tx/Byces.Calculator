@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using Byces.Calculator.Collections;
 using Byces.Calculator.Enums;
 using Byces.Calculator.Expressions;
 using Byces.Calculator.Expressions.Items;
@@ -133,15 +134,33 @@ namespace Byces.Calculator.Builders
         private bool FindNumber(ReadOnlySpan<char> expressionSpan)
         {
             _isNegative = expressionSpan[_lastIndex] == '-';
-            if (_isNegative || expressionSpan[_lastIndex] == '+') { _lastIndex++; _firstIndex++; }
-            if (char.IsLetter(expressionSpan[_lastIndex])) return false;
+            if (_isNegative || expressionSpan[_lastIndex] == '+')
+            {
+                _lastIndex++;
+                if (_lastIndex == expressionSpan.Length) return false;
+                _firstIndex++;
+            }
             
             var numberStyles = NumberStyles.None;
+            if (char.IsDigit(expressionSpan[_lastIndex]))
+            {
+                _lastIndex++;
+            }
+            else if (expressionSpan[_lastIndex] == _decimalSeparator)
+            {
+                numberStyles |= NumberStyles.AllowDecimalPoint;
+                _lastIndex++;
+            }
+            else
+            {
+                return false;
+            }
+            
             for (bool hasSignal = false; _lastIndex < expressionSpan.Length; _lastIndex++)
             {
                 char currentChar = expressionSpan[_lastIndex];
                 if (char.IsDigit(currentChar)) continue;
-                if ((numberStyles & NumberStyles.AllowDecimalPoint) == NumberStyles.None)
+                if ((numberStyles & NumberStyles.AllowDecimalPoint) == 0)
                 {
                     if (currentChar == _decimalSeparator) { numberStyles |= NumberStyles.AllowDecimalPoint; continue; }
                     if (currentChar == _groupSeparator) { numberStyles |= NumberStyles.AllowThousands; continue; }

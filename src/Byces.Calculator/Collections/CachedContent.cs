@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Byces.Calculator.Cache.Variables;
 using Byces.Calculator.Expressions;
 
-namespace Byces.Calculator.Cache
+namespace Byces.Calculator.Collections
 {
     internal sealed class CachedContent
     {
