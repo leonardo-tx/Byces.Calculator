@@ -11,7 +11,7 @@ A simple .NET calculator that solves expressions
 4. [Available functions](#available-functions)
 5. [Available variables](#available-variables)
 6. [Building your own functions and variables](#building-your-own-functions-and-variables)
-7. [Benchmark](#benchmark-one-million-iterations)
+7. [Benchmark](#benchmark-100000-iterations)
 8. [Future goals](#future-goals)
 9. [Feedback and bugs](#feedback-and-bugs)
 
@@ -165,8 +165,10 @@ will implement it, if you want, feel free to send a pull request!
 ```csharp
 internal sealed class CustomVariable : NumberItem
 {
-    // You can also add CharRepresentation. Both are optional
-    public override string StringRepresentation => "MYCUSTOMVARIABLE";
+    // You can add multiple strings
+    public CustomVariable(): base("MYCUSTOMVARIABLE")
+    {
+    }
     
     /*
     * If a variable is constant or a function is pure. You can set this 
@@ -183,7 +185,9 @@ internal sealed class CustomVariable : NumberItem
 
 internal sealed class CustomFunction : FunctionItem
 {
-    public override char CharRepresentation => '?';
+    public CustomFunction(): base("?")
+    {
+    }
     
     public override int ParametersMin => 1; // Default is 1
     
@@ -214,48 +218,48 @@ public class Program
 }
 ```
 
-## Benchmark (one million iterations)
+## Benchmark (100,000 iterations)
 
-In the Benchmark below, **one million iterations** were made for each method
+In the Benchmark below, **100,000 iterations** were made for each method
 
 ``` ini
 
 BenchmarkDotNet v0.13.12, Arch Linux
 AMD Ryzen 5 3500X, 1 CPU, 6 logical and 6 physical cores
-.NET SDK 8.0.101
-  [Host]     : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
-  DefaultJob : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
+.NET SDK 8.0.102
+  [Host]     : .NET 8.0.2 (8.0.224.6711), X64 RyuJIT AVX2
+  DefaultJob : .NET 8.0.2 (8.0.224.6711), X64 RyuJIT AVX2
 
 
 ```
-| Method                       | Options          | Mean        | Error     | StdDev    | Allocated |
-|----------------------------- |----------------- |------------:|----------:|----------:|----------:|
-| NumberOnly                   | Default          |    99.10 ms |  0.493 ms |  0.437 ms |     147 B |
-| Random                       | Default          |   359.91 ms |  1.155 ms |  1.081 ms |     736 B |
-| SimpleCalculation            | Default          |   248.98 ms |  1.602 ms |  1.498 ms |     245 B |
-| EulerPlusEulerPlusEuler      | Default          |   319.00 ms |  1.176 ms |  1.042 ms |     368 B |
-| ComplexCalculation           | Default          |   575.21 ms |  2.658 ms |  2.486 ms |     736 B |
-| HeavyCalculation             | Default          | 6,008.99 ms | 27.029 ms | 25.283 ms |     736 B |
-| HeavyCalculationNoWhiteSpace | Default          | 5,991.09 ms | 18.155 ms | 15.160 ms |     736 B |
-| ManyParenthesesCalculation   | Default          | 1,088.73 ms |  5.291 ms |  4.949 ms |     736 B |
-| FactorialCalculation         | Default          |   759.04 ms |  4.053 ms |  3.791 ms |     736 B |
-| SquareRootStringCalculation  | Default          |   193.50 ms |  1.460 ms |  1.365 ms |     245 B |
-| SquareRootCharCalculation    | Default          |   154.78 ms |  1.386 ms |  1.296 ms |     184 B |
-| AddFunctionCalculation       | Default          |   347.05 ms |  1.738 ms |  1.625 ms |     736 B |
-| AddOperationCalculation      | Default          |   255.07 ms |  0.518 ms |  0.485 ms |     368 B |
-| NumberOnly                   | CacheExpressions |    75.63 ms |  0.090 ms |  0.080 ms |     105 B |
-| Random                       | CacheExpressions |   218.22 ms |  0.723 ms |  0.641 ms |     245 B |
-| SimpleCalculation            | CacheExpressions |   105.31 ms |  0.124 ms |  0.116 ms |     147 B |
-| EulerPlusEulerPlusEuler      | CacheExpressions |   136.29 ms |  0.445 ms |  0.394 ms |     184 B |
-| ComplexCalculation           | CacheExpressions |   163.02 ms |  1.760 ms |  1.560 ms |     184 B |
-| HeavyCalculation             | CacheExpressions |   838.20 ms |  3.222 ms |  3.014 ms |     736 B |
-| HeavyCalculationNoWhiteSpace | CacheExpressions |   822.28 ms |  5.415 ms |  5.065 ms |     736 B |
-| ManyParenthesesCalculation   | CacheExpressions |   749.67 ms |  6.583 ms |  6.158 ms |     736 B |
-| FactorialCalculation         | CacheExpressions |   158.21 ms |  1.562 ms |  1.461 ms |     184 B |
-| SquareRootStringCalculation  | CacheExpressions |    98.32 ms |  0.067 ms |  0.063 ms |     123 B |
-| SquareRootCharCalculation    | CacheExpressions |   111.85 ms |  0.100 ms |  0.093 ms |     147 B |
-| AddFunctionCalculation       | CacheExpressions |   111.88 ms |  0.403 ms |  0.377 ms |     147 B |
-| AddOperationCalculation      | CacheExpressions |    94.51 ms |  0.179 ms |  0.167 ms |     123 B |
+| Method                       | Options          | Mean       | Error     | StdDev    | Allocated |
+|----------------------------- |----------------- |-----------:|----------:|----------:|----------:|
+| NumberOnly                   | Default          |   7.873 ms | 0.0076 ms | 0.0064 ms |      12 B |
+| Random                       | Default          |  38.121 ms | 0.1426 ms | 0.1334 ms |      53 B |
+| SimpleCalculation            | Default          |  23.906 ms | 0.1208 ms | 0.1130 ms |      23 B |
+| EulerPlusEulerPlusEuler      | Default          |  33.412 ms | 0.0941 ms | 0.0735 ms |      49 B |
+| ComplexCalculation           | Default          |  63.722 ms | 0.0783 ms | 0.0733 ms |      92 B |
+| HeavyCalculation             | Default          | 633.367 ms | 5.0311 ms | 4.7061 ms |     736 B |
+| HeavyCalculationNoWhiteSpace | Default          | 622.123 ms | 0.6197 ms | 0.5797 ms |     736 B |
+| ManyParenthesesCalculation   | Default          | 119.524 ms | 2.2572 ms | 2.4151 ms |     147 B |
+| FactorialCalculation         | Default          |  77.468 ms | 0.3160 ms | 0.2956 ms |     105 B |
+| SquareRootStringCalculation  | Default          |  18.776 ms | 0.0658 ms | 0.0616 ms |      23 B |
+| SquareRootCharCalculation    | Default          |  13.621 ms | 0.0721 ms | 0.0674 ms |      12 B |
+| AddFunctionCalculation       | Default          |  34.724 ms | 0.0325 ms | 0.0288 ms |      49 B |
+| AddOperationCalculation      | Default          |  23.851 ms | 0.0384 ms | 0.0360 ms |      23 B |
+| NumberOnly                   | CacheExpressions |   7.273 ms | 0.0595 ms | 0.0557 ms |       6 B |
+| Random                       | CacheExpressions |  22.307 ms | 0.0606 ms | 0.0538 ms |      23 B |
+| SimpleCalculation            | CacheExpressions |   9.341 ms | 0.0842 ms | 0.0746 ms |      12 B |
+| EulerPlusEulerPlusEuler      | CacheExpressions |  11.500 ms | 0.0525 ms | 0.0438 ms |      12 B |
+| ComplexCalculation           | CacheExpressions |  12.127 ms | 0.0457 ms | 0.0405 ms |      12 B |
+| HeavyCalculation             | CacheExpressions |  61.943 ms | 0.7462 ms | 0.6980 ms |      82 B |
+| HeavyCalculationNoWhiteSpace | CacheExpressions |  61.483 ms | 0.3993 ms | 0.3539 ms |      82 B |
+| ManyParenthesesCalculation   | CacheExpressions |  75.954 ms | 0.5798 ms | 0.5140 ms |     105 B |
+| FactorialCalculation         | CacheExpressions |  14.111 ms | 0.0395 ms | 0.0350 ms |      12 B |
+| SquareRootStringCalculation  | CacheExpressions |   7.658 ms | 0.0664 ms | 0.0621 ms |       6 B |
+| SquareRootCharCalculation    | CacheExpressions |   6.741 ms | 0.0239 ms | 0.0224 ms |       6 B |
+| AddFunctionCalculation       | CacheExpressions |   8.907 ms | 0.0379 ms | 0.0354 ms |      12 B |
+| AddOperationCalculation      | CacheExpressions |   7.472 ms | 0.0289 ms | 0.0270 ms |       6 B |
 
 ### Expressions
 
