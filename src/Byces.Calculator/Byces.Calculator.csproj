@@ -5,7 +5,7 @@
     <AssemblyName>Byces.Calculator</AssemblyName>
     <Authors>Leonardo Teixeira</Authors>
     <Description>A simple .NET calculator that solves string expressions</Description>
-    <VersionPrefix>3.1.1</VersionPrefix>
+    <VersionPrefix>3.2.0</VersionPrefix>
     <Nullable>enable</Nullable>
     <Copyright>Copyright (c) Leonardo Teixeira 2024</Copyright>
     <PackageId>Byces.Calculator</PackageId>
