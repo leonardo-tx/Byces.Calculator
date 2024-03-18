@@ -77,6 +77,8 @@ string expressionExample5 = "2(5)";
 |---------------|-------------------------------------------------------------------------|------------|
 | And           | Returns true if both values are true, otherwise false                   | `x && y`   |
 | Or            | Returns true if any of the values are true                              | `x \|\| y` |
+| And bitwise   | Bitwise AND operator, works for bool and number                         | `x & y`    |
+| Or bitwise    | Bitwise OR operator, works for bool and number                          | `x \| y`   |
 | Equal         | Returns true if the two values have the same value                      | `x == y`   |
 | Not Equal     | Returns true if the two values are different                            | `x != y`   |
 | Greater       | Returns true if the first number is greater than the second             | `x > y`    |
