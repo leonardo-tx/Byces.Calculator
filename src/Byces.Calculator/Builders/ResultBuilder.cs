@@ -28,7 +28,12 @@ namespace Byces.Calculator.Builders
         {
             ReadOnlySpan<char> formattedExpressionSpan = GetFormattedExpression(expressionSpan);
             if (formattedExpressionSpan.IsEmpty) return;
-            
+
+            if (_dependencies.HasCachedExpressions())
+            {
+                BuildContentWithCache(formattedExpressionSpan);
+                return;
+            }
             BuildContent(formattedExpressionSpan);
         }
 
@@ -45,13 +50,13 @@ namespace Byces.Calculator.Builders
 
         private void BuildContent(ReadOnlySpan<char> expressionSpan)
         {
-            if (!_dependencies.HasCachedExpressions())
-            {
-                _contentBuilder.Build(expressionSpan);
-                _content.Process();
-                return;
-            }
-            if (_dependencies.CachedExpressions.TryGetValue(expressionSpan, out CachedContent? cachedContent))
+            _contentBuilder.Build(expressionSpan);
+            _content.Process();
+        }
+
+        private void BuildContentWithCache(ReadOnlySpan<char> expressionSpan)
+        {
+            if (_dependencies.CachedExpressions!.TryGetValue(expressionSpan, out CachedContent? cachedContent))
             {
                 cachedContent.CopyTo(_content);
                 _content.Process();
