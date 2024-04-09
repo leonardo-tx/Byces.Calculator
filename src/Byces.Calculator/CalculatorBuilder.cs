@@ -23,7 +23,7 @@ namespace Byces.Calculator
         /// <summary>
         /// Gets or sets the culture of a <see cref="Calculator" />.
         /// </summary>
-        /// <returns>The default culture of a <see cref="Calculator" />, or <see langword="null" /> if none is set.</returns>
+        /// <returns>The default culture, or <see langword="null" /> if none is set.</returns>
         public CultureInfo? CultureInfo { get; set; }
 
         /// <summary>
@@ -37,6 +37,12 @@ namespace Byces.Calculator
         /// </summary>
         /// <returns>An array of assembly.</returns>
         public Assembly[] Assemblies { get; set; } = Array.Empty<Assembly>();
+        
+        /// <summary>
+        /// Gets or sets the service provider that will be used to to initialize custom variables and functions when building the <see cref="Calculator" />.
+        /// </summary>
+        /// <returns>The service provider, or <see langword="null" /> if none is set.</returns>
+        public IServiceProvider? ServiceProvider { get; set; }
 
         /// <summary>
         /// Sets the culture of a <see cref="Calculator" />.
@@ -72,12 +78,23 @@ namespace Byces.Calculator
         }
 
         /// <summary>
+        /// Sets the service provider that will be used to to initialize custom variables and functions when building the <see cref="Calculator" />.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider to be set.</param>
+        /// <returns>The current builder.</returns>
+        public CalculatorBuilder WithServiceProvider(IServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
+            return this;
+        }
+
+        /// <summary>
         /// Builds a new <see cref="Calculator"/> instance.
         /// </summary>
         /// <returns>The built calculator.</returns>
         public Calculator Build()
         {
-            BuiltExpressions builtExpressions = new(Options, Assemblies);
+            BuiltExpressions builtExpressions = new(Options, Assemblies, ServiceProvider);
             CalculatorDependencies dependencies = new(Options, builtExpressions, CultureInfo);
             
             return new Calculator(dependencies);
