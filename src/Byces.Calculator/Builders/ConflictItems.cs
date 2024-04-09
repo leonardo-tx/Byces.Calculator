@@ -6,18 +6,15 @@ using Byces.Calculator.Expressions.Items;
 
 namespace Byces.Calculator.Builders
 {
-    internal sealed class ConflictItems<T> where T : ExpressionItem<T>
+    internal class ConflictItems<T> where T : ExpressionItem<T>
     {
-        internal readonly HashSet<T> UniqueItems = new();
-        
         private readonly CharSpanDictionary<T> _itemsSpan = new();
         private readonly Dictionary<char, T> _itemsChar = new();
 
-        internal void AddItem(T item)
+        protected void AddItem(T item, List<T> tempItems)
         {
-            if (!UniqueItems.Add(item)) return;
-            
-            AddCollisions(item);
+            tempItems.Add(item);
+            AddCollisions(item, tempItems);
             foreach (string representation in item.StringRepresentations)
             {
                 if (representation.Length > 1)
@@ -38,13 +35,13 @@ namespace Byces.Calculator.Builders
             }
         }
         
-        private void AddCollisions(T item)
+        private void AddCollisions(T item, List<T> tempItems)
         {
             int indexForSameInstance = 1;
             foreach (string stringRepresentation in item.StringRepresentations)
             {
                 ReadOnlySpan<char> spanRepresentation = stringRepresentation;
-                foreach (T anotherItem in UniqueItems)
+                foreach (T anotherItem in tempItems)
                 {
                     bool sameInstance = item == anotherItem;
                     for (int i = sameInstance ? indexForSameInstance : 0; i < anotherItem.StringRepresentations.Length; i++)
