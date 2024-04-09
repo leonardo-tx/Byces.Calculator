@@ -14,4 +14,10 @@ public class CustomExpressionsItemsTest
         Evaluator.ValidateCacheNumber("-RANDOMNumBEr", -4.5, 4.5);
         Evaluator.ValidateNumberApproximately("?", 1073741824, 1073741824, true);
     }
+    
+    [TestMethod]
+    public void CustomDependencyVariablesTest()
+    {
+        Evaluator.ValidateBoolean("DEPENDENCY", false);
+    }
 }

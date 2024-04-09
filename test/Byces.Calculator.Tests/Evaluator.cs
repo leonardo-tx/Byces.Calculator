@@ -1,16 +1,33 @@
-﻿using Byces.Calculator.Enums;
+﻿using System;
+using Byces.Calculator.Enums;
 using Byces.Calculator.Interfaces;
+using Byces.Calculator.Tests.Settings.Dependencies;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Byces.Calculator.Tests
 {
     internal static class Evaluator
     {
-        private static readonly ICalculator DefaultCalculator = 
-            new CalculatorBuilder().WithAssemblies(typeof(Evaluator).Assembly).Build();
+        static Evaluator()
+        {
+            ServiceCollection serviceCollection = new();
+            serviceCollection.AddSingleton(new TestDependency("Test"));
+            
+            IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            DefaultCalculator = new CalculatorBuilder()
+                .WithAssemblies(typeof(Evaluator).Assembly)
+                .WithServiceProvider(serviceProvider)
+                .Build();
+            CacheCalculator = new CalculatorBuilder()
+                .WithAssemblies(typeof(Evaluator).Assembly)
+                .WithOptions(CalculatorOptions.CacheExpressions)
+                .WithServiceProvider(serviceProvider)
+                .Build();
+        }
 
-        private static readonly ICalculator CacheCalculator =
-            new CalculatorBuilder().WithAssemblies(typeof(Evaluator).Assembly).WithOptions(CalculatorOptions.CacheExpressions).Build();
+        private static readonly ICalculator DefaultCalculator;
+        private static readonly ICalculator CacheCalculator;
 
         internal static void ValidateNumber(string expressionAsString, double expectedValue)
         {
