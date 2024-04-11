@@ -39,7 +39,7 @@ namespace Byces.Calculator
         public Assembly[] Assemblies { get; set; } = Array.Empty<Assembly>();
         
         /// <summary>
-        /// Gets or sets the service provider that will be used to to initialize custom variables and functions when building the <see cref="Calculator" />.
+        /// Gets or sets the service provider that will be used to initialize custom variables and functions when building the <see cref="Calculator" />.
         /// </summary>
         /// <returns>The service provider, or <see langword="null" /> if none is set.</returns>
         public IServiceProvider? ServiceProvider { get; set; }
@@ -78,7 +78,7 @@ namespace Byces.Calculator
         }
 
         /// <summary>
-        /// Sets the service provider that will be used to to initialize custom variables and functions when building the <see cref="Calculator" />.
+        /// Sets the service provider that will be used to initialize custom variables and functions when building the <see cref="Calculator" />.
         /// </summary>
         /// <param name="serviceProvider">The service provider to be set.</param>
         /// <returns>The current builder.</returns>

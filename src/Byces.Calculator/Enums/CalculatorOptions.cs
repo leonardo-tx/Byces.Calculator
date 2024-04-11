@@ -17,7 +17,7 @@ namespace Byces.Calculator.Enums
         /// </summary>
         RemoveWhitespaceChecker = 1,
         /// <summary>
-        /// Will activate the cache of already solved expressions, making it not necessary to re-parse the string.
+        /// Will activate the cache of already solved expressions, making it not necessary to reparse the string.
         /// Improves performance for repeated expressions, but increases memory consumption.
         /// </summary>
         CacheExpressions = 2,
