@@ -37,7 +37,7 @@ else
 
 Before showing some syntax examples, here are some observations:
 
-* Numbers, variables, operators and functions are not case sensitive
+* Numbers, variables, operators and functions are not case-sensitive
 * The calculator is not sensitive to whitespace by default and using it has a low impact on performance
 
 ```csharp
@@ -155,12 +155,13 @@ string expressionExample5 = "2(5)";
 
 ## Building your own functions and variables
 
-Currently the classes you can inherit are: FunctionItem, NumberItem and BooleanItem
+Currently, the classes you can inherit are: FunctionItem, NumberItem and BooleanItem
 
 Remember that you need to provide the assembly where the custom functions and variables are located
 
-Obs: Currently the library does not support ServiceProvider to construct functions and variables, I don't know when I
-will implement it, if you want, feel free to send a pull request!
+The library currently supports ServiceProvider to construct functions and variables, you can use transient and singleton services.
+
+Obs: It is worth remembering that the created instances (Variables, Functions and Operators) are created only once per calculator.
 
 ### Example
 
