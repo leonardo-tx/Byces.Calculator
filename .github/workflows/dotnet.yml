@@ -15,18 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: [ '5.0.x', '6.0.x', '7.0.x', '8.0.x' ]
-        framework-version: [ 'net5.0', 'net6.0', 'net7.0', 'net8.0' ]
+        dotnet-version: [ '5.0', '6.0', '7.0', '8.0' ]
 
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ matrix.dotnet-version }}
+        dotnet-version: ${{ matrix.dotnet-version }}.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal --framework ${{ matrix.framework-version }}
+      run: dotnet test --no-build --verbosity normal --framework net${{ matrix.framework-version }}
