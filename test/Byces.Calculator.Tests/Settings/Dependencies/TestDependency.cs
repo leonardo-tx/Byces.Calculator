@@ -1,11 +1,12 @@
-namespace Byces.Calculator.Tests.Settings.Dependencies;
-
-public sealed class TestDependency
+namespace Byces.Calculator.Tests.Settings.Dependencies
 {
-    public TestDependency(string? path)
+    public sealed class TestDependency
     {
-        Path = path;
-    }
+        public TestDependency(string? path)
+        {
+            Path = path;
+        }
     
-    public string? Path { get; }
+        public string? Path { get; }
+    }
 }

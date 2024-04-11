@@ -1,19 +1,20 @@
 using Byces.Calculator.Expressions.Items.Variables;
 using Byces.Calculator.Tests.Settings.Dependencies;
 
-namespace Byces.Calculator.Tests.Settings.Custom;
-
-public sealed class DependencyItem : BooleanItem
+namespace Byces.Calculator.Tests.Settings.Custom
 {
-    public DependencyItem(TestDependency dependency): base("DEPENDENCY")
+    public sealed class DependencyItem : BooleanItem
     {
-        _dependency = dependency;
-    }
+        public DependencyItem(TestDependency dependency): base("DEPENDENCY")
+        {
+            _dependency = dependency;
+        }
 
-    private readonly TestDependency _dependency;
+        private readonly TestDependency _dependency;
 
-    public override bool GetValue()
-    {
-        return _dependency.Path == null;
+        public override bool GetValue()
+        {
+            return _dependency.Path == null;
+        }
     }
 }
